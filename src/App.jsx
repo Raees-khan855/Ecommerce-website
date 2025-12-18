@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { HashRouter, Routes, Route } from "react-router-dom";
 import Home from "./pages/home";
 import ProductList from "./pages/ProductList";
 import ProductDetails from "./pages/ProductDetails";
@@ -7,13 +7,12 @@ import Checkout from "./pages/Checkout";
 import Navbar from "./component/Navbar";
 import AdminPanel from "./component/AddProduct";
 import ProtectedRoute from "./component/ProtectedRoute";
-import Login from "./pages/AdminLogin"; // your admin login page
+import Login from "./pages/AdminLogin";
 
 function App() {
   return (
-    <BrowserRouter>
+    <HashRouter>
       <Navbar />
-
       <main>
         <Routes>
           <Route path="/" element={<Home />} />
@@ -22,7 +21,7 @@ function App() {
           <Route path="/cart" element={<Cart />} />
           <Route path="/checkout" element={<Checkout />} />
 
-          {/* admin login route */}
+          {/* admin login */}
           <Route path="/admin-login" element={<Login />} />
 
           {/* protected admin panel */}
@@ -36,7 +35,7 @@ function App() {
           />
         </Routes>
       </main>
-    </BrowserRouter>
+    </HashRouter>
   );
 }
 
