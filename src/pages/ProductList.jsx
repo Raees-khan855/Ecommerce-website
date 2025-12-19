@@ -12,7 +12,9 @@ function ProductList() {
 
     const loadProducts = async () => {
       try {
-        const res = await axios.get("http://localhost:5000/api/products");
+        const res = await axios.get(
+          "https://ecommerce-backend--inforaees690809.replit.app/api/products"
+        );
         if (mounted) setProducts(res.data || []);
       } catch (err) {
         if (mounted)

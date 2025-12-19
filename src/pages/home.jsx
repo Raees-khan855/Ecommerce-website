@@ -15,7 +15,9 @@ function Home() {
 
     const fetchHero = async () => {
       try {
-        const res = await axios.get("http://localhost:5000/api/hero");
+        const res = await axios.get(
+          "https://ecommerce-backend--inforaees690809.replit.app/api/hero"
+        );
         if (mounted) setHero(res.data);
       } catch (err) {
         console.error("Hero fetch error:", err);
@@ -25,7 +27,7 @@ function Home() {
     const fetchProducts = async () => {
       try {
         const res = await axios.get(
-          "http://localhost:5000/api/products/featured/all"
+          "https://ecommerce-backend--inforaees690809.replit.app/api/products/featured/all"
         );
         if (mounted) setFeaturedProducts(res.data || []);
       } catch (err) {
@@ -45,7 +47,7 @@ function Home() {
   const heroImg = hero?.image
     ? hero.image.startsWith("http")
       ? hero.image
-      : `http://localhost:5000${hero.image}`
+      : `https://ecommerce-backend--inforaees690809.replit.app${hero.image}`
     : "https://images.unsplash.com/photo-1616627982421-74db63b3f8a0?auto=format&fit=crop&w=1470&q=80";
 
   return (

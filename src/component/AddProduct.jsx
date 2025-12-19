@@ -135,7 +135,7 @@ function AdminPanel() {
     const token = localStorage.getItem("adminToken");
     const url = editingProductId
       ? `http://localhost:5000/api/products/${editingProductId}`
-      : "http://localhost:5000/api/products";
+      : "https://ecommerce-backend--inforaees690809.replit.app/api/products";
     const method = editingProductId ? "PUT" : "POST";
 
     try {
@@ -175,10 +175,13 @@ function AdminPanel() {
     if (!window.confirm("Are you sure you want to delete this product?"))
       return;
     try {
-      const res = await fetch(`http://localhost:5000/api/products/${id}`, {
-        method: "DELETE",
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const res = await fetch(
+        `https://ecommerce-backend--inforaees690809.replit.app/api/products/${id}`,
+        {
+          method: "DELETE",
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
       if (res.ok) {
         setMessage("✅ Product deleted!");
         fetchProducts();
@@ -209,11 +212,14 @@ function AdminPanel() {
 
     const token = localStorage.getItem("adminToken");
     try {
-      const res = await fetch("http://localhost:5000/api/hero", {
-        method: "POST",
-        body: formData,
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const res = await fetch(
+        "https://ecommerce-backend--inforaees690809.replit.app/api/hero",
+        {
+          method: "POST",
+          body: formData,
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
       const data = await res.json();
       if (res.ok) {
         setHeroPreview(data.image);

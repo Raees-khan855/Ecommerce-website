@@ -19,7 +19,9 @@ function ProductDetails() {
 
     const fetchProduct = async () => {
       try {
-        const res = await axios.get(`http://localhost:5000/api/products/${id}`);
+        const res = await axios.get(
+          `https://ecommerce-backend--inforaees690809.replit.app/products/${id}`
+        );
 
         if (isMounted) {
           setProduct(res.data.product);
