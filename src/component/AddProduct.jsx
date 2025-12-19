@@ -36,11 +36,14 @@ function AdminPanel() {
   const handleLogin = async (e) => {
     e.preventDefault();
     try {
-      const res = await fetch("http://localhost:5000/api/admin/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ username, password }),
-      });
+      const res = await fetch(
+        "https://ecommerce-backend--inforaees690809.replit.app/api/admin/login",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ username, password }),
+        }
+      );
       const data = await res.json();
 
       if (res.ok) {
@@ -64,9 +67,12 @@ function AdminPanel() {
   const fetchProducts = async () => {
     const token = localStorage.getItem("adminToken");
     try {
-      const res = await fetch("http://localhost:5000/api/products", {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const res = await fetch(
+        "https://ecommerce-backend--inforaees690809.replit.app/api/products",
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
       const data = await res.json();
       if (res.ok || res.status === 200) setProducts(data);
     } catch (err) {
@@ -80,9 +86,12 @@ function AdminPanel() {
   const fetchHero = async () => {
     const token = localStorage.getItem("adminToken");
     try {
-      const res = await fetch("http://localhost:5000/api/hero", {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const res = await fetch(
+        "https://ecommerce-backend--inforaees690809.replit.app/api/hero",
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
       const data = await res.json();
       if (data) {
         setHeroTitle(data.title);
@@ -134,7 +143,7 @@ function AdminPanel() {
 
     const token = localStorage.getItem("adminToken");
     const url = editingProductId
-      ? `http://localhost:5000/api/products/${editingProductId}`
+      ? `https://ecommerce-backend--inforaees690809.replit.app/api/products/${editingProductId}`
       : "https://ecommerce-backend--inforaees690809.replit.app/api/products";
     const method = editingProductId ? "PUT" : "POST";
 
