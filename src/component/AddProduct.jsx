@@ -37,7 +37,7 @@ function AdminPanel() {
     e.preventDefault();
     try {
       const res = await fetch(
-        "https://ecommerce-backend--inforaees690809.replit.app/api/admin/login",
+        "https://ecommerce-backend--inforaees690809.replit.app/api/admin",
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },

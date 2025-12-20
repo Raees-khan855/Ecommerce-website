@@ -20,7 +20,7 @@ function ProductDetails() {
     const fetchProduct = async () => {
       try {
         const res = await axios.get(
-          `https://ecommerce-backend--inforaees690809.replit.app/products/${id}`
+          `https://ecommerce-backend--inforaees690809.replit.app/api/products/${id}`
         );
 
         if (isMounted) {
