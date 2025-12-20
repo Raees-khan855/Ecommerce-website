@@ -9,19 +9,17 @@ function AdminLogin() {
 
   const navigate = useNavigate();
 
-  const handleLogin = async () => {
+  const handleLogin = async (e) => {
+    e.preventDefault();
+    setError("");
+
     try {
       const res = await axios.post(
         "https://ecommerce-backend--inforaees690809.replit.app/api/admin/login",
-        { username, password },
-        {
-          headers: { "Content-Type": "application/json" },
-        }
+        { username, password }
       );
 
       localStorage.setItem("adminToken", res.data.token);
-
-      alert("Logged in successfully!");
 
       navigate("/AdminPanel");
     } catch (err) {
@@ -30,7 +28,7 @@ function AdminLogin() {
   };
 
   return (
-    <div>
+    <form onSubmit={handleLogin}>
       <h2>Admin Login</h2>
 
       {error && <p style={{ color: "red" }}>{error}</p>}
@@ -49,8 +47,8 @@ function AdminLogin() {
         onChange={(e) => setPassword(e.target.value)}
       />
 
-      <button onClick={handleLogin}>Login</button>
-    </div>
+      <button type="submit">Login</button>
+    </form>
   );
 }
 
