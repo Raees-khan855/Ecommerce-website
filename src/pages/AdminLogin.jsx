@@ -12,17 +12,20 @@ function AdminLogin() {
   const handleLogin = async () => {
     try {
       const res = await axios.post(
-        "https://ecommerce-backend--inforaees690809.replit.app/api/admin", // change to your backend
-        { username, password }
+        "https://ecommerce-backend--inforaees690809.replit.app/api/admin/login",
+        { username, password },
+        {
+          headers: { "Content-Type": "application/json" },
+        }
       );
 
       localStorage.setItem("adminToken", res.data.token);
 
       alert("Logged in successfully!");
 
-      navigate("/AdminPanel"); // redirect admin
+      navigate("/AdminPanel");
     } catch (err) {
-      setError("Invalid credentials");
+      setError(err.response?.data?.message || "Invalid credentials");
     }
   };
 
