@@ -6,7 +6,6 @@ function AdminLogin() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
-
   const navigate = useNavigate();
 
   const handleLogin = async (e) => {
@@ -15,40 +14,45 @@ function AdminLogin() {
 
     try {
       const res = await axios.post(
-        "https://ecommerce-backend--inforaees690809.replit.app/api/admin/login",
-        { username, password }
+        "http://localhost:5000/api/admin/login", // backend URL
+        { username, password },
+        { headers: { "Content-Type": "application/json" } }
       );
 
       localStorage.setItem("adminToken", res.data.token);
-
-      navigate("/AdminPanel");
+      alert("✅ Logged in successfully");
+      navigate("/AdminPanel"); // redirect
     } catch (err) {
-      setError(err.response?.data?.message || "Invalid credentials");
+      console.error(err);
+      setError(
+        err.response?.data?.message || "❌ Invalid credentials or server error"
+      );
     }
   };
 
   return (
-    <form onSubmit={handleLogin}>
+    <div className="container py-5">
       <h2>Admin Login</h2>
-
       {error && <p style={{ color: "red" }}>{error}</p>}
 
-      <input
-        type="text"
-        placeholder="Username"
-        value={username}
-        onChange={(e) => setUsername(e.target.value)}
-      />
-
-      <input
-        type="password"
-        placeholder="Password"
-        value={password}
-        onChange={(e) => setPassword(e.target.value)}
-      />
-
-      <button type="submit">Login</button>
-    </form>
+      <form onSubmit={handleLogin}>
+        <input
+          type="text"
+          placeholder="Username"
+          className="form-control mb-2"
+          value={username}
+          onChange={(e) => setUsername(e.target.value)}
+        />
+        <input
+          type="password"
+          placeholder="Password"
+          className="form-control mb-2"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+        />
+        <button className="btn btn-primary w-100">Login</button>
+      </form>
+    </div>
   );
 }
 
