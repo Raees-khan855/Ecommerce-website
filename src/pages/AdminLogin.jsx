@@ -14,7 +14,7 @@ function AdminLogin() {
 
     try {
       const res = await axios.post(
-        "http://localhost:5000/api/admin/login", // backend URL
+        "https://ecommerce-backend--inforaees690809.replit.app/api/admin/login", // backend URL
         { username, password },
         { headers: { "Content-Type": "application/json" } }
       );
