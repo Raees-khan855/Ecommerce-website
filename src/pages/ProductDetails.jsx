@@ -20,7 +20,7 @@ function ProductDetails() {
     const fetchProduct = async () => {
       try {
         const res = await axios.get(
-          `ecommerce-backend-q715w1ypy-raees-khan855s-projects.vercel.app00/api/products/${id}`
+          `ecommerce-backend-q715w1ypy-raees-khan855s-projects.vercel.app/api/products/${id}`
         );
 
         if (isMounted) {
