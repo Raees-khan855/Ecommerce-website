@@ -143,8 +143,8 @@ function AdminPanel() {
 
     const token = localStorage.getItem("adminToken");
     const url = editingProductId
-      ? `ecommerce-backend-q715w1ypy-raees-khan855s-projects.vercel.app00/api/products/${editingProductId}`
-      : "ecommerce-backend-q715w1ypy-raees-khan855s-projects.vercel.app00/api/products";
+      ? `ecommerce-backend-q715w1ypy-raees-khan855s-projects.vercel.app/api/products/${editingProductId}`
+      : "ecommerce-backend-q715w1ypy-raees-khan855s-projects.vercel.app/api/products";
     const method = editingProductId ? "PUT" : "POST";
 
     try {
@@ -185,7 +185,7 @@ function AdminPanel() {
       return;
     try {
       const res = await fetch(
-        `ecommerce-backend-q715w1ypy-raees-khan855s-projects.vercel.app00/api/products/${id}`,
+        `ecommerce-backend-q715w1ypy-raees-khan855s-projects.vercel.app/api/products/${id}`,
         {
           method: "DELETE",
           headers: { Authorization: `Bearer ${token}` },
@@ -222,7 +222,7 @@ function AdminPanel() {
     const token = localStorage.getItem("adminToken");
     try {
       const res = await fetch(
-        "ecommerce-backend-q715w1ypy-raees-khan855s-projects.vercel.app00/api/hero",
+        "ecommerce-backend-q715w1ypy-raees-khan855s-projects.vercel.app/api/hero",
         {
           method: "POST",
           body: formData,
