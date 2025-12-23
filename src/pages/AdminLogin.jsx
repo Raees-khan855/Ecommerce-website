@@ -14,14 +14,17 @@ function AdminLogin() {
 
     try {
       const res = await axios.post(
-        "https://ecommerce-backend--inforaees690809.replit.app/api/admin/login", // backend URL
+        "ecommerce-backend-q715w1ypy-raees-khan855s-projects.vercel.app00/api/admin/login", // your backend URL
         { username, password },
-        { headers: { "Content-Type": "application/json" } }
+        { headers: { "Content-Type": "application/json" } } // headers go here
       );
 
+      // save token
       localStorage.setItem("adminToken", res.data.token);
+
       alert("✅ Logged in successfully");
-      navigate("/AdminPanel"); // redirect
+
+      navigate("/AdminPanel"); // redirect to admin panel
     } catch (err) {
       console.error(err);
       setError(
