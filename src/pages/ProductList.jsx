@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
 import ProductCard from "../component/ProductCard";
-import { BACKEND_URL } from "../config";
+import BACKEND_URL from "../config";
 
 function ProductList() {
   const [products, setProducts] = useState([]);

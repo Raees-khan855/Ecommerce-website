@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
-import { BACKEND_URL } from "../config"; // import your config
+import BACKEND_URL from "../config"; // import your config
 
 function AdminLogin() {
   const [username, setUsername] = useState("");

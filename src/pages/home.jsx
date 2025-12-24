@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import { useDispatch } from "react-redux";
 import { addToCart } from "../redux/cartSlice";
 import axios from "axios";
-import { BACKEND_URL } from "../config";
+import BACKEND_URL from "../config";
 
 function Home() {
   const dispatch = useDispatch();
