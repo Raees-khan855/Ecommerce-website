@@ -16,7 +16,7 @@ function Home() {
     const fetchHero = async () => {
       try {
         const res = await axios.get(
-          "ecommerce-backend-q715w1ypy-raees-khan855s-projects.vercel.app00/api/hero"
+          "https://ecommerce-backend-q715w1ypy-raees-khan855s-projects.vercel.app/api/hero"
         );
         if (mounted) setHero(res.data);
       } catch (err) {
@@ -27,7 +27,7 @@ function Home() {
     const fetchProducts = async () => {
       try {
         const res = await axios.get(
-          "ecommerce-backend-q715w1ypy-raees-khan855s-projects.vercel.app00/api/products/featured/all"
+          "https://ecommerce-backend-q715w1ypy-raees-khan855s-projects.vercel.app/api/products/featured/all"
         );
         if (mounted) setFeaturedProducts(res.data || []);
       } catch (err) {
@@ -47,7 +47,7 @@ function Home() {
   const heroImg = hero?.image
     ? hero.image.startsWith("http")
       ? hero.image
-      : `ecommerce-backend-q715w1ypy-raees-khan855s-projects.vercel.app00${hero.image}`
+      : `https://ecommerce-backend-q715w1ypy-raees-khan855s-projects.vercel.app${hero.image}`
     : "https://images.unsplash.com/photo-1616627982421-74db63b3f8a0?auto=format&fit=crop&w=1470&q=80";
 
   return (

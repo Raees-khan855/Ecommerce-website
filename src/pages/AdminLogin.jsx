@@ -14,7 +14,7 @@ function AdminLogin() {
 
     try {
       const res = await axios.post(
-        "ecommerce-backend-q715w1ypy-raees-khan855s-projects.vercel.app00/api/admin/login", // your backend URL
+        "https://ecommerce-backend-q715w1ypy-raees-khan855s-projects.vercel.app/api/admin/login", // your backend URL
         { username, password },
         { headers: { "Content-Type": "application/json" } } // headers go here
       );

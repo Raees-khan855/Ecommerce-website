@@ -13,7 +13,7 @@ function ProductList() {
     const loadProducts = async () => {
       try {
         const res = await axios.get(
-          "ecommerce-backend-q715w1ypy-raees-khan855s-projects.vercel.app00/api/products"
+          "https://ecommerce-backend-q715w1ypy-raees-khan855s-projects.vercel.app/api/products"
         );
         if (mounted) setProducts(res.data || []);
       } catch (err) {
