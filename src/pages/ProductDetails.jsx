@@ -4,6 +4,7 @@ import axios from "axios";
 import { useDispatch } from "react-redux";
 import { addToCart } from "../redux/cartSlice";
 import ProductCard from "../component/ProductCard";
+import { BACKEND_URL } from "../config";
 
 function ProductDetails() {
   const { id } = useParams();
@@ -19,10 +20,7 @@ function ProductDetails() {
 
     const fetchProduct = async () => {
       try {
-        const res = await axios.get(
-          `https://ecommerce-backend-q715w1ypy-raees-khan855s-projects.vercel.app/api/products/${id}`
-        );
-
+        const res = await axios.get(`${BACKEND_URL}/api/products/${id}`);
         if (isMounted) {
           setProduct(res.data.product);
           setRelated(res.data.related || []);
@@ -63,9 +61,7 @@ function ProductDetails() {
               alt={product.title}
               className="img-fluid"
               style={{ maxHeight: "420px", objectFit: "contain" }}
-              onError={(e) =>
-                (e.target.src = "https://via.placeholder.com/300")
-              }
+              onError={(e) => (e.target.src = "https://via.placeholder.com/300")}
             />
           </div>
         </div>
@@ -73,13 +69,8 @@ function ProductDetails() {
         {/* Product Info */}
         <div className="col-md-6">
           <h2 className="fw-bold">{product.title}</h2>
-          <p className="text-muted">
-            <strong>Category:</strong> {product.category}
-          </p>
-          <h4 className="text-primary mb-3">
-            ${Number(product.price).toFixed(2)}
-          </h4>
-
+          <p className="text-muted"><strong>Category:</strong> {product.category}</p>
+          <h4 className="text-primary mb-3">${Number(product.price).toFixed(2)}</h4>
           <p className="text-secondary" style={{ lineHeight: 1.6 }}>
             {product.description || "No description available."}
           </p>
@@ -88,14 +79,7 @@ function ProductDetails() {
             <button
               className="btn btn-primary btn-lg flex-grow-1"
               onClick={() =>
-                dispatch(
-                  addToCart({
-                    id: product._id,
-                    title: product.title,
-                    price: Number(product.price),
-                    image: product.image,
-                  })
-                )
+                dispatch(addToCart({ id: product._id, title: product.title, price: Number(product.price), image: product.image }))
               }
             >
               🛒 Add to Cart
@@ -103,9 +87,10 @@ function ProductDetails() {
 
             <button
               className="btn btn-success btn-lg flex-grow-1"
-              onClick={() =>
-                navigate("/checkout") && dispatch(addToCart(product))
-              }
+              onClick={() => {
+                dispatch(addToCart({ id: product._id, title: product.title, price: Number(product.price), image: product.image }));
+                navigate("/checkout");
+              }}
             >
               ⚡ Buy Now
             </button>
@@ -113,7 +98,7 @@ function ProductDetails() {
         </div>
       </div>
 
-      {/* RELATED PRODUCTS */}
+      {/* Related Products */}
       {related.length > 0 && (
         <div className="mt-5">
           <h4 className="fw-bold mb-3">Related Products</h4>

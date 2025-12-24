@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from "react";
+import axios from "axios";
+import { BACKEND_URL } from "../config"; // your config
 import { useNavigate } from "react-router-dom";
 
 function AdminPanel() {
@@ -35,29 +37,20 @@ function AdminPanel() {
   // ======================
   const handleLogin = async (e) => {
     e.preventDefault();
+    setMessage("");
     try {
-      const res = await fetch(
-        "https://ecommerce-backend-q715w1ypy-raees-khan855s-projects.vercel.app/api/admin/login",
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ username, password }),
-        }
-      );
-      const data = await res.json();
-
-      if (res.ok) {
-        localStorage.setItem("adminToken", data.token);
-        setIsLoggedIn(true);
-        setMessage("✅ Logged in successfully");
-        fetchProducts();
-        fetchHero();
-      } else {
-        setMessage(data.message || "❌ Login failed");
-      }
+      const res = await axios.post(`${BACKEND_URL}/api/admin/login`, {
+        username,
+        password,
+      });
+      localStorage.setItem("adminToken", res.data.token);
+      setIsLoggedIn(true);
+      setMessage("✅ Logged in successfully");
+      fetchProducts();
+      fetchHero();
     } catch (err) {
       console.error(err);
-      setMessage("❌ Server error: " + err.message);
+      setMessage(err.response?.data?.message || "❌ Login failed");
     }
   };
 
@@ -67,14 +60,10 @@ function AdminPanel() {
   const fetchProducts = async () => {
     const token = localStorage.getItem("adminToken");
     try {
-      const res = await fetch(
-        "https://ecommerce-backend-q715w1ypy-raees-khan855s-projects.vercel.app/api/products",
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
-      );
-      const data = await res.json();
-      if (res.ok || res.status === 200) setProducts(data);
+      const res = await axios.get(`${BACKEND_URL}/api/products`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setProducts(res.data);
     } catch (err) {
       console.error(err);
     }
@@ -86,17 +75,13 @@ function AdminPanel() {
   const fetchHero = async () => {
     const token = localStorage.getItem("adminToken");
     try {
-      const res = await fetch(
-        "https://ecommerce-backend-q715w1ypy-raees-khan855s-projects.vercel.app/api/hero",
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
-      );
-      const data = await res.json();
-      if (data) {
-        setHeroTitle(data.title);
-        setHeroSubtitle(data.subtitle);
-        setHeroPreview(data.image);
+      const res = await axios.get(`${BACKEND_URL}/api/hero`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (res.data) {
+        setHeroTitle(res.data.title);
+        setHeroSubtitle(res.data.subtitle);
+        setHeroPreview(res.data.image);
       }
     } catch (err) {
       console.error(err);
@@ -118,7 +103,7 @@ function AdminPanel() {
   };
 
   // ======================
-  // Product submit (add/update)
+  // Product submit
   // ======================
   const handleProductSubmit = async (e) => {
     e.preventDefault();
@@ -143,33 +128,29 @@ function AdminPanel() {
 
     const token = localStorage.getItem("adminToken");
     const url = editingProductId
-      ? `https://ecommerce-backend-q715w1ypy-raees-khan855s-projects.vercel.app/api/products/${editingProductId}`
-      : "https://ecommerce-backend-q715w1ypy-raees-khan855s-projects.vercel.app/api/products";
-    const method = editingProductId ? "PUT" : "POST";
+      ? `${BACKEND_URL}/api/products/${editingProductId}`
+      : `${BACKEND_URL}/api/products`;
+    const method = editingProductId ? "put" : "post";
 
     try {
-      const res = await fetch(url, {
+      const res = await axios({
+        url,
         method,
-        body: formData,
+        data: formData,
         headers: { Authorization: `Bearer ${token}` },
       });
-      const data = await res.json();
-      if (res.ok) {
-        setMessage(
-          editingProductId ? "✅ Product updated!" : "✅ Product added!"
-        );
-        fetchProducts();
-        setTitle("");
-        setDescription("");
-        setPrice("");
-        setCategory("");
-        setImage(null);
-        setFeatured(false);
-        setEditingProductId(null);
-        setProductPreview(null);
-      } else {
-        setMessage(data.message || "❌ Error saving product");
-      }
+      setMessage(
+        editingProductId ? "✅ Product updated!" : "✅ Product added!"
+      );
+      fetchProducts();
+      setTitle("");
+      setDescription("");
+      setPrice("");
+      setCategory("");
+      setImage(null);
+      setFeatured(false);
+      setEditingProductId(null);
+      setProductPreview(null);
     } catch (err) {
       console.error(err);
       setMessage("❌ Server error: " + err.message);
@@ -184,20 +165,11 @@ function AdminPanel() {
     if (!window.confirm("Are you sure you want to delete this product?"))
       return;
     try {
-      const res = await fetch(
-        `https://ecommerce-backend-q715w1ypy-raees-khan855s-projects.vercel.app/api/products/${id}`,
-        {
-          method: "DELETE",
-          headers: { Authorization: `Bearer ${token}` },
-        }
-      );
-      if (res.ok) {
-        setMessage("✅ Product deleted!");
-        fetchProducts();
-      } else {
-        const data = await res.json();
-        setMessage(data.message || "❌ Failed to delete");
-      }
+      await axios.delete(`${BACKEND_URL}/api/products/${id}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setMessage("✅ Product deleted!");
+      fetchProducts();
     } catch (err) {
       console.error(err);
       setMessage("❌ Server error: " + err.message);
@@ -221,21 +193,11 @@ function AdminPanel() {
 
     const token = localStorage.getItem("adminToken");
     try {
-      const res = await fetch(
-        "https://ecommerce-backend-q715w1ypy-raees-khan855s-projects.vercel.app/api/hero",
-        {
-          method: "POST",
-          body: formData,
-          headers: { Authorization: `Bearer ${token}` },
-        }
-      );
-      const data = await res.json();
-      if (res.ok) {
-        setHeroPreview(data.image);
-        setMessage("✅ Hero updated!");
-      } else {
-        setMessage(data.message || "❌ Error updating hero");
-      }
+      const res = await axios.post(`${BACKEND_URL}/api/hero`, formData, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setHeroPreview(res.data.image);
+      setMessage("✅ Hero updated!");
     } catch (err) {
       console.error(err);
       setMessage("❌ Server error: " + err.message);
@@ -274,7 +236,6 @@ function AdminPanel() {
     <div className="container py-5">
       <h2>Admin Panel</h2>
       {message && <div className="alert alert-info">{message}</div>}
-
       {/* Tabs */}
       <div className="d-flex gap-2 mb-3">
         <button
@@ -302,7 +263,6 @@ function AdminPanel() {
           Manage Products
         </button>
       </div>
-
       {/* Product Form */}
       {activeTab === "product" && (
         <form onSubmit={handleProductSubmit} encType="multipart/form-data">
@@ -358,7 +318,6 @@ function AdminPanel() {
           </button>
         </form>
       )}
-
       {/* Manage Products */}
       {activeTab === "manage" && (
         <div className="mt-3">
@@ -418,7 +377,6 @@ function AdminPanel() {
           )}
         </div>
       )}
-
       {/* Hero Section */}
       {activeTab === "hero" && (
         <form onSubmit={handleHeroSubmit} encType="multipart/form-data">

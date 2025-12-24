@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import { BACKEND_URL } from "../config"; // import your config
 
 function AdminLogin() {
   const [username, setUsername] = useState("");
@@ -14,12 +15,12 @@ function AdminLogin() {
 
     try {
       const res = await axios.post(
-        "https://ecommerce-backend-q715w1ypy-raees-khan855s-projects.vercel.app/api/admin/login", // your backend URL
+        `${BACKEND_URL}/api/admin/login`,
         { username, password },
-        { headers: { "Content-Type": "application/json" } } // headers go here
+        { headers: { "Content-Type": "application/json" } }
       );
 
-      // save token
+      // Save token
       localStorage.setItem("adminToken", res.data.token);
 
       alert("✅ Logged in successfully");

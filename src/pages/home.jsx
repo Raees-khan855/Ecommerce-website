@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { useDispatch } from "react-redux";
 import { addToCart } from "../redux/cartSlice";
 import axios from "axios";
+import { BACKEND_URL } from "../config";
 
 function Home() {
   const dispatch = useDispatch();
@@ -15,9 +16,7 @@ function Home() {
 
     const fetchHero = async () => {
       try {
-        const res = await axios.get(
-          "https://ecommerce-backend-q715w1ypy-raees-khan855s-projects.vercel.app/api/hero"
-        );
+        const res = await axios.get(`${BACKEND_URL}/api/hero`);
         if (mounted) setHero(res.data);
       } catch (err) {
         console.error("Hero fetch error:", err);
@@ -26,9 +25,7 @@ function Home() {
 
     const fetchProducts = async () => {
       try {
-        const res = await axios.get(
-          "https://ecommerce-backend-q715w1ypy-raees-khan855s-projects.vercel.app/api/products/featured/all"
-        );
+        const res = await axios.get(`${BACKEND_URL}/api/products/featured/all`);
         if (mounted) setFeaturedProducts(res.data || []);
       } catch (err) {
         console.error("Featured fetch error:", err);
@@ -39,20 +36,18 @@ function Home() {
 
     fetchHero();
     fetchProducts();
-
     return () => (mounted = false);
   }, []);
 
-  // Determine hero image URL
   const heroImg = hero?.image
     ? hero.image.startsWith("http")
       ? hero.image
-      : `https://ecommerce-backend-q715w1ypy-raees-khan855s-projects.vercel.app${hero.image}`
+      : `${BACKEND_URL}${hero.image}`
     : "https://images.unsplash.com/photo-1616627982421-74db63b3f8a0?auto=format&fit=crop&w=1470&q=80";
 
   return (
     <div className="container my-5">
-      {/* 🌟 Hero Section */}
+      {/* Hero Section */}
       <section
         className="position-relative text-center text-white rounded-3 shadow-sm mb-5"
         style={{

@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
 import ProductCard from "../component/ProductCard";
+import { BACKEND_URL } from "../config";
 
 function ProductList() {
   const [products, setProducts] = useState([]);
@@ -12,11 +13,12 @@ function ProductList() {
 
     const loadProducts = async () => {
       try {
-        const res = await axios.get(
-          "https://ecommerce-backend-q715w1ypy-raees-khan855s-projects.vercel.app/api/products"
-        );
+        const res = await axios.get(`${BACKEND_URL}/api/products`, {
+          withCredentials: true,
+        });
         if (mounted) setProducts(res.data || []);
       } catch (err) {
+        console.error(err);
         if (mounted)
           setError("Unable to load products. Please try again later.");
       } finally {
@@ -51,7 +53,6 @@ function ProductList() {
 
   return (
     <div className="container-fluid px-0">
-      {/* header */}
       <div className="text-center py-3">
         <h2 className="fw-bold">Our Products</h2>
         <p className="text-muted">
@@ -59,7 +60,6 @@ function ProductList() {
         </p>
       </div>
 
-      {/* grid */}
       <div className="row g-3 mx-0 px-2">
         {products.map((p) => (
           <div
