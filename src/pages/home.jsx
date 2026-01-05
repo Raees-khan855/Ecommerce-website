@@ -25,7 +25,7 @@ function Home() {
 
     const fetchProducts = async () => {
       try {
-        const res = await axios.get(`${BACKEND_URL}/api/products/featured/all`);
+        const res = await axios.get(`${BACKEND_URL}/products/featured/all`);
         if (mounted) setFeaturedProducts(res.data || []);
       } catch (err) {
         console.error("Featured fetch error:", err);
