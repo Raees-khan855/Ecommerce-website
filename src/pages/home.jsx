@@ -14,28 +14,25 @@ function Home() {
   useEffect(() => {
     let mounted = true;
 
-    const fetchHero = async () => {
+    const fetchData = async () => {
       try {
-        const res = await axios.get(`${BACKEND_URL}/hero`);
-        if (mounted) setHero(res.data);
-      } catch (err) {
-        console.error("Hero fetch error:", err);
-      }
-    };
+        const [heroRes, productRes] = await Promise.all([
+          axios.get(`${BACKEND_URL}/hero`),
+          axios.get(`${BACKEND_URL}/products/featured/all`),
+        ]);
 
-    const fetchProducts = async () => {
-      try {
-        const res = await axios.get(`${BACKEND_URL}/products/featured/all`);
-        if (mounted) setFeaturedProducts(res.data || []);
+        if (mounted) {
+          setHero(heroRes.data);
+          setFeaturedProducts(productRes.data || []);
+        }
       } catch (err) {
-        console.error("Featured fetch error:", err);
+        console.error("Home fetch error:", err);
       } finally {
-        setLoading(false);
+        if (mounted) setLoading(false);
       }
     };
 
-    fetchHero();
-    fetchProducts();
+    fetchData();
     return () => (mounted = false);
   }, []);
 
@@ -80,69 +77,63 @@ function Home() {
 
       {/* Featured Products */}
       <h2 className="mb-4 text-center fw-bold">Featured Products</h2>
+
       {loading ? (
-        <div className="d-flex justify-content-center align-items-center py-5">
-          <div className="spinner-border text-primary" role="status"></div>
+        <div className="d-flex justify-content-center py-5">
+          <div className="spinner-border text-primary" />
         </div>
       ) : featuredProducts.length === 0 ? (
         <p className="text-center text-muted">No featured products yet.</p>
       ) : (
         <div className="row g-4">
-          {featuredProducts.map((p) => (
-            <div
-              className="col-12 col-sm-6 col-md-4 col-lg-3 d-flex"
-              key={p._id}
-            >
-              <div className="card h-100 shadow-sm border-0 rounded-3">
-                <div
-                  className="text-center bg-light p-3"
-                  style={{ height: "220px" }}
-                >
-                  <img
-                    src={p.image}
-                    alt={p.title}
-                    className="img-fluid h-100"
-                    style={{ objectFit: "contain" }}
-                  />
-                </div>
+          {featuredProducts.map((p) => {
+            const productImg = p.image?.startsWith("http")
+              ? p.image
+              : `${BACKEND_URL}${p.image}`;
 
-                <div className="card-body d-flex flex-column text-center">
-                  <h6 className="fw-semibold text-truncate">{p.title}</h6>
-                  <p className="fw-bold">${Number(p.price).toFixed(2)}</p>
+            return (
+              <div
+                className="col-12 col-sm-6 col-md-4 col-lg-3 d-flex"
+                key={p._id}
+              >
+                <div className="card h-100 shadow-sm border-0 rounded-3">
+                  <div
+                    className="text-center bg-light p-3"
+                    style={{ height: "220px" }}
+                  >
+                    <img
+                      src={productImg}
+                      alt={p.title}
+                      className="img-fluid h-100"
+                      style={{ objectFit: "contain" }}
+                    />
+                  </div>
 
-                  <div className="mt-auto d-flex justify-content-center gap-2">
-                    <button
-                      className="btn btn-outline-primary btn-sm"
-                      onClick={() => dispatch(addToCart(p))}
-                    >
-                      Add
-                    </button>
-                    <Link
-                      to={`/products/${p._id}`}
-                      className="btn btn-primary btn-sm"
-                    >
-                      View
-                    </Link>
+                  <div className="card-body d-flex flex-column text-center">
+                    <h6 className="fw-semibold text-truncate">{p.title}</h6>
+                    <p className="fw-bold">${Number(p.price).toFixed(2)}</p>
+
+                    <div className="mt-auto d-flex justify-content-center gap-2">
+                      <button
+                        className="btn btn-outline-primary btn-sm"
+                        onClick={() => dispatch(addToCart(p))}
+                      >
+                        Add
+                      </button>
+                      <Link
+                        to={`/products/${p._id}`}
+                        className="btn btn-primary btn-sm"
+                      >
+                        View
+                      </Link>
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       )}
-
-      {/* Info Section */}
-      <section
-        className="mt-5 p-5 rounded shadow-sm text-center"
-        style={{ backgroundColor: "#f0f2f5" }}
-      >
-        <h3 className="fw-bold">Why Choose RaeesProduct?</h3>
-        <p className="mt-3 mb-0 fs-6">
-          ✔ Durable HDPE materials — built to last <br />
-          ✔ Fast nationwide shipping <br />
-          ✔ 24/7 customer support <br />✔ Secure payments
-        </p>
-      </section>
     </div>
   );
 }
