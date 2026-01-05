@@ -1,12 +1,14 @@
 import { useSelector, useDispatch } from "react-redux";
 import { useState } from "react";
 import { clearCart } from "../redux/cartSlice";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 
 function Checkout() {
   const items = useSelector((state) => state.cart.items);
   const dispatch = useDispatch();
   const navigate = useNavigate();
+
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const [formData, setFormData] = useState({
     name: "",
@@ -32,17 +34,26 @@ function Checkout() {
       return;
     }
 
-    alert(
-      "✅ Order placed successfully! Your payment method is Cash on Delivery."
-    );
-    dispatch(clearCart());
-    navigate("/");
+    setIsSubmitting(true);
+
+    // 🔔 Later: send order to backend
+    setTimeout(() => {
+      alert(
+        "✅ Order placed successfully! Your payment method is Cash on Delivery."
+      );
+      dispatch(clearCart());
+      navigate("/");
+    }, 800);
   };
 
+  // ✅ Empty cart UI
   if (items.length === 0)
     return (
       <div className="text-center my-5">
-        <h4>Your cart is empty.</h4>
+        <h4 className="mb-3">Your cart is empty</h4>
+        <Link to="/products" className="btn btn-primary">
+          Continue Shopping
+        </Link>
       </div>
     );
 
@@ -114,8 +125,8 @@ function Checkout() {
                     type="radio"
                     name="paymentMethod"
                     value="COD"
-                    checked={formData.paymentMethod === "COD"}
-                    onChange={handleChange}
+                    checked
+                    readOnly
                     className="form-check-input"
                     id="cod"
                   />
@@ -125,8 +136,12 @@ function Checkout() {
                 </div>
               </div>
 
-              <button type="submit" className="btn btn-primary w-100 py-2">
-                Place Order
+              <button
+                type="submit"
+                className="btn btn-primary w-100 py-2"
+                disabled={isSubmitting}
+              >
+                {isSubmitting ? "Placing Order..." : "Place Order"}
               </button>
             </form>
           </div>
@@ -147,6 +162,10 @@ function Checkout() {
                     <img
                       src={item.image}
                       alt={item.title}
+                      onError={(e) =>
+                        (e.target.src =
+                          "https://via.placeholder.com/60?text=No+Image")
+                      }
                       style={{
                         width: "60px",
                         height: "60px",

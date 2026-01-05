@@ -21,10 +21,13 @@ function ProductDetails() {
     const fetchProduct = async () => {
       try {
         const res = await axios.get(`${BACKEND_URL}/products/${id}`);
-        if (isMounted) {
-          setProduct(res.data.product);
-          setRelated(res.data.related || []);
-        }
+
+        if (!isMounted) return;
+
+        // ✅ safe response handling
+        const productData = res.data.product || res.data;
+        setProduct(productData);
+        setRelated(res.data.related || []);
       } catch (err) {
         console.error("Error fetching product:", err);
       } finally {
@@ -50,6 +53,23 @@ function ProductDetails() {
       </div>
     );
 
+  // ✅ Fix image URL for Vercel
+  const productImage = product?.image
+    ? product.image.startsWith("http")
+      ? product.image
+      : `${BACKEND_URL}${product.image}`
+    : "https://via.placeholder.com/300?text=No+Image";
+
+  const addProductToCart = () =>
+    dispatch(
+      addToCart({
+        id: product._id,
+        title: product.title,
+        price: Number(product.price),
+        image: productImage, // ✅ full URL stored
+      })
+    );
+
   return (
     <div className="container py-4">
       <div className="row g-4 align-items-center">
@@ -57,12 +77,12 @@ function ProductDetails() {
         <div className="col-md-6 text-center">
           <div className="card border-0 shadow-sm p-3">
             <img
-              src={product.image}
+              src={productImage}
               alt={product.title}
               className="img-fluid"
               style={{ maxHeight: "420px", objectFit: "contain" }}
               onError={(e) =>
-                (e.target.src = "https://via.placeholder.com/300")
+                (e.target.src = "https://via.placeholder.com/300?text=No+Image")
               }
             />
           </div>
@@ -84,16 +104,7 @@ function ProductDetails() {
           <div className="d-flex flex-column flex-sm-row gap-3 mt-3">
             <button
               className="btn btn-primary btn-lg flex-grow-1"
-              onClick={() =>
-                dispatch(
-                  addToCart({
-                    id: product._id,
-                    title: product.title,
-                    price: Number(product.price),
-                    image: product.image,
-                  })
-                )
-              }
+              onClick={addProductToCart}
             >
               🛒 Add to Cart
             </button>
@@ -101,14 +112,7 @@ function ProductDetails() {
             <button
               className="btn btn-success btn-lg flex-grow-1"
               onClick={() => {
-                dispatch(
-                  addToCart({
-                    id: product._id,
-                    title: product.title,
-                    price: Number(product.price),
-                    image: product.image,
-                  })
-                );
+                addProductToCart();
                 navigate("/checkout");
               }}
             >

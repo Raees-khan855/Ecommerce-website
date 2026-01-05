@@ -2,18 +2,25 @@ import { Link, NavLink } from "react-router-dom";
 import { useSelector } from "react-redux";
 
 function Navbar() {
-  const user = useSelector((state) => state.user?.currentUser);
-  const count = useSelector((state) =>
-    state.cart.items.reduce((s, i) => s + i.quantity, 0)
+  const cartItems = useSelector((state) => state.cart?.items || []);
+
+  const cartCount = cartItems.reduce(
+    (sum, item) => sum + (item.quantity || 0),
+    0
   );
+
+  const navLinkClass = ({ isActive }) =>
+    `nav-link ${isActive ? "active fw-semibold" : ""}`;
 
   return (
     <nav className="navbar navbar-expand-lg navbar-dark bg-dark sticky-top shadow-sm">
       <div className="container">
+        {/* Brand */}
         <Link className="navbar-brand fw-bold" to="/">
           RaeesProduct
         </Link>
 
+        {/* Mobile Toggle */}
         <button
           className="navbar-toggler"
           type="button"
@@ -26,24 +33,31 @@ function Navbar() {
           <span className="navbar-toggler-icon" />
         </button>
 
+        {/* Nav Links */}
         <div className="collapse navbar-collapse" id="mainNavbar">
           <ul className="navbar-nav me-auto mb-2 mb-lg-0">
             <li className="nav-item">
-              <NavLink className="nav-link" end to="/">
+              <NavLink to="/" end className={navLinkClass}>
                 Home
               </NavLink>
             </li>
 
             <li className="nav-item">
-              <NavLink className="nav-link" to="/products">
+              <NavLink to="/products" className={navLinkClass}>
                 Products
               </NavLink>
             </li>
           </ul>
 
-          <div className="d-flex align-items-center flex-column flex-lg-row gap-2 mt-2 mt-lg-0">
-            <NavLink to="/cart" className="btn btn-primary ms-lg-3">
-              🛒 Cart ({count})
+          {/* Right Actions */}
+          <div className="d-flex align-items-center mt-2 mt-lg-0">
+            <NavLink to="/cart" className="btn btn-primary position-relative">
+              🛒 Cart
+              {cartCount > 0 && (
+                <span className="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                  {cartCount}
+                </span>
+              )}
             </NavLink>
           </div>
         </div>

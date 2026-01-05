@@ -59,7 +59,7 @@ function Home() {
         <div
           className="position-absolute top-0 start-0 w-100 h-100"
           style={{ background: "rgba(0,0,0,0.55)", borderRadius: "0.5rem" }}
-        ></div>
+        />
 
         <div className="position-relative w-100" style={{ zIndex: 2 }}>
           <h1 className="display-4 fw-bold">
@@ -134,6 +134,19 @@ function Home() {
           })}
         </div>
       )}
+
+      {/* Info Section */}
+      <section
+        className="mt-5 p-5 rounded shadow-sm text-center"
+        style={{ backgroundColor: "#f0f2f5" }}
+      >
+        <h3 className="fw-bold">Why Choose RaeesProduct?</h3>
+        <p className="mt-3 mb-0 fs-6">
+          ✔ Durable HDPE materials — built to last <br />
+          ✔ Fast nationwide shipping <br />
+          ✔ 24/7 customer support <br />✔ Secure payments
+        </p>
+      </section>
     </div>
   );
 }

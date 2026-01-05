@@ -9,33 +9,41 @@ function ProductList() {
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    let mounted = true;
+    let isMounted = true;
 
     const loadProducts = async () => {
       try {
         const res = await axios.get(`${BACKEND_URL}/products`);
-        if (mounted) setProducts(res.data || []);
+
+        if (!isMounted) return;
+
+        // ✅ Safe API response handling
+        const productData = Array.isArray(res.data)
+          ? res.data
+          : res.data.products || [];
+
+        setProducts(productData);
       } catch (err) {
-        console.error(err);
-        if (mounted) {
+        console.error("Product fetch error:", err);
+        if (isMounted) {
           setError("Unable to load products. Please try again later.");
         }
       } finally {
-        if (mounted) setLoading(false);
+        if (isMounted) setLoading(false);
       }
     };
 
     loadProducts();
 
     return () => {
-      mounted = false;
+      isMounted = false;
     };
   }, []);
 
   if (loading) {
     return (
       <div className="d-flex justify-content-center align-items-center vh-100 bg-light">
-        <div className="spinner-border" role="status"></div>
+        <div className="spinner-border text-primary" role="status"></div>
       </div>
     );
   }
