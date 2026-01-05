@@ -20,7 +20,7 @@ function ProductDetails() {
 
     const fetchProduct = async () => {
       try {
-        const res = await axios.get(`${BACKEND_URL}/api/products/${id}`);
+        const res = await axios.get(`${BACKEND_URL}/products/${id}`);
         if (isMounted) {
           setProduct(res.data.product);
           setRelated(res.data.related || []);

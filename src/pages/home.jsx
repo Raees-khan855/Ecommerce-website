@@ -16,7 +16,7 @@ function Home() {
 
     const fetchHero = async () => {
       try {
-        const res = await axios.get(`${BACKEND_URL}/api/hero`);
+        const res = await axios.get(`${BACKEND_URL}/hero`);
         if (mounted) setHero(res.data);
       } catch (err) {
         console.error("Hero fetch error:", err);

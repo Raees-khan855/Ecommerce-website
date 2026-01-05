@@ -1,14 +1,12 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import axios from "axios";
-import BACKEND_URL from "../config"; // your config
-import { useNavigate } from "react-router-dom";
+import BACKEND_URL from "../config";
 
 function AdminPanel() {
-  const navigate = useNavigate();
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [message, setMessage] = useState("");
 
-  // Login states
+  // Login
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
 
@@ -29,17 +27,16 @@ function AdminPanel() {
   const [heroImage, setHeroImage] = useState(null);
   const [heroPreview, setHeroPreview] = useState(null);
 
-  // Active tab
   const [activeTab, setActiveTab] = useState("product");
 
   // ======================
-  // Login handler
+  // LOGIN
   // ======================
   const handleLogin = async (e) => {
     e.preventDefault();
     setMessage("");
     try {
-      const res = await axios.post(`${BACKEND_URL}/api/admin/login`, {
+      const res = await axios.post(`${BACKEND_URL}/admin/login`, {
         username,
         password,
       });
@@ -49,18 +46,17 @@ function AdminPanel() {
       fetchProducts();
       fetchHero();
     } catch (err) {
-      console.error(err);
       setMessage(err.response?.data?.message || "❌ Login failed");
     }
   };
 
   // ======================
-  // Fetch products
+  // FETCH PRODUCTS
   // ======================
   const fetchProducts = async () => {
     const token = localStorage.getItem("adminToken");
     try {
-      const res = await axios.get(`${BACKEND_URL}/api/products`, {
+      const res = await axios.get(`${BACKEND_URL}/products`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       setProducts(res.data);
@@ -70,12 +66,12 @@ function AdminPanel() {
   };
 
   // ======================
-  // Fetch hero
+  // FETCH HERO
   // ======================
   const fetchHero = async () => {
     const token = localStorage.getItem("adminToken");
     try {
-      const res = await axios.get(`${BACKEND_URL}/api/hero`, {
+      const res = await axios.get(`${BACKEND_URL}/hero`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       if (res.data) {
@@ -89,13 +85,14 @@ function AdminPanel() {
   };
 
   // ======================
-  // Image handlers
+  // IMAGE HANDLERS
   // ======================
   const handleProductImageChange = (e) => {
     const file = e.target.files[0];
     setImage(file);
     setProductPreview(file ? URL.createObjectURL(file) : null);
   };
+
   const handleHeroImageChange = (e) => {
     const file = e.target.files[0];
     setHeroImage(file);
@@ -103,20 +100,10 @@ function AdminPanel() {
   };
 
   // ======================
-  // Product submit
+  // ADD / UPDATE PRODUCT
   // ======================
   const handleProductSubmit = async (e) => {
     e.preventDefault();
-    if (
-      !title ||
-      !description ||
-      !price ||
-      !category ||
-      (!image && !editingProductId)
-    ) {
-      setMessage("❌ All fields are required!");
-      return;
-    }
 
     const formData = new FormData();
     formData.append("title", title);
@@ -127,21 +114,22 @@ function AdminPanel() {
     formData.append("featured", featured);
 
     const token = localStorage.getItem("adminToken");
-    const url = editingProductId
-      ? `${BACKEND_URL}/api/products/${editingProductId}`
-      : `${BACKEND_URL}/api/products`;
-    const method = editingProductId ? "put" : "post";
 
     try {
-      const res = await axios({
-        url,
-        method,
-        data: formData,
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      setMessage(
-        editingProductId ? "✅ Product updated!" : "✅ Product added!"
-      );
+      if (editingProductId) {
+        await axios.put(
+          `${BACKEND_URL}/products/${editingProductId}`,
+          formData,
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
+        setMessage("✅ Product updated");
+      } else {
+        await axios.post(`${BACKEND_URL}/products`, formData, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        setMessage("✅ Product added");
+      }
+
       fetchProducts();
       setTitle("");
       setDescription("");
@@ -152,60 +140,51 @@ function AdminPanel() {
       setEditingProductId(null);
       setProductPreview(null);
     } catch (err) {
-      console.error(err);
-      setMessage("❌ Server error: " + err.message);
+      setMessage("❌ Server error");
     }
   };
 
   // ======================
-  // Delete product
+  // DELETE PRODUCT
   // ======================
   const handleDeleteProduct = async (id) => {
+    if (!window.confirm("Delete this product?")) return;
     const token = localStorage.getItem("adminToken");
-    if (!window.confirm("Are you sure you want to delete this product?"))
-      return;
     try {
-      await axios.delete(`${BACKEND_URL}/api/products/${id}`, {
+      await axios.delete(`${BACKEND_URL}/products/${id}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
-      setMessage("✅ Product deleted!");
       fetchProducts();
     } catch (err) {
       console.error(err);
-      setMessage("❌ Server error: " + err.message);
     }
   };
 
   // ======================
-  // Hero submit
+  // HERO SUBMIT
   // ======================
   const handleHeroSubmit = async (e) => {
     e.preventDefault();
-    if (!heroTitle || !heroSubtitle || !heroImage) {
-      setMessage("❌ All fields are required!");
-      return;
-    }
+    const token = localStorage.getItem("adminToken");
 
     const formData = new FormData();
     formData.append("title", heroTitle);
     formData.append("subtitle", heroSubtitle);
     formData.append("image", heroImage);
 
-    const token = localStorage.getItem("adminToken");
     try {
-      const res = await axios.post(`${BACKEND_URL}/api/hero`, formData, {
+      const res = await axios.post(`${BACKEND_URL}/hero`, formData, {
         headers: { Authorization: `Bearer ${token}` },
       });
       setHeroPreview(res.data.image);
-      setMessage("✅ Hero updated!");
+      setMessage("✅ Hero updated");
     } catch (err) {
-      console.error(err);
-      setMessage("❌ Server error: " + err.message);
+      setMessage("❌ Server error");
     }
   };
 
   // ======================
-  // Render
+  // RENDER
   // ======================
   if (!isLoggedIn) {
     return (
@@ -221,8 +200,8 @@ function AdminPanel() {
           />
           <input
             className="form-control mb-2"
-            placeholder="Password"
             type="password"
+            placeholder="Password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
           />
@@ -240,32 +219,26 @@ function AdminPanel() {
       <div className="d-flex gap-2 mb-3">
         <button
           onClick={() => setActiveTab("product")}
-          className={`btn ${
-            activeTab === "product" ? "btn-primary" : "btn-outline-primary"
-          }`}
+          className="btn btn-primary"
         >
-          Add / Update Product
-        </button>
-        <button
-          onClick={() => setActiveTab("hero")}
-          className={`btn ${
-            activeTab === "hero" ? "btn-primary" : "btn-outline-primary"
-          }`}
-        >
-          Hero Section
+          Product
         </button>
         <button
           onClick={() => setActiveTab("manage")}
-          className={`btn ${
-            activeTab === "manage" ? "btn-primary" : "btn-outline-primary"
-          }`}
+          className="btn btn-primary"
         >
-          Manage Products
+          Manage
+        </button>
+        <button
+          onClick={() => setActiveTab("hero")}
+          className="btn btn-primary"
+        >
+          Hero
         </button>
       </div>
-      {/* Product Form */}
+
       {activeTab === "product" && (
-        <form onSubmit={handleProductSubmit} encType="multipart/form-data">
+        <form onSubmit={handleProductSubmit}>
           <input
             className="form-control mb-2"
             placeholder="Title"
@@ -280,8 +253,8 @@ function AdminPanel() {
           />
           <input
             className="form-control mb-2"
-            placeholder="Price"
             type="number"
+            placeholder="Price"
             value={price}
             onChange={(e) => setPrice(e.target.value)}
           />
@@ -294,118 +267,11 @@ function AdminPanel() {
           <input
             className="form-control mb-2"
             type="file"
-            accept="image/*"
             onChange={handleProductImageChange}
           />
-          {productPreview && (
-            <img
-              src={productPreview}
-              alt="Preview"
-              style={{ maxHeight: "150px" }}
-            />
-          )}
-          <div className="form-check mb-2">
-            <input
-              type="checkbox"
-              checked={featured}
-              onChange={(e) => setFeatured(e.target.checked)}
-              className="form-check-input"
-            />
-            <label className="form-check-label">Featured</label>
-          </div>
           <button className="btn btn-success w-100">
-            {editingProductId ? "Update Product" : "Add Product"}
+            {editingProductId ? "Update" : "Add"}
           </button>
-        </form>
-      )}
-      {/* Manage Products */}
-      {activeTab === "manage" && (
-        <div className="mt-3">
-          {products.length === 0 ? (
-            <p>No products found</p>
-          ) : (
-            products.map((p) => (
-              <div
-                key={p._id}
-                className="card mb-2 p-2 d-flex flex-row align-items-center"
-              >
-                <img
-                  src={p.image}
-                  alt={p.title}
-                  style={{
-                    width: "100px",
-                    height: "100px",
-                    objectFit: "cover",
-                  }}
-                  className="me-2"
-                />
-                <div className="flex-grow-1">
-                  <h5>{p.title}</h5>
-                  <p>{p.description}</p>
-                  <p>
-                    ${p.price} | {p.category}
-                  </p>
-                  {p.featured && (
-                    <span className="badge bg-success">Featured</span>
-                  )}
-                </div>
-                <div className="d-flex flex-column gap-1">
-                  <button
-                    className="btn btn-sm btn-warning"
-                    onClick={() => {
-                      setEditingProductId(p._id);
-                      setTitle(p.title);
-                      setDescription(p.description);
-                      setPrice(p.price);
-                      setCategory(p.category);
-                      setFeatured(p.featured);
-                      setProductPreview(p.image);
-                      setActiveTab("product");
-                    }}
-                  >
-                    Edit
-                  </button>
-                  <button
-                    className="btn btn-sm btn-danger"
-                    onClick={() => handleDeleteProduct(p._id)}
-                  >
-                    Delete
-                  </button>
-                </div>
-              </div>
-            ))
-          )}
-        </div>
-      )}
-      {/* Hero Section */}
-      {activeTab === "hero" && (
-        <form onSubmit={handleHeroSubmit} encType="multipart/form-data">
-          <input
-            className="form-control mb-2"
-            placeholder="Hero Title"
-            value={heroTitle}
-            onChange={(e) => setHeroTitle(e.target.value)}
-          />
-          <input
-            className="form-control mb-2"
-            placeholder="Hero Subtitle"
-            value={heroSubtitle}
-            onChange={(e) => setHeroSubtitle(e.target.value)}
-          />
-          <input
-            className="form-control mb-2"
-            type="file"
-            accept="image/*"
-            onChange={handleHeroImageChange}
-          />
-          {heroPreview && (
-            <img
-              src={heroPreview}
-              alt="Hero Preview"
-              style={{ maxHeight: "150px" }}
-            />
-          )}
-          <button className="btn btn-success w-100">Save Hero</button>
         </form>
       )}
     </div>
