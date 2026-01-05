@@ -1,3 +1,3 @@
-const BACKEND_URL =
-  "https://ecommerce-backend-q715w1ypy-raees-khan855s-projects.vercel.app";
+const BACKEND_URL = import.meta.env.VITE_API_URL;
+
 export default BACKEND_URL;

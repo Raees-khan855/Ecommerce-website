@@ -13,9 +13,12 @@ function ProductList() {
 
     const loadProducts = async () => {
       try {
-        const res = await axios.get(`${BACKEND_URL}/api/products`, {
-          withCredentials: true,
-        });
+        const res = await axios.get(
+          `https://ecommerce-backend-zeta-three.vercel.app/products`,
+          {
+            withCredentials: true,
+          }
+        );
         if (mounted) setProducts(res.data || []);
       } catch (err) {
         console.error(err);
