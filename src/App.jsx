@@ -16,15 +16,17 @@ function App() {
       <main>
         <Routes>
           <Route path="/" element={<Home />} />
+
+          {/* products */}
           <Route path="/products" element={<ProductList />} />
-          <Route path="/product/:id" element={<ProductDetails />} />
+          <Route path="/products/:id" element={<ProductDetails />} />
+
+          {/* cart */}
           <Route path="/cart" element={<Cart />} />
           <Route path="/checkout" element={<Checkout />} />
 
-          {/* admin login */}
+          {/* admin */}
           <Route path="/admin-login" element={<Login />} />
-
-          {/* protected admin panel */}
           <Route
             path="/AdminPanel"
             element={
