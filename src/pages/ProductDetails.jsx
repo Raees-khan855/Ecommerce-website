@@ -8,130 +8,96 @@ import BACKEND_URL from "../config";
 
 function ProductDetails() {
   const { id } = useParams();
-  const dispatch = useDispatch();
-  const navigate = useNavigate();
-
   const [product, setProduct] = useState(null);
   const [related, setRelated] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
+
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
 
   useEffect(() => {
+    let mounted = true;
+
     const fetchProduct = async () => {
       try {
-        setLoading(true);
-        setError("");
-
-        // ✅ fetch product by ID
         const res = await axios.get(`${BACKEND_URL}/products/${id}`);
-        setProduct(res.data);
 
-        // ✅ optional related products (safe)
-        if (res.data?.category) {
-          const relatedRes = await axios.get(
-            `${BACKEND_URL}/products?category=${res.data.category}`
-          );
-          setRelated(relatedRes.data.filter((p) => p._id !== res.data._id));
-        }
+        if (!mounted) return;
+
+        setProduct(res.data.product || res.data);
+        setRelated(res.data.related || []);
       } catch (err) {
         console.error("Product fetch error:", err);
-        setError("Product not found");
       } finally {
-        setLoading(false);
+        if (mounted) setLoading(false);
       }
     };
 
-    if (id) fetchProduct();
+    fetchProduct();
+    return () => (mounted = false);
   }, [id]);
 
-  // =========================
-  // LOADING
-  // =========================
-  if (loading) {
+  if (loading)
     return (
       <div className="d-flex justify-content-center align-items-center vh-100">
         <div className="spinner-border text-primary" />
       </div>
     );
-  }
 
-  // =========================
-  // ERROR
-  // =========================
-  if (error) {
-    return (
-      <div className="text-center my-5">
-        <h4 className="text-danger">{error}</h4>
-      </div>
-    );
-  }
+  if (!product)
+    return <h4 className="text-center mt-5 text-danger">Product not found</h4>;
 
-  // =========================
-  // IMAGE HANDLING (FIXED)
-  // =========================
-  const productImage = product?.image
-    ? product.image.startsWith("http")
+  // ✅ SAFE FALLBACKS
+  const price = Number(product.price || 0).toFixed(2);
+
+  const image =
+    product.image && product.image.startsWith("http")
       ? product.image
-      : `${BACKEND_URL}${product.image}`
-    : "https://via.placeholder.com/400?text=No+Image";
+      : "https://via.placeholder.com/400?text=No+Image";
 
-  const handleAddToCart = () => {
+  const description =
+    product.description?.trim() || "No description available.";
+
+  const category = product.category || "N/A";
+
+  const addItem = () =>
     dispatch(
       addToCart({
         id: product._id,
         title: product.title,
-        price: Number(product.price),
-        image: productImage,
+        price: Number(product.price || 0),
+        image,
       })
     );
-  };
 
   return (
     <div className="container py-4">
       <div className="row g-4 align-items-center">
-        {/* IMAGE */}
         <div className="col-md-6 text-center">
-          <div className="card p-3 shadow-sm border-0">
-            <img
-              src={productImage}
-              alt={product.title}
-              className="img-fluid"
-              style={{ maxHeight: "420px", objectFit: "contain" }}
-              onError={(e) =>
-                (e.target.src = "https://via.placeholder.com/400?text=No+Image")
-              }
-            />
-          </div>
+          <img
+            src={image}
+            alt={product.title}
+            className="img-fluid"
+            style={{ maxHeight: 420, objectFit: "contain" }}
+          />
         </div>
 
-        {/* DETAILS */}
         <div className="col-md-6">
-          <h2 className="fw-bold">{product.title}</h2>
-
-          <p className="text-muted">
-            <strong>Category:</strong> {product.category || "N/A"}
+          <h2>{product.title}</h2>
+          <p>
+            <strong>Category:</strong> {category}
           </p>
+          <h4 className="text-primary">${price}</h4>
+          <p>{description}</p>
 
-          <h4 className="text-primary mb-3">
-            ${Number(product.price).toFixed(2)}
-          </h4>
-
-          <p className="text-secondary">
-            {product.description || "No description available."}
-          </p>
-
-          <div className="d-flex gap-3 mt-4">
-            <button
-              className="btn btn-primary btn-lg w-100"
-              onClick={handleAddToCart}
-            >
+          <div className="d-flex gap-3">
+            <button className="btn btn-primary" onClick={addItem}>
               🛒 Add to Cart
             </button>
-
             <button
-              className="btn btn-success btn-lg w-100"
+              className="btn btn-success"
               onClick={() => {
-                handleAddToCart();
+                addItem();
                 navigate("/checkout");
               }}
             >
@@ -141,14 +107,13 @@ function ProductDetails() {
         </div>
       </div>
 
-      {/* RELATED PRODUCTS */}
       {related.length > 0 && (
         <div className="mt-5">
-          <h4 className="fw-bold mb-3">Related Products</h4>
+          <h4>Related Products</h4>
           <div className="row g-3">
-            {related.map((item) => (
-              <div key={item._id} className="col-6 col-md-4 col-lg-3">
-                <ProductCard product={item} />
+            {related.map((p) => (
+              <div key={p._id} className="col-6 col-md-3">
+                <ProductCard product={p} />
               </div>
             ))}
           </div>
