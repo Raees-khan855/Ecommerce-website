@@ -178,164 +178,134 @@ function AdminPanel() {
   if (!isLoggedIn) {
     return (
       <div className="container py-5">
-        <h2>Admin Login</h2>
-        {message && <div className="alert alert-danger">{message}</div>}
-        <form onSubmit={handleLogin}>
-          <input
-            className="form-control mb-2"
-            placeholder="Username"
-            onChange={(e) => setUsername(e.target.value)}
-          />
-          <input
-            className="form-control mb-2"
-            type="password"
-            placeholder="Password"
-            onChange={(e) => setPassword(e.target.value)}
-          />
-          <button className="btn btn-primary w-100">Login</button>
-        </form>
+        <div className="row justify-content-center">
+          <div className="col-12 col-md-6 col-lg-4">
+            <h2 className="text-center mb-3">Admin Login</h2>
+            {message && <div className="alert alert-danger">{message}</div>}
+            <form onSubmit={handleLogin}>
+              <input
+                className="form-control mb-2"
+                placeholder="Username"
+                onChange={(e) => setUsername(e.target.value)}
+              />
+              <input
+                className="form-control mb-3"
+                type="password"
+                placeholder="Password"
+                onChange={(e) => setPassword(e.target.value)}
+              />
+              <button className="btn btn-primary w-100">Login</button>
+            </form>
+          </div>
+        </div>
       </div>
     );
   }
 
   /* ================= ADMIN UI ================= */
   return (
-    <div className="container py-5">
-      <h2>Admin Panel</h2>
+    <div className="container py-4">
+      <h2 className="text-center mb-4">Admin Panel</h2>
 
-      <div className="mb-3">
-        <button
-          className="btn btn-info me-2"
-          onClick={() => setActiveTab("hero")}
-        >
-          Hero
-        </button>
-        <button
-          className="btn btn-primary me-2"
-          onClick={() => setActiveTab("product")}
-        >
-          Add Product
-        </button>
-        <button
-          className="btn btn-secondary me-2"
-          onClick={() => setActiveTab("manage")}
-        >
-          Manage Products
-        </button>
-        <button
-          className="btn btn-success"
-          onClick={() => setActiveTab("orders")}
-        >
-          Orders
-        </button>
+      {/* TABS */}
+      <div className="row g-2 mb-4">
+        <div className="col-6 col-md-3">
+          <button
+            className="btn btn-info w-100"
+            onClick={() => setActiveTab("hero")}
+          >
+            Hero
+          </button>
+        </div>
+        <div className="col-6 col-md-3">
+          <button
+            className="btn btn-primary w-100"
+            onClick={() => setActiveTab("product")}
+          >
+            Add Product
+          </button>
+        </div>
+        <div className="col-6 col-md-3">
+          <button
+            className="btn btn-secondary w-100"
+            onClick={() => setActiveTab("manage")}
+          >
+            Manage
+          </button>
+        </div>
+        <div className="col-6 col-md-3">
+          <button
+            className="btn btn-success w-100"
+            onClick={() => setActiveTab("orders")}
+          >
+            Orders
+          </button>
+        </div>
       </div>
 
       {/* HERO */}
       {activeTab === "hero" && (
-        <form onSubmit={updateHero}>
-          <input
-            className="form-control mb-2"
-            value={heroTitle}
-            onChange={(e) => setHeroTitle(e.target.value)}
-            placeholder="Hero Title"
-          />
-          <input
-            className="form-control mb-2"
-            value={heroSubtitle}
-            onChange={(e) => setHeroSubtitle(e.target.value)}
-            placeholder="Hero Subtitle"
-          />
-          <input
-            type="file"
-            className="form-control mb-2"
-            onChange={(e) => {
-              setHeroImage(e.target.files[0]);
-              setHeroPreview(URL.createObjectURL(e.target.files[0]));
-            }}
-          />
-          {heroPreview && (
-            <img src={heroPreview} width="250" className="mb-3" />
-          )}
-          <button className="btn btn-success w-100">Update Hero</button>
-        </form>
-      )}
-
-      {/* PRODUCT FORM */}
-      {activeTab === "product" && (
-        <form onSubmit={handleProductSubmit}>
-          <input
-            className="form-control mb-2"
-            placeholder="Title"
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-          />
-          <textarea
-            className="form-control mb-2"
-            placeholder="Description"
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
-          />
-          <input
-            className="form-control mb-2"
-            type="number"
-            placeholder="Price"
-            value={price}
-            onChange={(e) => setPrice(e.target.value)}
-          />
-          <input
-            className="form-control mb-2"
-            placeholder="Category"
-            value={category}
-            onChange={(e) => setCategory(e.target.value)}
-          />
-          <input
-            className="form-control mb-2"
-            type="file"
-            onChange={handleImageChange}
-          />
-          {productPreview && (
-            <img src={productPreview} width="120" className="mb-2" />
-          )}
-          <div className="form-check mb-2">
-            <input
-              className="form-check-input"
-              type="checkbox"
-              checked={featured}
-              onChange={(e) => setFeatured(e.target.checked)}
-            />
-            <label className="form-check-label">Featured</label>
+        <div className="row justify-content-center">
+          <div className="col-12 col-md-8">
+            <form onSubmit={updateHero}>
+              <input
+                className="form-control mb-2"
+                value={heroTitle}
+                onChange={(e) => setHeroTitle(e.target.value)}
+                placeholder="Hero Title"
+              />
+              <input
+                className="form-control mb-2"
+                value={heroSubtitle}
+                onChange={(e) => setHeroSubtitle(e.target.value)}
+                placeholder="Hero Subtitle"
+              />
+              <input
+                type="file"
+                className="form-control mb-2"
+                onChange={(e) => {
+                  setHeroImage(e.target.files[0]);
+                  setHeroPreview(URL.createObjectURL(e.target.files[0]));
+                }}
+              />
+              {heroPreview && (
+                <img src={heroPreview} className="img-fluid rounded mb-3" />
+              )}
+              <button className="btn btn-success w-100">Update Hero</button>
+            </form>
           </div>
-          <button className="btn btn-success w-100">
-            {editingProductId ? "Update" : "Add"} Product
-          </button>
-        </form>
+        </div>
       )}
 
       {/* MANAGE PRODUCTS */}
       {activeTab === "manage" && (
-        <div>
+        <div className="row g-3">
           {products.map((p) => (
-            <div
-              key={p._id}
-              className="card p-2 mb-2 d-flex flex-row align-items-center"
-            >
-              <img src={getImageUrl(p.image)} width="80" className="me-3" />
-              <div className="flex-grow-1">
-                <h6>{p.title}</h6>
-                <small>${p.price}</small>
+            <div key={p._id} className="col-12 col-md-6 col-lg-4">
+              <div className="card h-100">
+                <img
+                  src={getImageUrl(p.image)}
+                  className="card-img-top img-fluid"
+                />
+                <div className="card-body">
+                  <h6>{p.title}</h6>
+                  <p className="mb-1">${p.price}</p>
+                  <div className="d-flex gap-2">
+                    <button
+                      className="btn btn-warning btn-sm w-50"
+                      onClick={() => handleEdit(p)}
+                    >
+                      Edit
+                    </button>
+                    <button
+                      className="btn btn-danger btn-sm w-50"
+                      onClick={() => handleDelete(p._id)}
+                    >
+                      Delete
+                    </button>
+                  </div>
+                </div>
               </div>
-              <button
-                className="btn btn-warning btn-sm me-2"
-                onClick={() => handleEdit(p)}
-              >
-                Edit
-              </button>
-              <button
-                className="btn btn-danger btn-sm"
-                onClick={() => handleDelete(p._id)}
-              >
-                Delete
-              </button>
             </div>
           ))}
         </div>
@@ -343,27 +313,29 @@ function AdminPanel() {
 
       {/* ORDERS */}
       {activeTab === "orders" && (
-        <div>
+        <div className="row g-3">
           {orders.map((o) => (
-            <div key={o._id} className="card mb-3 p-3">
-              <strong>{o.customerName}</strong>
-              <small>{o.address}</small>
-              <ul className="list-group my-2">
-                {o.products.map((p, i) => (
-                  <li
-                    key={i}
-                    className="list-group-item d-flex align-items-center"
-                  >
-                    <img
-                      src={getImageUrl(p.image)}
-                      width="50"
-                      className="me-2"
-                    />
-                    {p.title} × {p.quantity}
-                  </li>
-                ))}
-              </ul>
-              <strong>Total: ${o.totalAmount}</strong>
+            <div key={o._id} className="col-12 col-md-6">
+              <div className="card p-3 h-100">
+                <strong>{o.customerName}</strong>
+                <small>{o.address}</small>
+                <ul className="list-group list-group-flush my-2">
+                  {o.products.map((p, i) => (
+                    <li
+                      key={i}
+                      className="list-group-item d-flex align-items-center"
+                    >
+                      <img
+                        src={getImageUrl(p.image)}
+                        width="50"
+                        className="me-2 img-fluid"
+                      />
+                      {p.title} × {p.quantity}
+                    </li>
+                  ))}
+                </ul>
+                <strong>Total: ${o.totalAmount}</strong>
+              </div>
             </div>
           ))}
         </div>
