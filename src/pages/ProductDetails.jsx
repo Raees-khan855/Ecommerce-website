@@ -1,5 +1,5 @@
 import { useParams, useNavigate } from "react-router-dom";
-import { useEffect, useState } from "react";
+import { useEffect, useLayoutEffect, useState } from "react";
 import axios from "axios";
 import { useDispatch } from "react-redux";
 import { addToCart } from "../redux/cartSlice";
@@ -8,16 +8,22 @@ import BACKEND_URL from "../config";
 
 function ProductDetails() {
   const { id } = useParams();
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
+
   const [product, setProduct] = useState(null);
   const [related, setRelated] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  const dispatch = useDispatch();
-  const navigate = useNavigate();
+  /* ================= FORCE SCROLL TO TOP ================= */
+  useLayoutEffect(() => {
+    window.scrollTo(0, 0);
+  }, [id]);
 
   /* ================= FETCH PRODUCT ================= */
   useEffect(() => {
     let mounted = true;
+    setLoading(true);
 
     const fetchProduct = async () => {
       try {
@@ -59,8 +65,8 @@ function ProductDetails() {
         : `${BACKEND_URL}/${img.replace(/^\/+/, "")}`
       : "https://via.placeholder.com/400?text=No+Image";
 
-  const price = Number(product.price || 0).toFixed(2);
   const image = getImageUrl(product.image);
+  const price = Number(product.price || 0).toFixed(2);
   const description =
     product.description?.trim() || "No description available.";
   const category = product.category || "N/A";
@@ -78,9 +84,8 @@ function ProductDetails() {
   /* ================= UI ================= */
   return (
     <div className="container py-4">
-      {/* ================= PRODUCT ================= */}
+      {/* PRODUCT */}
       <div className="row g-4 align-items-center">
-        {/* Image */}
         <div className="col-12 col-md-6 text-center">
           <div className="bg-light p-3 rounded shadow-sm">
             <img
@@ -95,7 +100,6 @@ function ProductDetails() {
           </div>
         </div>
 
-        {/* Info */}
         <div className="col-12 col-md-6">
           <h2 className="fw-bold">{product.title}</h2>
 
@@ -125,16 +129,13 @@ function ProductDetails() {
         </div>
       </div>
 
-      {/* ================= RELATED ================= */}
+      {/* RELATED */}
       {related.length > 0 && (
         <div className="mt-5">
-          <h4 className="fw-bold mb-3 text-center text-md-start">
-            Related Products
-          </h4>
-
+          <h4 className="fw-bold mb-3">Related Products</h4>
           <div className="row g-3">
             {related.map((p) => (
-              <div key={p._id} className="col-6 col-sm-6 col-md-4 col-lg-3">
+              <div key={p._id} className="col-6 col-md-4 col-lg-3">
                 <ProductCard product={p} />
               </div>
             ))}
