@@ -172,6 +172,23 @@ function AdminPanel() {
       headers: { Authorization: `Bearer ${token}` },
     });
     setOrders(res.data || []);
+    const handleDeleteOrder = async (orderId) => {
+      const confirm = window.confirm(
+        "Are you sure you want to confirm & delete this order?"
+      );
+      if (!confirm) return;
+
+      try {
+        await axios.delete(`${BACKEND_URL}/orders/${orderId}`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+
+        // Remove from UI instantly (better UX)
+        setOrders((prev) => prev.filter((o) => o._id !== orderId));
+      } catch (error) {
+        alert("Failed to delete order");
+      }
+    };
   };
 
   /* ================= LOGIN UI ================= */
@@ -391,15 +408,33 @@ function AdminPanel() {
       )}
 
       {/* ORDERS */}
+      {/* ORDERS */}
       {activeTab === "orders" && (
         <div className="row g-3">
+          {orders.length === 0 && (
+            <p className="text-center text-muted">No orders found</p>
+          )}
+
           {orders.map((o) => (
             <div key={o._id} className="col-12 col-md-6">
-              <div className="card p-3 h-100">
-                <strong>{o.customerName}</strong>
-                <small>{o.address}</small>
+              <div className="card p-3 h-100 shadow-sm">
+                <div className="d-flex justify-content-between align-items-start">
+                  <div>
+                    <strong>{o.customerName}</strong>
+                    <br />
+                    <small>{o.address}</small>
+                  </div>
+
+                  <button
+                    className="btn btn-sm btn-success"
+                    onClick={() => handleDeleteOrder(o._id)}
+                  >
+                    Confirm
+                  </button>
+                </div>
+
                 <ul className="list-group list-group-flush my-2">
-                  {o.products.map((p, i) => (
+                  {(o.products || []).map((p, i) => (
                     <li
                       key={i}
                       className="list-group-item d-flex align-items-center"
@@ -407,13 +442,20 @@ function AdminPanel() {
                       <img
                         src={getImageUrl(p.image)}
                         width="50"
-                        className="me-2 img-fluid"
+                        className="me-2 img-fluid rounded"
+                        alt={p.title}
                       />
-                      {p.title} × {p.quantity}
+                      <div>
+                        <div>{p.title}</div>
+                        <small>
+                          Qty: {p.quantity} × ${p.price}
+                        </small>
+                      </div>
                     </li>
                   ))}
                 </ul>
-                <strong>Total: ${o.totalAmount}</strong>
+
+                <div className="text-end fw-bold">Total: ${o.totalAmount}</div>
               </div>
             </div>
           ))}
