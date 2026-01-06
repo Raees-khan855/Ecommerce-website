@@ -17,7 +17,6 @@ function ProductList() {
 
         if (!isMounted) return;
 
-        // ✅ Safe API response handling
         const productData = Array.isArray(res.data)
           ? res.data
           : res.data.products || [];
@@ -40,44 +39,58 @@ function ProductList() {
     };
   }, []);
 
+  /* ================= LOADING ================= */
   if (loading) {
     return (
-      <div className="d-flex justify-content-center align-items-center vh-100 bg-light">
-        <div className="spinner-border text-primary" role="status"></div>
+      <div className="d-flex justify-content-center align-items-center min-vh-100 bg-light">
+        <div className="spinner-border text-primary" role="status" />
       </div>
     );
   }
 
+  /* ================= ERROR ================= */
   if (error) {
     return (
-      <div className="text-center mt-5">
+      <div className="container py-5 text-center">
         <h5 className="text-danger fw-semibold">{error}</h5>
       </div>
     );
   }
 
+  /* ================= EMPTY ================= */
   if (products.length === 0) {
     return (
-      <div className="text-center mt-5">
+      <div className="container py-5 text-center">
         <h5 className="text-muted">No products available.</h5>
       </div>
     );
   }
 
+  /* ================= PRODUCTS ================= */
   return (
-    <div className="container-fluid px-0">
-      <div className="text-center py-3">
+    <div className="container-xl py-4">
+      {/* HEADER */}
+      <div className="text-center mb-4 px-3">
         <h2 className="fw-bold">Our Products</h2>
-        <p className="text-muted">
+        <p className="text-muted mb-0">
           Browse durable products designed for real industrial use.
         </p>
       </div>
 
-      <div className="row g-3 mx-0 px-2">
+      {/* GRID */}
+      <div className="row g-3">
         {products.map((p) => (
           <div
             key={p._id}
-            className="col-6 col-md-4 col-lg-3 d-flex justify-content-center"
+            className="
+              col-6        /* Mobile */
+              col-sm-6     /* Small phones */
+              col-md-4     /* Tablets */
+              col-lg-3     /* Laptops */
+              col-xl-2     /* Large screens */
+              d-flex
+              justify-content-center
+            "
           >
             <ProductCard product={p} />
           </div>

@@ -6,12 +6,12 @@ import BACKEND_URL from "../config";
 function ProductCard({ product }) {
   const dispatch = useDispatch();
 
-  // Fix image URL (important for Vercel)
+  /* ================= IMAGE FIX ================= */
   const productImage = product?.image
     ? product.image.startsWith("http")
       ? product.image
-      : `${BACKEND_URL}${product.image}`
-    : "https://via.placeholder.com/200?text=No+Image";
+      : `${BACKEND_URL}/${product.image.replace(/^\/+/, "")}`
+    : "https://via.placeholder.com/300?text=No+Image";
 
   const handleAdd = () => {
     dispatch(
@@ -19,41 +19,64 @@ function ProductCard({ product }) {
         id: product._id,
         title: product.title,
         price: Number(product.price),
-        image: productImage, // ✅ store full URL
+        image: productImage, // store full URL
       })
     );
   };
 
   return (
-    <div className="card h-100 shadow-sm border-0 rounded-3 overflow-hidden">
-      {/* Image */}
+    <div
+      className="
+        card 
+        h-100 
+        shadow-sm 
+        border-0 
+        rounded-3 
+        overflow-hidden
+      "
+      style={{ maxWidth: "260px", width: "100%" }}
+    >
+      {/* ================= IMAGE ================= */}
       <div
-        className="bg-light d-flex align-items-center justify-content-center p-3"
-        style={{ height: "220px" }}
+        className="
+          bg-light 
+          d-flex 
+          align-items-center 
+          justify-content-center
+        "
+        style={{
+          height: "200px",
+          padding: "12px",
+        }}
       >
         <img
           src={productImage}
-          alt={product.title}
+          alt={product?.title || "Product image"}
           className="img-fluid"
-          style={{ objectFit: "contain", maxHeight: "100%" }}
+          style={{
+            maxHeight: "100%",
+            objectFit: "contain",
+          }}
           onError={(e) => {
-            e.target.src = "https://via.placeholder.com/200?text=No+Image";
+            e.target.src = "https://via.placeholder.com/300?text=No+Image";
           }}
         />
       </div>
 
-      {/* Content */}
-      <div className="card-body d-flex flex-column text-center">
-        <h6 className="fw-semibold text-truncate mb-1">{product.title}</h6>
+      {/* ================= BODY ================= */}
+      <div className="card-body d-flex flex-column text-center p-3">
+        <h6 className="fw-semibold mb-1 text-truncate" title={product.title}>
+          {product.title}
+        </h6>
 
         <span className="text-muted small mb-3">
           ${Number(product.price).toFixed(2)}
         </span>
 
-        {/* Actions */}
+        {/* ================= ACTIONS ================= */}
         <div className="mt-auto d-flex gap-2">
           <Link
-            to={`/products/${product._id}`} // ✅ route fixed
+            to={`/products/${product._id}`}
             className="btn btn-outline-primary btn-sm flex-grow-1"
           >
             View
