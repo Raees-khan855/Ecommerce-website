@@ -89,7 +89,7 @@ function AdminPanel() {
       headers: { Authorization: `Bearer ${token}` },
     });
 
-    setMessage("✅ Hero updated");
+    alert("✅ Hero updated");
     fetchHero();
   };
 
@@ -125,10 +125,10 @@ function AdminPanel() {
       await axios.put(`${BACKEND_URL}/products/${editingProductId}`, formData, {
         headers,
       });
-      setMessage("✅ Product updated");
+      alert("✅ Product updated");
     } else {
       await axios.post(`${BACKEND_URL}/products`, formData, { headers });
-      setMessage("✅ Product added");
+      alert("✅ Product added");
     }
 
     resetForm();
@@ -147,7 +147,7 @@ function AdminPanel() {
     setActiveTab("product");
   };
 
-  const handleDelete = async (id) => {
+  const handleDeleteProduct = async (id) => {
     if (!window.confirm("Delete product?")) return;
     await axios.delete(`${BACKEND_URL}/products/${id}`, {
       headers: { Authorization: `Bearer ${token}` },
@@ -174,30 +174,36 @@ function AdminPanel() {
     setOrders(res.data || []);
   };
 
+  const handleDeleteOrder = async (orderId) => {
+    if (!window.confirm("Are you sure you want to delete this order?")) return;
+
+    await axios.delete(`${BACKEND_URL}/orders/${orderId}`, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+
+    setOrders((prev) => prev.filter((o) => o._id !== orderId));
+    alert("✅ Order deleted");
+  };
+
   /* ================= LOGIN UI ================= */
   if (!isLoggedIn) {
     return (
       <div className="container py-5">
-        <div className="row justify-content-center">
-          <div className="col-12 col-md-6 col-lg-4">
-            <h2 className="text-center mb-3">Admin Login</h2>
-            {message && <div className="alert alert-danger">{message}</div>}
-            <form onSubmit={handleLogin}>
-              <input
-                className="form-control mb-2"
-                placeholder="Username"
-                onChange={(e) => setUsername(e.target.value)}
-              />
-              <input
-                className="form-control mb-3"
-                type="password"
-                placeholder="Password"
-                onChange={(e) => setPassword(e.target.value)}
-              />
-              <button className="btn btn-primary w-100">Login</button>
-            </form>
-          </div>
-        </div>
+        <form onSubmit={handleLogin} className="col-md-4 mx-auto">
+          <h3 className="text-center mb-3">Admin Login</h3>
+          <input
+            className="form-control mb-2"
+            placeholder="Username"
+            onChange={(e) => setUsername(e.target.value)}
+          />
+          <input
+            className="form-control mb-3"
+            type="password"
+            placeholder="Password"
+            onChange={(e) => setPassword(e.target.value)}
+          />
+          <button className="btn btn-primary w-100">Login</button>
+        </form>
       </div>
     );
   }
@@ -207,212 +213,44 @@ function AdminPanel() {
     <div className="container py-4">
       <h2 className="text-center mb-4">Admin Panel</h2>
 
-      {/* TABS */}
       <div className="row g-2 mb-4">
-        <div className="col-6 col-md-3">
-          <button
-            className="btn btn-info w-100"
-            onClick={() => setActiveTab("hero")}
-          >
-            Hero
-          </button>
-        </div>
-        <div className="col-6 col-md-3">
-          <button
-            className="btn btn-primary w-100"
-            onClick={() => setActiveTab("product")}
-          >
-            Add Product
-          </button>
-        </div>
-        <div className="col-6 col-md-3">
-          <button
-            className="btn btn-secondary w-100"
-            onClick={() => setActiveTab("manage")}
-          >
-            Manage
-          </button>
-        </div>
-        <div className="col-6 col-md-3">
-          <button
-            className="btn btn-success w-100"
-            onClick={() => setActiveTab("orders")}
-          >
-            Orders
-          </button>
-        </div>
+        {["hero", "product", "manage", "orders"].map((tab) => (
+          <div key={tab} className="col-6 col-md-3">
+            <button
+              className="btn btn-outline-primary w-100"
+              onClick={() => setActiveTab(tab)}
+            >
+              {tab.toUpperCase()}
+            </button>
+          </div>
+        ))}
       </div>
-
-      {/* HERO */}
-      {activeTab === "hero" && (
-        <div className="row justify-content-center">
-          <div className="col-12 col-md-8">
-            <form onSubmit={updateHero}>
-              <input
-                className="form-control mb-2"
-                value={heroTitle}
-                onChange={(e) => setHeroTitle(e.target.value)}
-                placeholder="Hero Title"
-              />
-              <input
-                className="form-control mb-2"
-                value={heroSubtitle}
-                onChange={(e) => setHeroSubtitle(e.target.value)}
-                placeholder="Hero Subtitle"
-              />
-              <input
-                type="file"
-                className="form-control mb-2"
-                onChange={(e) => {
-                  setHeroImage(e.target.files[0]);
-                  setHeroPreview(URL.createObjectURL(e.target.files[0]));
-                }}
-              />
-              {heroPreview && (
-                <img src={heroPreview} className="img-fluid rounded mb-3" />
-              )}
-              <button className="btn btn-success w-100">Update Hero</button>
-            </form>
-          </div>
-        </div>
-      )}
-      {/* ADD / EDIT PRODUCT */}
-      {activeTab === "product" && (
-        <div className="row justify-content-center">
-          <div className="col-12 col-md-8 col-lg-6">
-            <form onSubmit={handleProductSubmit} className="card p-3 shadow-sm">
-              <h5 className="text-center mb-3">
-                {editingProductId ? "Update Product" : "Add Product"}
-              </h5>
-
-              <input
-                className="form-control mb-2"
-                placeholder="Product Title"
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
-                required
-              />
-
-              <textarea
-                className="form-control mb-2"
-                placeholder="Description"
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
-                rows="3"
-                required
-              />
-
-              <input
-                className="form-control mb-2"
-                type="number"
-                placeholder="Price"
-                value={price}
-                onChange={(e) => setPrice(e.target.value)}
-                required
-              />
-
-              <input
-                className="form-control mb-2"
-                placeholder="Category"
-                value={category}
-                onChange={(e) => setCategory(e.target.value)}
-                required
-              />
-
-              <input
-                type="file"
-                className="form-control mb-2"
-                accept="image/*"
-                onChange={handleImageChange}
-              />
-
-              {productPreview && (
-                <img
-                  src={productPreview}
-                  alt="preview"
-                  className="img-fluid rounded mb-2"
-                  style={{ maxHeight: "180px", objectFit: "contain" }}
-                />
-              )}
-
-              <div className="form-check mb-3">
-                <input
-                  className="form-check-input"
-                  type="checkbox"
-                  checked={featured}
-                  onChange={(e) => setFeatured(e.target.checked)}
-                  id="featured"
-                />
-                <label className="form-check-label" htmlFor="featured">
-                  Featured Product
-                </label>
-              </div>
-
-              <button className="btn btn-success w-100">
-                {editingProductId ? "Update Product" : "Add Product"}
-              </button>
-            </form>
-          </div>
-        </div>
-      )}
-
-      {/* MANAGE PRODUCTS */}
-      {activeTab === "manage" && (
-        <div className="row g-3">
-          {products.map((p) => (
-            <div key={p._id} className="col-12 col-md-6 col-lg-4">
-              <div className="card h-100">
-                <img
-                  src={getImageUrl(p.image)}
-                  className="card-img-top img-fluid"
-                />
-                <div className="card-body">
-                  <h6>{p.title}</h6>
-                  <p className="mb-1">${p.price}</p>
-                  <div className="d-flex gap-2">
-                    <button
-                      className="btn btn-warning btn-sm w-50"
-                      onClick={() => handleEdit(p)}
-                    >
-                      Edit
-                    </button>
-                    <button
-                      className="btn btn-danger btn-sm w-50"
-                      onClick={() => handleDelete(p._id)}
-                    >
-                      Delete
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-      )}
 
       {/* ORDERS */}
       {activeTab === "orders" && (
         <div className="row g-3">
           {orders.map((o) => (
-            <div key={o._id} className="col-12 col-md-6">
-              <div className="card p-3 h-100">
-                <strong>{o.customerName}</strong>
+            <div key={o._id} className="col-md-6">
+              <div className="card p-3">
+                <div className="d-flex justify-content-between">
+                  <strong>{o.customerName}</strong>
+                  <button
+                    className="btn btn-danger btn-sm"
+                    onClick={() => handleDeleteOrder(o._id)}
+                  >
+                    Delete
+                  </button>
+                </div>
                 <small>{o.address}</small>
+
                 <ul className="list-group list-group-flush my-2">
                   {o.products.map((p, i) => (
-                    <li
-                      key={i}
-                      className="list-group-item d-flex align-items-center"
-                    >
-                      <img
-                        src={getImageUrl(p.image)}
-                        width="50"
-                        className="me-2 img-fluid"
-                      />
+                    <li key={i} className="list-group-item">
                       {p.title} × {p.quantity}
                     </li>
                   ))}
                 </ul>
+
                 <strong>Total: ${o.totalAmount}</strong>
               </div>
             </div>
@@ -423,35 +261,4 @@ function AdminPanel() {
   );
 }
 
-export default AdminPanel;  my order backend const express = require("express");
-const Order = require("../models/Order.js");
-const authMiddleware = require("../middleware/auth.js");
-
-const router = express.Router();
-
-/* CREATE ORDER (FROM CHECKOUT) */
-router.post("/", async (req, res) => {
-  try {
-    const order = new Order(req.body);
-    await order.save();
-    res.status(201).json(order);
-  } catch (err) {
-    res.status(500).json(err);
-  }
-});
-
-/* GET ALL ORDERS (ADMIN) */
-router.get("/", authMiddleware, async (req, res) => {
-  const orders = await Order.find().sort({ createdAt: -1 });
-  res.json(orders);
-});
-
-/* UPDATE STATUS */
-router.put("/:id", authMiddleware, async (req, res) => {
-  await Order.findByIdAndUpdate(req.params.id, {
-    status: req.body.status,
-  });
-  res.json({ message: "Order updated" });
-});
-    
-module. exports = router;
+export default AdminPanel;
