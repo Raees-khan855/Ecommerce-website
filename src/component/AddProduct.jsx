@@ -64,7 +64,7 @@ function AdminPanel() {
       fetchProducts();
       fetchOrders();
     } catch {
-      setMessage("❌ Login failed");
+      setMessage("Login failed");
     }
   };
 
@@ -174,13 +174,10 @@ function AdminPanel() {
     setOrders(res.data || []);
   };
 
-  const confirmAndDeleteOrder = async (orderId) => {
-    const ok = window.confirm(
-      "Are you sure you want to confirm & delete this order?"
-    );
-    if (!ok) return;
+  const confirmDeleteOrder = async (id) => {
+    if (!window.confirm("Confirm order and delete it?")) return;
 
-    await axios.delete(`${BACKEND_URL}/orders/${orderId}`, {
+    await axios.delete(`${BACKEND_URL}/orders/${id}`, {
       headers: { Authorization: `Bearer ${token}` },
     });
 
@@ -221,39 +218,14 @@ function AdminPanel() {
     <div className="container py-4">
       <h2 className="text-center mb-4">Admin Panel</h2>
 
-      {message && <div className="alert alert-success">{message}</div>}
-
-      {/* TABS */}
-      <div className="row g-2 mb-4">
-        {[
-          ["hero", "Hero", "info"],
-          ["product", "Add Product", "primary"],
-          ["manage", "Manage", "secondary"],
-          ["orders", "Orders", "success"],
-        ].map(([key, label, color]) => (
-          <div className="col-6 col-md-3" key={key}>
-            <button
-              className={`btn btn-${color} w-100`}
-              onClick={() => setActiveTab(key)}
-            >
-              {label}
-            </button>
-          </div>
-        ))}
-      </div>
-
       {/* ORDERS */}
       {activeTab === "orders" && (
         <div className="row g-3">
-          {orders.length === 0 && (
-            <p className="text-center text-muted">No orders available</p>
-          )}
-
           {orders.map((o) => (
             <div key={o._id} className="col-12 col-md-6">
-              <div className="card p-3 shadow-sm">
+              <div className="card p-3 h-100">
                 <strong>{o.customerName}</strong>
-                <small className="text-muted">{o.address}</small>
+                <small>{o.address}</small>
 
                 <ul className="list-group list-group-flush my-2">
                   {o.products.map((p, i) => (
@@ -264,7 +236,7 @@ function AdminPanel() {
                       <img
                         src={getImageUrl(p.image)}
                         width="50"
-                        className="me-2 rounded"
+                        className="me-2 img-fluid"
                       />
                       {p.title} × {p.quantity}
                     </li>
@@ -275,7 +247,7 @@ function AdminPanel() {
 
                 <button
                   className="btn btn-success mt-2"
-                  onClick={() => confirmAndDeleteOrder(o._id)}
+                  onClick={() => confirmDeleteOrder(o._id)}
                 >
                   ✅ Confirm & Delete
                 </button>
