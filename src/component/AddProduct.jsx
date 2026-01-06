@@ -15,7 +15,7 @@ function AdminPanel() {
   const [heroTitle, setHeroTitle] = useState("");
   const [heroSubtitle, setHeroSubtitle] = useState("");
   const [heroImage, setHeroImage] = useState(null);
-  const [heroPreview, setHeroPreview] = useState(null);
+  const [heroPreview, setHeroPreview] = useState("");
 
   /* ================= PRODUCTS ================= */
   const [products, setProducts] = useState([]);
@@ -26,18 +26,19 @@ function AdminPanel() {
   const [image, setImage] = useState(null);
   const [featured, setFeatured] = useState(false);
   const [editingProductId, setEditingProductId] = useState(null);
-  const [productPreview, setProductPreview] = useState(null);
+  const [productPreview, setProductPreview] = useState("");
 
   /* ================= ORDERS ================= */
   const [orders, setOrders] = useState([]);
-
   const [activeTab, setActiveTab] = useState("hero");
 
-  /* ================= IMAGE HELPER ================= */
+  /* ================= IMAGE FIX ================= */
   const getImageUrl = (img) => {
-    if (!img) return "https://via.placeholder.com/80";
+    if (!img) return "https://via.placeholder.com/300x200?text=No+Image";
     if (img.startsWith("http")) return img;
-    return `${BACKEND_URL}/${img.replace(/^\/+/, "")}`;
+
+    const cleanPath = img.replace(/^\/+/, "");
+    return `${BACKEND_URL}/${cleanPath}`;
   };
 
   /* ================= AUTO LOGIN ================= */
@@ -101,6 +102,7 @@ function AdminPanel() {
 
   const handleImageChange = (e) => {
     const file = e.target.files[0];
+    if (!file) return;
     setImage(file);
     setProductPreview(URL.createObjectURL(file));
   };
@@ -142,8 +144,9 @@ function AdminPanel() {
     setDescription(p.description);
     setPrice(p.price);
     setCategory(p.category);
-    setFeatured(p.featured);
+    setFeatured(p.featured || false);
     setProductPreview(getImageUrl(p.image));
+    setImage(null);
     setActiveTab("product");
   };
 
@@ -163,7 +166,7 @@ function AdminPanel() {
     setImage(null);
     setFeatured(false);
     setEditingProductId(null);
-    setProductPreview(null);
+    setProductPreview("");
   };
 
   /* ================= ORDERS ================= */
@@ -172,17 +175,6 @@ function AdminPanel() {
       headers: { Authorization: `Bearer ${token}` },
     });
     setOrders(res.data || []);
-  };
-
-  const confirmDeleteOrder = async (id) => {
-    if (!window.confirm("Confirm order and delete it?")) return;
-
-    await axios.delete(`${BACKEND_URL}/orders/${id}`, {
-      headers: { Authorization: `Bearer ${token}` },
-    });
-
-    setMessage("✅ Order confirmed & deleted");
-    fetchOrders();
   };
 
   /* ================= LOGIN UI ================= */
@@ -218,39 +210,58 @@ function AdminPanel() {
     <div className="container py-4">
       <h2 className="text-center mb-4">Admin Panel</h2>
 
-      {/* ORDERS */}
-      {activeTab === "orders" && (
+      {/* TABS */}
+      <div className="row g-2 mb-4">
+        {["hero", "product", "manage", "orders"].map((tab) => (
+          <div key={tab} className="col-6 col-md-3">
+            <button
+              className={`btn w-100 btn-${
+                tab === "hero"
+                  ? "info"
+                  : tab === "product"
+                  ? "primary"
+                  : tab === "manage"
+                  ? "secondary"
+                  : "success"
+              }`}
+              onClick={() => setActiveTab(tab)}
+            >
+              {tab.toUpperCase()}
+            </button>
+          </div>
+        ))}
+      </div>
+
+      {/* MANAGE PRODUCTS */}
+      {activeTab === "manage" && (
         <div className="row g-3">
-          {orders.map((o) => (
-            <div key={o._id} className="col-12 col-md-6">
-              <div className="card p-3 h-100">
-                <strong>{o.customerName}</strong>
-                <small>{o.address}</small>
-
-                <ul className="list-group list-group-flush my-2">
-                  {o.products.map((p, i) => (
-                    <li
-                      key={i}
-                      className="list-group-item d-flex align-items-center"
+          {products.map((p) => (
+            <div key={p._id} className="col-12 col-md-6 col-lg-4">
+              <div className="card h-100">
+                <img
+                  src={getImageUrl(p.image)}
+                  className="card-img-top"
+                  style={{ height: "200px", objectFit: "contain" }}
+                  alt={p.title}
+                />
+                <div className="card-body">
+                  <h6>{p.title}</h6>
+                  <p>₹{p.price}</p>
+                  <div className="d-flex gap-2">
+                    <button
+                      className="btn btn-warning btn-sm w-50"
+                      onClick={() => handleEdit(p)}
                     >
-                      <img
-                        src={getImageUrl(p.image)}
-                        width="50"
-                        className="me-2 img-fluid"
-                      />
-                      {p.title} × {p.quantity}
-                    </li>
-                  ))}
-                </ul>
-
-                <strong>Total: ${o.totalAmount}</strong>
-
-                <button
-                  className="btn btn-success mt-2"
-                  onClick={() => confirmDeleteOrder(o._id)}
-                >
-                  ✅ Confirm & Delete
-                </button>
+                      Edit
+                    </button>
+                    <button
+                      className="btn btn-danger btn-sm w-50"
+                      onClick={() => handleDelete(p._id)}
+                    >
+                      Delete
+                    </button>
+                  </div>
+                </div>
               </div>
             </div>
           ))}
