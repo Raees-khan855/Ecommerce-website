@@ -3,18 +3,18 @@ import { createSlice } from "@reduxjs/toolkit";
 const userSlice = createSlice({
   name: "user",
   initialState: {
-    // temporarily simulate a logged-in admin user
-    currentUser: { username: "admin", role: "admin" },
+    currentUser: null, // ❗ start empty
   },
   reducers: {
-    login: (state, action) => {
+    loginSuccess: (state, action) => {
       state.currentUser = action.payload;
     },
     logout: (state) => {
       state.currentUser = null;
+      localStorage.removeItem("adminToken");
     },
   },
 });
 
-export const { login, logout } = userSlice.actions;
+export const { loginSuccess, logout } = userSlice.actions;
 export default userSlice.reducer;

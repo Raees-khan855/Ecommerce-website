@@ -2,6 +2,8 @@ import { useSelector, useDispatch } from "react-redux";
 import { useState } from "react";
 import { clearCart } from "../redux/cartSlice";
 import { useNavigate, Link } from "react-router-dom";
+import axios from "axios";
+import BACKEND_URL from "../config";
 
 function Checkout() {
   const items = useSelector((state) => state.cart.items);
@@ -18,15 +20,17 @@ function Checkout() {
     paymentMethod: "COD",
   });
 
-  const total = items
-    .reduce((sum, item) => sum + item.price * item.quantity, 0)
-    .toFixed(2);
+  const totalAmount = items.reduce(
+    (sum, item) => sum + item.price * item.quantity,
+    0
+  );
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = (e) => {
+  /* ================= PLACE ORDER ================= */
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
     if (!formData.name || !formData.phone || !formData.address) {
@@ -36,18 +40,36 @@ function Checkout() {
 
     setIsSubmitting(true);
 
-    // 🔔 Later: send order to backend
-    setTimeout(() => {
-      alert(
-        "✅ Order placed successfully! Your payment method is Cash on Delivery."
-      );
+    try {
+      await axios.post(`${BACKEND_URL}/orders`, {
+        customerName: formData.name,
+        email: formData.email,
+        phone: formData.phone,
+        address: formData.address,
+        paymentMethod: formData.paymentMethod,
+        products: items.map((item) => ({
+          productId: item._id,
+          title: item.title,
+          price: item.price,
+          quantity: item.quantity,
+          image: item.image, // 🔥 saved correctly
+        })),
+        totalAmount,
+      });
+
+      alert("✅ Order placed successfully!");
       dispatch(clearCart());
       navigate("/");
-    }, 800);
+    } catch (err) {
+      console.error(err);
+      alert("❌ Failed to place order");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
-  // ✅ Empty cart UI
-  if (items.length === 0)
+  /* ================= EMPTY CART ================= */
+  if (items.length === 0) {
     return (
       <div className="text-center my-5">
         <h4 className="mb-3">Your cart is empty</h4>
@@ -56,15 +78,17 @@ function Checkout() {
         </Link>
       </div>
     );
+  }
 
+  /* ================= UI ================= */
   return (
     <div className="container my-5">
       <h3 className="mb-4 text-center fw-bold">Checkout</h3>
 
       <div className="row g-4">
-        {/* Customer Info */}
+        {/* CUSTOMER DETAILS */}
         <div className="col-12 col-lg-7">
-          <div className="card shadow-sm p-4 h-100">
+          <div className="card shadow-sm p-4">
             <h5 className="mb-3">Customer Details</h5>
 
             <form onSubmit={handleSubmit}>
@@ -81,7 +105,7 @@ function Checkout() {
               </div>
 
               <div className="mb-3">
-                <label className="form-label">Email (optional)</label>
+                <label className="form-label">Email</label>
                 <input
                   type="email"
                   name="email"
@@ -92,7 +116,7 @@ function Checkout() {
               </div>
 
               <div className="mb-3">
-                <label className="form-label">Phone Number *</label>
+                <label className="form-label">Phone *</label>
                 <input
                   type="tel"
                   name="phone"
@@ -115,27 +139,6 @@ function Checkout() {
                 />
               </div>
 
-              {/* Payment Option */}
-              <div className="mb-4">
-                <label className="form-label mb-2 d-block">
-                  Payment Method
-                </label>
-                <div className="form-check">
-                  <input
-                    type="radio"
-                    name="paymentMethod"
-                    value="COD"
-                    checked
-                    readOnly
-                    className="form-check-input"
-                    id="cod"
-                  />
-                  <label htmlFor="cod" className="form-check-label">
-                    Cash on Delivery (COD)
-                  </label>
-                </div>
-              </div>
-
               <button
                 type="submit"
                 className="btn btn-primary w-100 py-2"
@@ -147,20 +150,24 @@ function Checkout() {
           </div>
         </div>
 
-        {/* Order Summary */}
+        {/* ORDER SUMMARY */}
         <div className="col-12 col-lg-5">
-          <div className="card shadow-sm p-4 h-100">
+          <div className="card shadow-sm p-4">
             <h5 className="mb-3">Order Summary</h5>
 
             <ul className="list-group list-group-flush mb-3">
               {items.map((item) => (
                 <li
-                  key={item.id}
-                  className="list-group-item d-flex align-items-center justify-content-between"
+                  key={item._id}
+                  className="list-group-item d-flex justify-content-between align-items-center"
                 >
                   <div className="d-flex align-items-center gap-3">
                     <img
-                      src={item.image}
+                      src={
+                        item.image?.startsWith("http")
+                          ? item.image
+                          : `${BACKEND_URL}/${item.image}`
+                      }
                       alt={item.title}
                       onError={(e) =>
                         (e.target.src =
@@ -175,8 +182,9 @@ function Checkout() {
                       }}
                     />
                     <div>
-                      <strong className="d-block">{item.title}</strong>
-                      <small className="text-muted">
+                      <strong>{item.title}</strong>
+                      <br />
+                      <small>
                         Qty: {item.quantity} × ${item.price}
                       </small>
                     </div>
@@ -189,7 +197,8 @@ function Checkout() {
             </ul>
 
             <h5 className="text-end">
-              Total: <span className="text-primary">${total}</span>
+              Total:{" "}
+              <span className="text-primary">${totalAmount.toFixed(2)}</span>
             </h5>
           </div>
         </div>
