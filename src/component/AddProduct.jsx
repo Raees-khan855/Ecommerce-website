@@ -276,6 +276,85 @@ function AdminPanel() {
           </div>
         </div>
       )}
+      {/* ADD / EDIT PRODUCT */}
+      {activeTab === "product" && (
+        <div className="row justify-content-center">
+          <div className="col-12 col-md-8 col-lg-6">
+            <form onSubmit={handleProductSubmit} className="card p-3 shadow-sm">
+              <h5 className="text-center mb-3">
+                {editingProductId ? "Update Product" : "Add Product"}
+              </h5>
+
+              <input
+                className="form-control mb-2"
+                placeholder="Product Title"
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                required
+              />
+
+              <textarea
+                className="form-control mb-2"
+                placeholder="Description"
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                rows="3"
+                required
+              />
+
+              <input
+                className="form-control mb-2"
+                type="number"
+                placeholder="Price"
+                value={price}
+                onChange={(e) => setPrice(e.target.value)}
+                required
+              />
+
+              <input
+                className="form-control mb-2"
+                placeholder="Category"
+                value={category}
+                onChange={(e) => setCategory(e.target.value)}
+                required
+              />
+
+              <input
+                type="file"
+                className="form-control mb-2"
+                accept="image/*"
+                onChange={handleImageChange}
+              />
+
+              {productPreview && (
+                <img
+                  src={productPreview}
+                  alt="preview"
+                  className="img-fluid rounded mb-2"
+                  style={{ maxHeight: "180px", objectFit: "contain" }}
+                />
+              )}
+
+              <div className="form-check mb-3">
+                <input
+                  className="form-check-input"
+                  type="checkbox"
+                  checked={featured}
+                  onChange={(e) => setFeatured(e.target.checked)}
+                  id="featured"
+                />
+                <label className="form-check-label" htmlFor="featured">
+                  Featured Product
+                </label>
+              </div>
+
+              <button className="btn btn-success w-100">
+                {editingProductId ? "Update Product" : "Add Product"}
+              </button>
+            </form>
+          </div>
+        </div>
+      )}
 
       {/* MANAGE PRODUCTS */}
       {activeTab === "manage" && (
