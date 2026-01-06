@@ -50,14 +50,14 @@ function Footer() {
           <div className="col-12 col-sm-6 col-md-4">
             <h6 className="fw-semibold mb-3">Contact</h6>
 
-            <p className="small mb-2">📍 India</p>
+            <p className="small mb-2">📍 Pakistan</p>
 
             <p className="small mb-2">
               <a
                 href="tel:+919876543210"
                 className="text-light text-decoration-none"
               >
-                📞 +91 98765 43210
+                📞 +923254555681
               </a>
             </p>
 
@@ -66,7 +66,7 @@ function Footer() {
                 href="mailto:support@raeesproduct.com"
                 className="text-light text-decoration-none"
               >
-                ✉️ support@raeesproduct.com
+                ✉️ support@sigmaraees183@gmail.com
               </a>
             </p>
           </div>
