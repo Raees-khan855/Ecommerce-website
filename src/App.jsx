@@ -2,30 +2,36 @@ import { HashRouter, Routes, Route } from "react-router-dom";
 import { useEffect } from "react";
 import { useDispatch } from "react-redux";
 
+import Navbar from "./component/Navbar";
+import Footer from "./component/Footer";
+
 import Home from "./pages/home";
 import ProductList from "./pages/ProductList";
 import ProductDetails from "./pages/ProductDetails";
 import Cart from "./pages/Cart";
 import Checkout from "./pages/Checkout";
-import Navbar from "./component/Navbar";
+
 import AdminPanel from "./component/AddProduct";
 import ProtectedRoute from "./component/ProtectedRoute";
 import Login from "./pages/AdminLogin";
+
 import { loginSuccess } from "./redux/userSlice";
 
 function App() {
-  const dispatch = useDispatch(); // ✅ REQUIRED
+  const dispatch = useDispatch();
 
+  // ✅ Auto admin login (safe)
   useEffect(() => {
     const token = localStorage.getItem("adminToken");
     if (!token) return;
 
     try {
       const payload = JSON.parse(atob(token.split(".")[1]));
-      if (payload.role === "admin") {
+      if (payload?.role === "admin") {
         dispatch(loginSuccess({ id: payload.id, role: payload.role }));
       }
-    } catch {
+    } catch (err) {
+      console.error("Invalid token");
       localStorage.removeItem("adminToken");
     }
   }, [dispatch]);
@@ -33,19 +39,22 @@ function App() {
   return (
     <HashRouter>
       <Navbar />
-      <main>
+
+      {/* ✅ keeps footer at bottom */}
+      <main className="min-vh-100">
         <Routes>
+          {/* Home */}
           <Route path="/" element={<Home />} />
 
-          {/* products */}
+          {/* Products */}
           <Route path="/products" element={<ProductList />} />
           <Route path="/products/:id" element={<ProductDetails />} />
 
-          {/* cart */}
+          {/* Cart */}
           <Route path="/cart" element={<Cart />} />
           <Route path="/checkout" element={<Checkout />} />
 
-          {/* admin */}
+          {/* Admin */}
           <Route path="/admin-login" element={<Login />} />
           <Route
             path="/admin"
@@ -57,6 +66,9 @@ function App() {
           />
         </Routes>
       </main>
+
+      {/* ✅ Footer added correctly */}
+      <Footer />
     </HashRouter>
   );
 }
