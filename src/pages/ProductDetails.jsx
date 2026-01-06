@@ -15,6 +15,7 @@ function ProductDetails() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
+  /* ================= FETCH PRODUCT ================= */
   useEffect(() => {
     let mounted = true;
 
@@ -25,7 +26,7 @@ function ProductDetails() {
         if (!mounted) return;
 
         setProduct(res.data.product || res.data);
-        setRelated(res.data.related || []);
+        setRelated(Array.isArray(res.data.related) ? res.data.related : []);
       } catch (err) {
         console.error("Product fetch error:", err);
       } finally {
@@ -37,27 +38,31 @@ function ProductDetails() {
     return () => (mounted = false);
   }, [id]);
 
-  if (loading)
+  /* ================= LOADING ================= */
+  if (loading) {
     return (
       <div className="d-flex justify-content-center align-items-center vh-100">
         <div className="spinner-border text-primary" />
       </div>
     );
+  }
 
-  if (!product)
+  if (!product) {
     return <h4 className="text-center mt-5 text-danger">Product not found</h4>;
+  }
 
-  // ✅ SAFE FALLBACKS
-  const price = Number(product.price || 0).toFixed(2);
-
-  const image =
-    product.image && product.image.startsWith("http")
-      ? product.image
+  /* ================= HELPERS ================= */
+  const getImageUrl = (img) =>
+    img
+      ? img.startsWith("http")
+        ? img
+        : `${BACKEND_URL}/${img.replace(/^\/+/, "")}`
       : "https://via.placeholder.com/400?text=No+Image";
 
+  const price = Number(product.price || 0).toFixed(2);
+  const image = getImageUrl(product.image);
   const description =
     product.description?.trim() || "No description available.";
-
   const category = product.category || "N/A";
 
   const addItem = () =>
@@ -70,32 +75,45 @@ function ProductDetails() {
       })
     );
 
+  /* ================= UI ================= */
   return (
     <div className="container py-4">
+      {/* ================= PRODUCT ================= */}
       <div className="row g-4 align-items-center">
-        <div className="col-md-6 text-center">
-          <img
-            src={image}
-            alt={product.title}
-            className="img-fluid"
-            style={{ maxHeight: 420, objectFit: "contain" }}
-          />
+        {/* Image */}
+        <div className="col-12 col-md-6 text-center">
+          <div className="bg-light p-3 rounded shadow-sm">
+            <img
+              src={image}
+              alt={product.title}
+              className="img-fluid"
+              style={{ maxHeight: "420px", objectFit: "contain" }}
+              onError={(e) =>
+                (e.target.src = "https://via.placeholder.com/400?text=No+Image")
+              }
+            />
+          </div>
         </div>
 
-        <div className="col-md-6">
-          <h2>{product.title}</h2>
-          <p>
+        {/* Info */}
+        <div className="col-12 col-md-6">
+          <h2 className="fw-bold">{product.title}</h2>
+
+          <p className="text-muted mb-1">
             <strong>Category:</strong> {category}
           </p>
-          <h4 className="text-primary">${price}</h4>
-          <p>{description}</p>
 
-          <div className="d-flex gap-3">
-            <button className="btn btn-primary" onClick={addItem}>
+          <h4 className="text-primary fw-bold mb-3">${price}</h4>
+
+          <p className="mb-4">{description}</p>
+
+          <div className="d-flex flex-wrap gap-3">
+            <button className="btn btn-primary px-4" onClick={addItem}>
               🛒 Add to Cart
             </button>
+
             <button
-              className="btn btn-success"
+              className="btn btn-success px-4"
               onClick={() => {
                 addItem();
                 navigate("/checkout");
@@ -107,12 +125,16 @@ function ProductDetails() {
         </div>
       </div>
 
+      {/* ================= RELATED ================= */}
       {related.length > 0 && (
         <div className="mt-5">
-          <h4>Related Products</h4>
+          <h4 className="fw-bold mb-3 text-center text-md-start">
+            Related Products
+          </h4>
+
           <div className="row g-3">
             {related.map((p) => (
-              <div key={p._id} className="col-6 col-md-3">
+              <div key={p._id} className="col-6 col-sm-6 col-md-4 col-lg-3">
                 <ProductCard product={p} />
               </div>
             ))}
