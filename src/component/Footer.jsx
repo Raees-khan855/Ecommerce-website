@@ -4,9 +4,9 @@ function Footer() {
   return (
     <footer className="bg-dark text-light mt-5">
       <div className="container py-4">
-        <div className="row text-center text-md-start">
+        <div className="row gy-4 text-center text-md-start">
           {/* Brand */}
-          <div className="col-12 col-md-4 mb-3">
+          <div className="col-12 col-md-4">
             <h5 className="fw-bold">RaeesProduct</h5>
             <p className="small text-muted mb-0">
               Trusted supplier of industrial & chemical containers.
@@ -14,15 +14,15 @@ function Footer() {
           </div>
 
           {/* Quick Links */}
-          <div className="col-6 col-md-4 mb-3">
-            <h6 className="fw-semibold">Quick Links</h6>
-            <ul className="list-unstyled small">
-              <li className="mb-1">
+          <div className="col-12 col-sm-6 col-md-4">
+            <h6 className="fw-semibold mb-3">Quick Links</h6>
+            <ul className="list-unstyled small mb-0">
+              <li className="mb-2">
                 <Link to="/" className="text-light text-decoration-none">
                   Home
                 </Link>
               </li>
-              <li className="mb-1">
+              <li className="mb-2">
                 <Link
                   to="/products"
                   className="text-light text-decoration-none"
@@ -30,7 +30,7 @@ function Footer() {
                   Products
                 </Link>
               </li>
-              <li className="mb-1">
+              <li className="mb-2">
                 <Link to="/cart" className="text-light text-decoration-none">
                   Cart
                 </Link>
@@ -47,10 +47,12 @@ function Footer() {
           </div>
 
           {/* Contact */}
-          <div className="col-6 col-md-4 mb-3">
-            <h6 className="fw-semibold">Contact</h6>
-            <p className="small mb-1">📍 India</p>
-            <p className="small mb-1">
+          <div className="col-12 col-sm-6 col-md-4">
+            <h6 className="fw-semibold mb-3">Contact</h6>
+
+            <p className="small mb-2">📍 India</p>
+
+            <p className="small mb-2">
               <a
                 href="tel:+919876543210"
                 className="text-light text-decoration-none"
@@ -58,6 +60,7 @@ function Footer() {
                 📞 +91 98765 43210
               </a>
             </p>
+
             <p className="small mb-0">
               <a
                 href="mailto:support@raeesproduct.com"
@@ -69,7 +72,7 @@ function Footer() {
           </div>
         </div>
 
-        <hr className="border-secondary my-3" />
+        <hr className="border-secondary my-4" />
 
         <p className="text-center small mb-0 text-muted">
           © {new Date().getFullYear()} RaeesProduct. All rights reserved.
