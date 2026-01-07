@@ -437,45 +437,95 @@ function AdminPanel() {
           )}
 
           {orders.map((o) => (
-            <div key={o._id} className="col-md-6">
-              <div className="card p-3 shadow-sm">
-                <div className="d-flex justify-content-between">
-                  <div>
-                    <strong>{o.customerName}</strong>
-                    <br />
-                    <small>{o.address}</small>
-                    <br />
-                    <span className="badge bg-info">{o.status}</span>
+            <div key={o._id} className="col-12 col-lg-6">
+              <div className="card shadow-sm h-100">
+                {/* CARD BODY */}
+                <div className="card-body">
+                  {/* CUSTOMER INFO */}
+                  <div className="mb-3">
+                    <h6 className="mb-1 fw-bold">{o.customerName}</h6>
+
+                    <div className="d-flex flex-column gap-1">
+                      <small className="text-muted">
+                        📧 <span className="ms-1">{o.email}</span>
+                      </small>
+
+                      {o.phone && (
+                        <small className="text-muted">
+                          📞 <span className="ms-1">{o.phone}</span>
+                        </small>
+                      )}
+
+                      <small className="text-muted">
+                        🏠 <span className="ms-1">{o.address}</span>
+                      </small>
+                    </div>
                   </div>
 
-                  <div className="d-flex gap-2">
-                    {o.status !== "Confirmed" && (
-                      <button
-                        className="btn btn-success btn-sm"
-                        onClick={() => handleConfirmOrder(o._id)}
-                      >
-                        Confirm
-                      </button>
-                    )}
-
-                    <button
-                      className="btn btn-danger btn-sm"
-                      onClick={() => handleDeleteOrder(o._id)}
+                  {/* STATUS + ACTIONS */}
+                  <div className="d-flex justify-content-between align-items-center mb-3">
+                    <span
+                      className={`badge ${
+                        o.status === "Confirmed" ? "bg-success" : "bg-info"
+                      }`}
                     >
-                      Delete
-                    </button>
+                      {o.status}
+                    </span>
+
+                    <div className="d-flex gap-2">
+                      {o.status !== "Confirmed" && (
+                        <button
+                          className="btn btn-success btn-sm"
+                          onClick={() => handleConfirmOrder(o._id)}
+                        >
+                          Confirm
+                        </button>
+                      )}
+
+                      <button
+                        className="btn btn-danger btn-sm"
+                        onClick={() => handleDeleteOrder(o._id)}
+                      >
+                        Delete
+                      </button>
+                    </div>
                   </div>
+
+                  {/* PRODUCTS */}
+                  <ul className="list-group list-group-flush">
+                    {(o.products || []).map((p, i) => (
+                      <li
+                        key={i}
+                        className="list-group-item d-flex align-items-center gap-3 px-0"
+                      >
+                        <img
+                          src={getImageUrl(p.image)}
+                          alt={p.title}
+                          style={{
+                            width: "48px",
+                            height: "48px",
+                            objectFit: "cover",
+                            borderRadius: "6px",
+                          }}
+                        />
+
+                        <div className="flex-grow-1">
+                          <div className="fw-semibold">{p.title}</div>
+                          <small className="text-muted">
+                            Qty: {p.quantity}
+                          </small>
+                        </div>
+                      </li>
+                    ))}
+                  </ul>
                 </div>
 
-                <ul className="list-group list-group-flush my-2">
-                  {(o.products || []).map((p, i) => (
-                    <li key={i} className="list-group-item">
-                      {p.title} × {p.quantity}
-                    </li>
-                  ))}
-                </ul>
-
-                <strong>Total: ₹{o.totalAmount}</strong>
+                {/* TOTAL */}
+                <div className="card-footer bg-white border-top">
+                  <div className="d-flex justify-content-end">
+                    <strong className="fs-6">Total: ₹{o.totalAmount}</strong>
+                  </div>
+                </div>
               </div>
             </div>
           ))}
