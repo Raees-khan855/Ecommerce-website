@@ -415,7 +415,7 @@ function AdminPanel() {
             <div key={p._id} className="col-12 col-md-6 col-lg-4">
               <div className="card h-100">
                 <img
-                  src={getImageUrl(p.image)}
+                  src={getImageUrl(p.mainImage || p.images?.[0])}
                   className="card-img-top img-fluid"
                 />
                 <div className="card-body">
