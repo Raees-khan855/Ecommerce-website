@@ -7,6 +7,7 @@ import BACKEND_URL from "../config";
 
 function Home() {
   const dispatch = useDispatch();
+
   const [featuredProducts, setFeaturedProducts] = useState([]);
   const [hero, setHero] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -40,18 +41,23 @@ function Home() {
   }, []);
 
   /* ================= IMAGE HELPERS ================= */
+
+  // PRODUCT IMAGE
+  const getProductImage = (p) => {
+    const img = p.mainImage || p.images?.[0];
+    return img
+      ? img.startsWith("http")
+        ? img
+        : `${BACKEND_URL}/${img.replace(/^\/+/, "")}`
+      : "https://via.placeholder.com/300?text=No+Image";
+  };
+
+  // HERO IMAGE ✅ (THIS WAS MISSING)
   const heroImg = hero?.image
     ? hero.image.startsWith("http")
       ? hero.image
       : `${BACKEND_URL}/${hero.image.replace(/^\/+/, "")}`
     : "https://images.unsplash.com/photo-1616627982421-74db63b3f8a0?auto=format&fit=crop&w=1470&q=80";
-
-  const getProductImg = (img) =>
-    img
-      ? img.startsWith("http")
-        ? img
-        : `${BACKEND_URL}/${img.replace(/^\/+/, "")}`
-      : "https://via.placeholder.com/300?text=No+Image";
 
   /* ================= UI ================= */
   return (
@@ -72,10 +78,11 @@ function Home() {
         />
 
         <div className="container position-relative z-1 py-5">
-          <h1 className="fw-bold display-5 display-md-4">
+          <h1 className="fw-bold display-5">
             {hero?.title || "Welcome to RaeesProduct"}
           </h1>
-          <p className="fs-6 fs-md-5 mx-auto" style={{ maxWidth: "720px" }}>
+
+          <p className="fs-6 mx-auto" style={{ maxWidth: "720px" }}>
             {hero?.subtitle ||
               "Your trusted source for industrial and chemical containers."}
           </p>
@@ -103,14 +110,13 @@ function Home() {
                 key={p._id}
                 className="col-6 col-sm-6 col-md-4 col-lg-3 d-flex"
               >
-                <div className="card h-100 shadow-sm border-0 rounded-3 w-100">
-                  {/* Image */}
+                <div className="card h-100 shadow-sm border-0 w-100">
                   <div
                     className="bg-light d-flex align-items-center justify-content-center p-3"
                     style={{ height: "200px" }}
                   >
                     <img
-                      src={getProductImg(p.image)}
+                      src={getProductImage(p)}
                       alt={p.title}
                       className="img-fluid"
                       style={{ maxHeight: "100%", objectFit: "contain" }}
@@ -121,32 +127,33 @@ function Home() {
                     />
                   </div>
 
-                  {/* Content */}
                   <div className="card-body d-flex flex-column text-center">
                     <h6 className="fw-semibold text-truncate">{p.title}</h6>
+
                     <span className="fw-bold mb-3">
                       Rs.{Number(p.price).toFixed(2)}
                     </span>
 
-                    <div className="mt-auto d-flex gap-2 justify-content-center">
+                    <div className="mt-auto d-flex gap-2">
                       <button
-                        className="btn btn-outline-primary btn-sm flex-grow-1"
+                        className="btn btn-outline-primary btn-sm w-50"
                         onClick={() =>
                           dispatch(
                             addToCart({
                               id: p._id,
                               title: p.title,
                               price: Number(p.price),
-                              image: getProductImg(p.image),
+                              image: getProductImage(p),
                             })
                           )
                         }
                       >
                         Add
                       </button>
+
                       <Link
                         to={`/products/${p._id}`}
-                        className="btn btn-primary btn-sm flex-grow-1"
+                        className="btn btn-primary btn-sm w-50"
                       >
                         View
                       </Link>
