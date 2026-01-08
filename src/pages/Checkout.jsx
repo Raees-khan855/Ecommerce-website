@@ -185,12 +185,12 @@ function Checkout() {
                       <strong>{item.title}</strong>
                       <br />
                       <small>
-                        Qty: {item.quantity} × ${item.price}
+                        Qty: {item.quantity} × Rs.{item.price}
                       </small>
                     </div>
                   </div>
                   <span className="fw-bold">
-                    ${(item.price * item.quantity).toFixed(2)}
+                    Rs.{(item.price * item.quantity).toFixed(2)}
                   </span>
                 </li>
               ))}
@@ -198,7 +198,7 @@ function Checkout() {
 
             <h5 className="text-end">
               Total:{" "}
-              <span className="text-primary">${totalAmount.toFixed(2)}</span>
+              <span className="text-primary">Rs.{totalAmount.toFixed(2)}</span>
             </h5>
           </div>
         </div>

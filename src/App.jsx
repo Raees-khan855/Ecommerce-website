@@ -14,7 +14,7 @@ import Checkout from "./pages/Checkout";
 import AdminPanel from "./component/AddProduct";
 import ProtectedRoute from "./component/ProtectedRoute";
 import Login from "./pages/AdminLogin";
-
+import Whatsapp from "./component/WhatsAppButton";
 import { loginSuccess } from "./redux/userSlice";
 
 function App() {
@@ -66,7 +66,8 @@ function App() {
           />
         </Routes>
       </main>
-
+      {/* ✅ WhatsApp Button goes HERE */}
+      <Whatsapp />
       {/* ✅ Footer added correctly */}
       <Footer />
     </HashRouter>

@@ -420,7 +420,7 @@ function AdminPanel() {
                 />
                 <div className="card-body">
                   <h6>{p.title}</h6>
-                  <p className="mb-1">${p.price}</p>
+                  <p className="mb-1">Rs.{p.price}</p>
                   <div className="d-flex gap-2">
                     <button
                       className="btn btn-warning btn-sm w-50"
@@ -536,7 +536,7 @@ function AdminPanel() {
                 {/* TOTAL */}
                 <div className="card-footer bg-white border-top">
                   <div className="d-flex justify-content-end">
-                    <strong className="fs-6">Total: ₹{o.totalAmount}</strong>
+                    <strong className="fs-6">Total: Rs.{o.totalAmount}</strong>
                   </div>
                 </div>
               </div>
