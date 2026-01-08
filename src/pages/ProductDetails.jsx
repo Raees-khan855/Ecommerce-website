@@ -14,6 +14,7 @@ function ProductDetails() {
   const [product, setProduct] = useState(null);
   const [related, setRelated] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [activeImage, setActiveImage] = useState(null);
 
   /* ================= FORCE SCROLL TO TOP ================= */
   useLayoutEffect(() => {
@@ -31,8 +32,17 @@ function ProductDetails() {
 
         if (!mounted) return;
 
-        setProduct(res.data.product || res.data);
+        const prod = res.data.product || res.data;
+
+        setProduct(prod);
         setRelated(Array.isArray(res.data.related) ? res.data.related : []);
+
+        // ✅ pick first image automatically
+        if (Array.isArray(prod.images) && prod.images.length > 0) {
+          setActiveImage(prod.images[0]);
+        } else if (prod.image) {
+          setActiveImage(prod.image);
+        }
       } catch (err) {
         console.error("Product fetch error:", err);
       } finally {
@@ -65,11 +75,15 @@ function ProductDetails() {
         : `${BACKEND_URL}/${img.replace(/^\/+/, "")}`
       : "https://via.placeholder.com/400?text=No+Image";
 
-  const image = getImageUrl(product.image);
+  const images =
+    Array.isArray(product.images) && product.images.length > 0
+      ? product.images
+      : product.image
+      ? [product.image]
+      : [];
+
+  const mainImage = getImageUrl(activeImage);
   const price = Number(product.price || 0).toFixed(2);
-  const description =
-    product.description?.trim() || "No description available.";
-  const category = product.category || "N/A";
 
   const addItem = () =>
     dispatch(
@@ -77,7 +91,7 @@ function ProductDetails() {
         id: product._id,
         title: product.title,
         price: Number(product.price || 0),
-        image,
+        image: mainImage,
       })
     );
 
@@ -85,31 +99,60 @@ function ProductDetails() {
   return (
     <div className="container py-4">
       {/* PRODUCT */}
-      <div className="row g-4 align-items-center">
-        <div className="col-12 col-md-6 text-center">
-          <div className="bg-light p-3 rounded shadow-sm">
+      <div className="row g-4">
+        {/* IMAGE GALLERY */}
+        <div className="col-12 col-md-6">
+          <div className="bg-light p-3 rounded shadow-sm text-center">
             <img
-              src={image}
+              src={mainImage}
               alt={product.title}
-              className="img-fluid"
+              className="img-fluid mb-3"
               style={{ maxHeight: "420px", objectFit: "contain" }}
-              onError={(e) =>
-                (e.target.src = "https://via.placeholder.com/400?text=No+Image")
-              }
             />
+
+            {/* THUMBNAILS */}
+            {images.length > 1 && (
+              <div className="d-flex justify-content-center gap-2 flex-wrap">
+                {images.slice(0, 5).map((img, i) => {
+                  const thumb = getImageUrl(img);
+                  return (
+                    <img
+                      key={i}
+                      src={thumb}
+                      alt="thumb"
+                      onClick={() => setActiveImage(img)}
+                      style={{
+                        width: "64px",
+                        height: "64px",
+                        objectFit: "cover",
+                        cursor: "pointer",
+                        border:
+                          img === activeImage
+                            ? "2px solid #0d6efd"
+                            : "1px solid #ddd",
+                        borderRadius: "6px",
+                      }}
+                    />
+                  );
+                })}
+              </div>
+            )}
           </div>
         </div>
 
+        {/* DETAILS */}
         <div className="col-12 col-md-6">
           <h2 className="fw-bold">{product.title}</h2>
 
           <p className="text-muted mb-1">
-            <strong>Category:</strong> {category}
+            <strong>Category:</strong> {product.category}
           </p>
 
-          <h4 className="text-primary fw-bold mb-3">${price}</h4>
+          <h4 className="text-primary fw-bold mb-3">Rs.{price}</h4>
 
-          <p className="mb-4">{description}</p>
+          <p className="mb-4">
+            {product.description || "No description available."}
+          </p>
 
           <div className="d-flex flex-wrap gap-3">
             <button className="btn btn-primary px-4" onClick={addItem}>
@@ -129,7 +172,7 @@ function ProductDetails() {
         </div>
       </div>
 
-      {/* RELATED */}
+      {/* RELATED PRODUCTS */}
       {related.length > 0 && (
         <div className="mt-5">
           <h4 className="fw-bold mb-3">Related Products</h4>

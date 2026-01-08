@@ -125,7 +125,7 @@ function Home() {
                   <div className="card-body d-flex flex-column text-center">
                     <h6 className="fw-semibold text-truncate">{p.title}</h6>
                     <span className="fw-bold mb-3">
-                      ${Number(p.price).toFixed(2)}
+                      Rs.{Number(p.price).toFixed(2)}
                     </span>
 
                     <div className="mt-auto d-flex gap-2 justify-content-center">

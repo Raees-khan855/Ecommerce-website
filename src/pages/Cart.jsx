@@ -7,9 +7,10 @@ function Cart() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
-  const total = items
-    .reduce((sum, item) => sum + item.price * item.quantity, 0)
-    .toFixed(2);
+  // ✅ PKR total (no decimals)
+  const total = Math.round(
+    items.reduce((sum, item) => sum + item.price * item.quantity, 0)
+  );
 
   if (items.length === 0)
     return (
@@ -52,11 +53,12 @@ function Cart() {
                 <div className="mb-2 mb-md-0">
                   <strong className="d-block">{item.title}</strong>
                   <span className="text-muted small">
-                    ${item.price.toFixed(2)} each
+                    Rs. {item.price} each
                   </span>
                 </div>
+
                 <div className="fw-bold text-md-end text-primary">
-                  ${(item.price * item.quantity).toFixed(2)}
+                  Rs. {item.price * item.quantity}
                 </div>
               </div>
 
@@ -77,6 +79,7 @@ function Cart() {
                   className="form-control form-control-sm"
                   style={{ width: "80px" }}
                 />
+
                 <button
                   className="btn btn-sm btn-outline-danger"
                   onClick={() => dispatch(removeFromCart(item.id))}
@@ -98,6 +101,7 @@ function Cart() {
           >
             🧹 Clear Cart
           </button>
+
           <button
             className="btn btn-primary"
             onClick={() => navigate("/checkout")}
@@ -105,7 +109,11 @@ function Cart() {
             💳 Proceed to Checkout
           </button>
         </div>
-        <h5 className="fw-bold text-primary mt-3 mt-md-0">Total: ${total}</h5>
+
+        {/* ✅ TOTAL PKR */}
+        <h5 className="fw-bold text-primary mt-3 mt-md-0">
+          Total: Rs. {total}
+        </h5>
       </div>
     </div>
   );
