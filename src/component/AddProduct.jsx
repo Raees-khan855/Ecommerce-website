@@ -23,10 +23,11 @@ function AdminPanel() {
   const [description, setDescription] = useState("");
   const [price, setPrice] = useState("");
   const [category, setCategory] = useState("");
-  const [image, setImage] = useState(null);
-  const [featured, setFeatured] = useState(false);
+  const [images, setImages] = useState([]); // files
+  const [productPreviews, setProductPreviews] = useState([]); // preview urls
   const [editingProductId, setEditingProductId] = useState(null);
   const [productPreview, setProductPreview] = useState(null);
+  const [featured, setFeatured] = useState(false);
 
   /* ================= ORDERS ================= */
   const [orders, setOrders] = useState([]);
@@ -100,9 +101,9 @@ function AdminPanel() {
   };
 
   const handleImageChange = (e) => {
-    const file = e.target.files[0];
-    setImage(file);
-    setProductPreview(URL.createObjectURL(file));
+    const files = Array.from(e.target.files).slice(0, 5);
+    setImages(files);
+    setProductPreviews(files.map((f) => URL.createObjectURL(f)));
   };
 
   const handleProductSubmit = async (e) => {
@@ -113,8 +114,12 @@ function AdminPanel() {
     formData.append("description", description);
     formData.append("price", price);
     formData.append("category", category);
-    formData.append("featured", featured);
-    if (image) formData.append("image", image);
+    formData.append("featured", featured ? "true" : "false");
+
+    // add 1–5 images
+    images.forEach((img) => {
+      formData.append("images", img);
+    });
 
     const headers = {
       Authorization: `Bearer ${token}`,
@@ -143,7 +148,7 @@ function AdminPanel() {
     setPrice(p.price);
     setCategory(p.category);
     setFeatured(p.featured);
-    setProductPreview(getImageUrl(p.image));
+    setProductPreviews(p.images?.map(getImageUrl) || []);
     setActiveTab("product");
   };
 
@@ -160,10 +165,10 @@ function AdminPanel() {
     setDescription("");
     setPrice("");
     setCategory("");
-    setImage(null);
+    setImages([]);
     setFeatured(false);
     setEditingProductId(null);
-    setProductPreview(null);
+    setProductPreviews([]);
   };
 
   /* ================= ORDERS ================= */
@@ -223,10 +228,13 @@ function AdminPanel() {
             {message && <div className="alert alert-danger">{message}</div>}
             <form onSubmit={handleLogin}>
               <input
+                type="file"
                 className="form-control mb-2"
-                placeholder="Username"
-                onChange={(e) => setUsername(e.target.value)}
+                accept="image/*"
+                multiple
+                onChange={handleImageChange}
               />
+
               <input
                 className="form-control mb-3"
                 type="password"
@@ -357,22 +365,27 @@ function AdminPanel() {
                 onChange={(e) => setCategory(e.target.value)}
                 required
               />
-
               <input
                 type="file"
                 className="form-control mb-2"
                 accept="image/*"
+                multiple
                 onChange={handleImageChange}
               />
-
-              {productPreview && (
-                <img
-                  src={productPreview}
-                  alt="preview"
-                  className="img-fluid rounded mb-2"
-                  style={{ maxHeight: "180px", objectFit: "contain" }}
-                />
-              )}
+              <div className="d-flex flex-wrap gap-2 mb-2">
+                {productPreviews.map((img, i) => (
+                  <img
+                    key={i}
+                    src={img}
+                    style={{
+                      width: 80,
+                      height: 80,
+                      objectFit: "cover",
+                      borderRadius: 6,
+                    }}
+                  />
+                ))}
+              </div>
 
               <div className="form-check mb-3">
                 <input
