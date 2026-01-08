@@ -47,6 +47,11 @@ function Navbar() {
                 Products
               </NavLink>
             </li>
+            <li>
+              <NavLink to="/contact" className="nav-link">
+                Contact Us
+              </NavLink>
+            </li>
           </ul>
 
           {/* Right Actions */}

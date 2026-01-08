@@ -16,7 +16,7 @@ import ProtectedRoute from "./component/ProtectedRoute";
 import Login from "./pages/AdminLogin";
 import Whatsapp from "./component/WhatsAppButton";
 import { loginSuccess } from "./redux/userSlice";
-
+import Contact from "./pages/Contact";
 function App() {
   const dispatch = useDispatch();
 
@@ -49,7 +49,7 @@ function App() {
           {/* Products */}
           <Route path="/products" element={<ProductList />} />
           <Route path="/products/:id" element={<ProductDetails />} />
-
+          <Route path="/contact" element={<Contact />} />
           {/* Cart */}
           <Route path="/cart" element={<Cart />} />
           <Route path="/checkout" element={<Checkout />} />

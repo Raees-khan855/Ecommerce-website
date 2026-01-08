@@ -84,7 +84,7 @@ function Home() {
 
           <p className="fs-6 mx-auto" style={{ maxWidth: "720px" }}>
             {hero?.subtitle ||
-              "Your trusted source for industrial and chemical containers."}
+              "Shop with free delivery and cash on delivery—pay when your order arrives."}
           </p>
 
           <Link to="/products" className="btn btn-light btn-lg mt-3 px-4">
@@ -171,9 +171,10 @@ function Home() {
         <div className="container text-center">
           <h3 className="fw-bold mb-3">Why Choose RaeesProduct?</h3>
           <p className="mb-0 fs-6">
-            ✔ Durable HDPE materials — built to last <br />
-            ✔ Fast nationwide shipping <br />
-            ✔ 24/7 customer support <br />✔ Secure payments
+            ✔ Newly launched quality products <br />
+            ✔ Cash on Delivery available all over Pakistan <br />
+            ✔ Fast & FREE shipping nationwide <br />
+            ✔ Reliable customer support <br />✔ 100% satisfaction guaranteed
           </p>
         </div>
       </section>
