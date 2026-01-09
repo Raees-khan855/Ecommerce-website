@@ -69,7 +69,7 @@ function Home() {
           backgroundImage: `url(${heroImg})`,
           backgroundSize: "cover",
           backgroundPosition: "center",
-          minHeight: "60vh",
+          minHeight: "40vh",
         }}
       >
         <div
