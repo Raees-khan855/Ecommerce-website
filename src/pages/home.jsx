@@ -4,8 +4,16 @@ import { useDispatch } from "react-redux";
 import { addToCart } from "../redux/cartSlice";
 import axios from "axios";
 import BACKEND_URL from "../config";
-
+import useSEO from "../hooks/useSEO";
 function Home() {
+  useSEO({
+    title: "Best Online Store in Pakistan | MyShop",
+    description:
+      "Buy quality products online with fast delivery and Cash on Delivery all over Pakistan.",
+    keywords: "online shopping Pakistan, ecommerce store, COD shopping",
+    url: window.location.href,
+    image: "https://yourdomain.com/seo/home.jpg",
+  });
   const dispatch = useDispatch();
 
   const [featuredProducts, setFeaturedProducts] = useState([]);

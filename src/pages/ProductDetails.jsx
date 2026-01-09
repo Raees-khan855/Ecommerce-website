@@ -5,8 +5,14 @@ import { useDispatch } from "react-redux";
 import { addToCart } from "../redux/cartSlice";
 import ProductCard from "../component/ProductCard";
 import BACKEND_URL from "../config";
-
+import useSEO from "../hooks/useSEO";
 function ProductDetails() {
+  useSEO({
+    title: `${product.title} | MyShop`,
+    description: product.description,
+    image: product.image,
+    url: window.location.href,
+  });
   const { id } = useParams();
   const navigate = useNavigate();
   const dispatch = useDispatch();

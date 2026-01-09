@@ -1,4 +1,5 @@
 import { useState } from "react";
+import useSEO from "../hooks/useSEO";
 import {
   FaUser,
   FaEnvelope,
@@ -8,6 +9,12 @@ import {
 import BACKEND_URL from "../config";
 
 const Contact = () => {
+  useSEO({
+    title: "Contact Us | MyShop",
+    description:
+      "Contact MyShop for support, orders, and inquiries. We are happy to help.",
+    url: window.location.href,
+  });
   const [form, setForm] = useState({
     name: "",
     email: "",

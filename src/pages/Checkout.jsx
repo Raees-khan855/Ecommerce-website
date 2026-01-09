@@ -4,8 +4,14 @@ import { clearCart } from "../redux/cartSlice";
 import { useNavigate, Link } from "react-router-dom";
 import axios from "axios";
 import BACKEND_URL from "../config";
-
+import useSEO from "../hooks/useSEO";
 function Checkout() {
+  useSEO({
+    title: "Secure Checkout | MyShop",
+    description:
+      "Complete your order securely with Cash on Delivery and fast shipping.",
+    url: window.location.href,
+  });
   const items = useSelector((state) => state.cart.items);
   const dispatch = useDispatch();
   const navigate = useNavigate();
