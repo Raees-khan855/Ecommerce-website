@@ -1,8 +1,12 @@
-.whatsapp-btn {
-  transition: transform 0.25s ease, box-shadow 0.25s ease;
+@keyframes whatsapp-vibrate {
+  0% { transform: rotate(0deg); }
+  25% { transform: rotate(-10deg); }
+  50% { transform: rotate(10deg); }
+  75% { transform: rotate(-10deg); }
+  100% { transform: rotate(0deg); }
 }
 
-.whatsapp-btn:hover {
-  transform: scale(1.1);
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+/* Animate ONLY the icon */
+.whatsapp-btn svg {
+  animation: whatsapp-vibrate 1.9s infinite;
 }

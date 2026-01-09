@@ -52,7 +52,7 @@ function Checkout() {
           title: item.title,
           price: item.price,
           quantity: item.quantity,
-          image: item.image, // 🔥 saved correctly
+          image: item.image,
         })),
         totalAmount,
       });
@@ -83,13 +83,18 @@ function Checkout() {
   /* ================= UI ================= */
   return (
     <div className="container my-5">
-      <h3 className="mb-4 text-center fw-bold">Checkout</h3>
+      <h3 className="text-center fw-bold text-uppercase mb-2">
+        Secure Checkout
+      </h3>
+      <p className="text-center text-muted mb-4">
+        Please review your order before placing it
+      </p>
 
       <div className="row g-4">
         {/* CUSTOMER DETAILS */}
         <div className="col-12 col-lg-7">
-          <div className="card shadow-sm p-4">
-            <h5 className="mb-3">Customer Details</h5>
+          <div className="card border-0 shadow-lg p-4">
+            <h5 className="mb-3 fw-semibold">Customer Details</h5>
 
             <form onSubmit={handleSubmit}>
               <div className="mb-3">
@@ -141,7 +146,7 @@ function Checkout() {
 
               <button
                 type="submit"
-                className="btn btn-primary w-100 py-2"
+                className="btn btn-primary w-100 py-3 fw-semibold"
                 disabled={isSubmitting}
               >
                 {isSubmitting ? "Placing Order..." : "Place Order"}
@@ -152,54 +157,59 @@ function Checkout() {
 
         {/* ORDER SUMMARY */}
         <div className="col-12 col-lg-5">
-          <div className="card shadow-sm p-4">
-            <h5 className="mb-3">Order Summary</h5>
+          <div style={{ position: "sticky", top: "100px" }}>
+            <div className="card border-0 shadow-lg p-4">
+              <h5 className="mb-3 fw-semibold">Order Summary</h5>
 
-            <ul className="list-group list-group-flush mb-3">
-              {items.map((item) => (
-                <li
-                  key={item._id}
-                  className="list-group-item d-flex justify-content-between align-items-center"
-                >
-                  <div className="d-flex align-items-center gap-3">
-                    <img
-                      src={
-                        item.image?.startsWith("http")
-                          ? item.image
-                          : `${BACKEND_URL}/${item.image}`
-                      }
-                      alt={item.title}
-                      onError={(e) =>
-                        (e.target.src =
-                          "https://via.placeholder.com/60?text=No+Image")
-                      }
-                      style={{
-                        width: "60px",
-                        height: "60px",
-                        objectFit: "contain",
-                        borderRadius: "6px",
-                        backgroundColor: "#f8f9fa",
-                      }}
-                    />
-                    <div>
-                      <strong>{item.title}</strong>
-                      <br />
-                      <small>
-                        Qty: {item.quantity} × Rs.{item.price}
-                      </small>
+              <ul className="list-group list-group-flush mb-3">
+                {items.map((item) => (
+                  <li
+                    key={item._id}
+                    className="list-group-item d-flex justify-content-between align-items-center"
+                  >
+                    <div className="d-flex align-items-center gap-3">
+                      <img
+                        src={
+                          item.image?.startsWith("http")
+                            ? item.image
+                            : `${BACKEND_URL}/${item.image}`
+                        }
+                        alt={item.title}
+                        onError={(e) =>
+                          (e.target.src =
+                            "https://via.placeholder.com/60?text=No+Image")
+                        }
+                        style={{
+                          width: "60px",
+                          height: "60px",
+                          objectFit: "contain",
+                          borderRadius: "6px",
+                          backgroundColor: "#f8f9fa",
+                        }}
+                      />
+                      <div>
+                        <strong className="d-block">{item.title}</strong>
+                        <small className="text-muted">
+                          Quantity: {item.quantity}
+                        </small>
+                      </div>
                     </div>
-                  </div>
-                  <span className="fw-bold">
-                    Rs.{(item.price * item.quantity).toFixed(2)}
-                  </span>
-                </li>
-              ))}
-            </ul>
+                    <span className="fw-bold">
+                      Rs.{(item.price * item.quantity).toFixed(2)}
+                    </span>
+                  </li>
+                ))}
+              </ul>
 
-            <h5 className="text-end">
-              Total:{" "}
-              <span className="text-primary">Rs.{totalAmount.toFixed(2)}</span>
-            </h5>
+              <hr />
+
+              <div className="d-flex justify-content-between align-items-center">
+                <span className="fw-semibold fs-5">Total</span>
+                <span className="fw-bold fs-4 text-primary">
+                  Rs.{totalAmount.toFixed(2)}
+                </span>
+              </div>
+            </div>
           </div>
         </div>
       </div>

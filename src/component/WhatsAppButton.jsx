@@ -25,9 +25,8 @@ const WhatsAppButton = () => {
         width: "60px",
         height: "60px",
         zIndex: 2000,
-        marginTop: "210px", // 🔽 moves it a little down
+        marginTop: "210px",
       }}
-      aria-label="Chat on WhatsApp"
     >
       <FaWhatsapp size={30} />
     </a>
