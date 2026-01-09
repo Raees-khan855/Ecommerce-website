@@ -1,5 +1,5 @@
 import { useSelector, useDispatch } from "react-redux";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { clearCart } from "../redux/cartSlice";
 import { useNavigate, Link } from "react-router-dom";
 import axios from "axios";
@@ -19,6 +19,11 @@ function Checkout() {
     address: "",
     paymentMethod: "COD",
   });
+
+  /* 🔼 SCROLL TO TOP WHEN PAGE LOADS */
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }, []);
 
   const totalAmount = items.reduce(
     (sum, item) => sum + item.price * item.quantity,
@@ -57,9 +62,8 @@ function Checkout() {
         totalAmount,
       });
 
-      alert("✅ Order placed successfully!");
       dispatch(clearCart());
-      navigate("/");
+      navigate("/order-success");
     } catch (err) {
       console.error(err);
       alert("❌ Failed to place order");
@@ -142,6 +146,47 @@ function Checkout() {
                   className="form-control"
                   required
                 />
+              </div>
+
+              {/* 💳 PAYMENT METHOD */}
+              <div className="mb-4">
+                <h6 className="fw-semibold mb-3">Payment Method</h6>
+
+                <label
+                  className={`w-100 border rounded-3 p-4 d-flex align-items-start gap-3 cursor-pointer ${
+                    formData.paymentMethod === "COD"
+                      ? "border-primary bg-light"
+                      : "border-secondary-subtle"
+                  }`}
+                  style={{ cursor: "pointer" }}
+                >
+                  <input
+                    type="radio"
+                    name="paymentMethod"
+                    value="COD"
+                    checked={formData.paymentMethod === "COD"}
+                    onChange={handleChange}
+                    className="form-check-input mt-1"
+                  />
+
+                  <div className="flex-grow-1">
+                    <div className="d-flex align-items-center gap-2">
+                      <span className="fw-bold fs-5">Cash on Delivery</span>
+                      <span className="badge bg-success">Available</span>
+                    </div>
+
+                    <p
+                      className="text-muted mb-0 mt-1"
+                      style={{ fontSize: "14px" }}
+                    >
+                      Pay cash at your doorstep after receiving the product.
+                    </p>
+
+                    <small className="text-success fw-semibold d-block mt-2">
+                      ✔ Free Shipping • ✔ No Advance Payment
+                    </small>
+                  </div>
+                </label>
               </div>
 
               <button

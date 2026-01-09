@@ -10,7 +10,7 @@ import ProductList from "./pages/ProductList";
 import ProductDetails from "./pages/ProductDetails";
 import Cart from "./pages/Cart";
 import Checkout from "./pages/Checkout";
-
+import OrderSuccess from "./pages/OrderSuccess";
 import AdminPanel from "./component/AddProduct";
 import ProtectedRoute from "./component/ProtectedRoute";
 import Login from "./pages/AdminLogin";
@@ -53,6 +53,7 @@ function App() {
           {/* Cart */}
           <Route path="/cart" element={<Cart />} />
           <Route path="/checkout" element={<Checkout />} />
+          <Route path="/order-success" element={<OrderSuccess />} />
 
           {/* Admin */}
           <Route path="/admin-login" element={<Login />} />

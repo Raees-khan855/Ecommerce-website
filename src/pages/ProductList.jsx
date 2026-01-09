@@ -72,9 +72,6 @@ function ProductList() {
       {/* HEADER */}
       <div className="text-center mb-4 px-3">
         <h2 className="fw-bold">Our Products</h2>
-        <p className="text-muted mb-0">
-          Browse durable products designed for real industrial use.
-        </p>
       </div>
 
       {/* GRID */}
