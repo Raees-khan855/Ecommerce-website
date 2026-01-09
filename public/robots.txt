@@ -1,0 +1,11 @@
+User-agent: *
+Allow: /
+
+# Block admin & private pages (optional but recommended)
+Disallow: /#/admin
+Disallow: /#/admin-login
+Disallow: /#/checkout
+Disallow: /#/cart
+
+# Sitemap location
+Sitemap: https://raeesproduct.shop/sitemap.xml
