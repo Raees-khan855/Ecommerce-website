@@ -7,7 +7,7 @@ const WhatsAppButton = () => {
       target="_blank"
       rel="noopener noreferrer"
       className="
-        position-absolute
+        position-fixed
         end-0
         top-50
         translate-middle-y
