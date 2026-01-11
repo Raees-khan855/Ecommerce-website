@@ -6,6 +6,7 @@ import { addToCart } from "../redux/cartSlice";
 import ProductCard from "../component/ProductCard";
 import BACKEND_URL from "../config";
 import useSEO from "../hooks/useSEO";
+import { FaStar, FaStarHalfAlt, FaRegStar } from "react-icons/fa";
 
 function ProductDetails() {
   const { id } = useParams();
@@ -16,10 +17,15 @@ function ProductDetails() {
   const [related, setRelated] = useState([]);
   const [loading, setLoading] = useState(true);
   const [activeImage, setActiveImage] = useState(null);
+  const [quantity, setQuantity] = useState(1);
+
+  // ⭐ Fake rating (stable)
+  const rating = 4.6;
+  const reviewCount = 128;
 
   /* ================= SEO (ALWAYS CALLED) ================= */
   useSEO({
-    title: product ? `${product.title} | MyShop` : "Product Details",
+    title: product ? `${product.title} | RaeesProduct` : "Product Details",
     description: product?.description || "",
     image: product?.image || "",
     url: window.location.href,
@@ -41,7 +47,6 @@ function ProductDetails() {
         if (!mounted) return;
 
         const prod = res.data.product || res.data;
-
         setProduct(prod);
         setRelated(Array.isArray(res.data.related) ? res.data.related : []);
 
@@ -58,15 +63,12 @@ function ProductDetails() {
     };
 
     fetchProduct();
-    return () => {
-      mounted = false;
-    };
+    return () => (mounted = false);
   }, [id]);
 
   /* ================= TIKTOK VIEW CONTENT ================= */
   useEffect(() => {
     if (!product) return;
-
     if (window.ttq) {
       window.ttq.track("ViewContent", {
         content_id: product._id,
@@ -74,7 +76,6 @@ function ProductDetails() {
         content_type: "product",
         value: Number(product.price || 0),
         currency: "PKR",
-        quantity: 1,
       });
     }
   }, [product]);
@@ -110,6 +111,11 @@ function ProductDetails() {
   const mainImage = getImageUrl(activeImage);
   const price = Number(product.price || 0).toFixed(2);
 
+  /* ================= QUANTITY ================= */
+  const increaseQty = () => setQuantity((q) => q + 1);
+  const decreaseQty = () => setQuantity((q) => (q > 1 ? q - 1 : 1));
+
+  /* ================= ADD TO CART ================= */
   const addItem = () => {
     dispatch(
       addToCart({
@@ -117,17 +123,17 @@ function ProductDetails() {
         title: product.title,
         price: Number(product.price || 0),
         image: mainImage,
+        quantity,
       })
     );
 
-    /* TikTok Add To Cart */
     if (window.ttq) {
       window.ttq.track("AddToCart", {
         content_id: product._id,
         content_name: product.title,
-        value: Number(product.price || 0),
+        value: Number(product.price || 0) * quantity,
         currency: "PKR",
-        quantity: 1,
+        quantity,
       });
     }
   };
@@ -175,11 +181,42 @@ function ProductDetails() {
         {/* DETAILS */}
         <div className="col-12 col-md-6">
           <h2 className="fw-bold">{product.title}</h2>
+
+          {/* ⭐ RATING */}
+          <div className="d-flex align-items-center gap-1 mb-2">
+            {[1, 2, 3, 4, 5].map((i) => {
+              if (rating >= i)
+                return <FaStar key={i} className="text-warning" />;
+              if (rating >= i - 0.5)
+                return <FaStarHalfAlt key={i} className="text-warning" />;
+              return <FaRegStar key={i} className="text-warning" />;
+            })}
+            <span className="small text-muted ms-2">
+              {rating} ({reviewCount} reviews)
+            </span>
+          </div>
+
           <p className="text-muted">
             <strong>Category:</strong> {product.category}
           </p>
-          <h4 className="text-primary fw-bold">Rs. {price}</h4>
+
+          <h4 className="text-primary fw-bold mb-3">Rs. {price}</h4>
+
           <p>{product.description || "No description available."}</p>
+
+          {/* QUANTITY */}
+          <div className="d-flex align-items-center gap-3 mb-3">
+            <strong>Quantity:</strong>
+            <div className="d-flex align-items-center border rounded">
+              <button className="btn btn-light px-3" onClick={decreaseQty}>
+                −
+              </button>
+              <span className="px-3 fw-bold">{quantity}</span>
+              <button className="btn btn-light px-3" onClick={increaseQty}>
+                +
+              </button>
+            </div>
+          </div>
 
           <div className="d-flex gap-3 flex-wrap">
             <button className="btn btn-primary" onClick={addItem}>
