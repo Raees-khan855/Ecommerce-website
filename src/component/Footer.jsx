@@ -1,6 +1,8 @@
 import { Link } from "react-router-dom";
 
 function Footer() {
+  const scrollTop = () => window.scrollTo(0, 0);
+
   return (
     <footer className="bg-dark text-light mt-5">
       <div className="container py-4">
@@ -18,26 +20,39 @@ function Footer() {
             <h6 className="fw-semibold mb-3">Quick Links</h6>
             <ul className="list-unstyled small mb-0">
               <li className="mb-2">
-                <Link to="/" className="text-light text-decoration-none">
+                <Link
+                  to="/"
+                  onClick={scrollTop}
+                  className="text-light text-decoration-none"
+                >
                   Home
                 </Link>
               </li>
+
               <li className="mb-2">
                 <Link
                   to="/products"
+                  onClick={scrollTop}
                   className="text-light text-decoration-none"
                 >
                   Products
                 </Link>
               </li>
+
               <li className="mb-2">
-                <Link to="/cart" className="text-light text-decoration-none">
+                <Link
+                  to="/cart"
+                  onClick={scrollTop}
+                  className="text-light text-decoration-none"
+                >
                   Cart
                 </Link>
               </li>
+
               <li>
                 <Link
                   to="/checkout"
+                  onClick={scrollTop}
                   className="text-light text-decoration-none"
                 >
                   Checkout
@@ -54,16 +69,16 @@ function Footer() {
 
             <p className="small mb-2">
               <a
-                href="tel:+919876543210"
+                href="tel:+923254555681"
                 className="text-light text-decoration-none"
               >
-                📞 +923254555681
+                📞 +92 325 4555681
               </a>
             </p>
 
             <p className="small mb-0">
               <a
-                href="mailto:support@raeesproduct.com"
+                href="mailto:support@sigmaraees183@gmail.com"
                 className="text-light text-decoration-none"
               >
                 ✉️ support@sigmaraees183@gmail.com
