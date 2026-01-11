@@ -6,13 +6,8 @@ import { addToCart } from "../redux/cartSlice";
 import ProductCard from "../component/ProductCard";
 import BACKEND_URL from "../config";
 import useSEO from "../hooks/useSEO";
+
 function ProductDetails() {
-  useSEO({
-    title: `${product.title} | MyShop`,
-    description: product.description,
-    image: product.image,
-    url: window.location.href,
-  });
   const { id } = useParams();
   const navigate = useNavigate();
   const dispatch = useDispatch();
@@ -22,7 +17,15 @@ function ProductDetails() {
   const [loading, setLoading] = useState(true);
   const [activeImage, setActiveImage] = useState(null);
 
-  /* ================= FORCE SCROLL TO TOP ================= */
+  /* ================= SEO (MUST BE HERE, ALWAYS) ================= */
+  useSEO({
+    title: product ? `${product.title} | MyShop` : "Product Details",
+    description: product?.description || "",
+    image: product?.image || "",
+    url: window.location.href,
+  });
+
+  /* ================= FORCE SCROLL TOP ================= */
   useLayoutEffect(() => {
     window.scrollTo(0, 0);
   }, [id]);
@@ -35,15 +38,12 @@ function ProductDetails() {
     const fetchProduct = async () => {
       try {
         const res = await axios.get(`${BACKEND_URL}/products/${id}`);
-
         if (!mounted) return;
 
         const prod = res.data.product || res.data;
-
         setProduct(prod);
         setRelated(Array.isArray(res.data.related) ? res.data.related : []);
 
-        // ✅ pick first image automatically
         if (Array.isArray(prod.images) && prod.images.length > 0) {
           setActiveImage(prod.images[0]);
         } else if (prod.image) {
@@ -57,7 +57,9 @@ function ProductDetails() {
     };
 
     fetchProduct();
-    return () => (mounted = false);
+    return () => {
+      mounted = false;
+    };
   }, [id]);
 
   /* ================= LOADING ================= */
@@ -104,9 +106,8 @@ function ProductDetails() {
   /* ================= UI ================= */
   return (
     <div className="container py-4">
-      {/* PRODUCT */}
       <div className="row g-4">
-        {/* IMAGE GALLERY */}
+        {/* IMAGE */}
         <div className="col-12 col-md-6">
           <div className="bg-light p-3 rounded shadow-sm text-center">
             <img
@@ -116,31 +117,27 @@ function ProductDetails() {
               style={{ maxHeight: "420px", objectFit: "contain" }}
             />
 
-            {/* THUMBNAILS */}
             {images.length > 1 && (
               <div className="d-flex justify-content-center gap-2 flex-wrap">
-                {images.slice(0, 5).map((img, i) => {
-                  const thumb = getImageUrl(img);
-                  return (
-                    <img
-                      key={i}
-                      src={thumb}
-                      alt="thumb"
-                      onClick={() => setActiveImage(img)}
-                      style={{
-                        width: "64px",
-                        height: "64px",
-                        objectFit: "cover",
-                        cursor: "pointer",
-                        border:
-                          img === activeImage
-                            ? "2px solid #0d6efd"
-                            : "1px solid #ddd",
-                        borderRadius: "6px",
-                      }}
-                    />
-                  );
-                })}
+                {images.map((img, i) => (
+                  <img
+                    key={i}
+                    src={getImageUrl(img)}
+                    alt="thumb"
+                    onClick={() => setActiveImage(img)}
+                    style={{
+                      width: 64,
+                      height: 64,
+                      cursor: "pointer",
+                      objectFit: "cover",
+                      border:
+                        img === activeImage
+                          ? "2px solid #0d6efd"
+                          : "1px solid #ddd",
+                      borderRadius: 6,
+                    }}
+                  />
+                ))}
               </div>
             )}
           </div>
@@ -149,24 +146,19 @@ function ProductDetails() {
         {/* DETAILS */}
         <div className="col-12 col-md-6">
           <h2 className="fw-bold">{product.title}</h2>
-
-          <p className="text-muted mb-1">
+          <p className="text-muted">
             <strong>Category:</strong> {product.category}
           </p>
+          <h4 className="text-primary fw-bold">Rs. {price}</h4>
+          <p>{product.description || "No description available."}</p>
 
-          <h4 className="text-primary fw-bold mb-3">Rs.{price}</h4>
-
-          <p className="mb-4">
-            {product.description || "No description available."}
-          </p>
-
-          <div className="d-flex flex-wrap gap-3">
-            <button className="btn btn-primary px-4" onClick={addItem}>
+          <div className="d-flex gap-3 flex-wrap">
+            <button className="btn btn-primary" onClick={addItem}>
               🛒 Add to Cart
             </button>
 
             <button
-              className="btn btn-success px-4"
+              className="btn btn-success"
               onClick={() => {
                 addItem();
                 navigate("/checkout");
@@ -178,7 +170,7 @@ function ProductDetails() {
         </div>
       </div>
 
-      {/* RELATED PRODUCTS */}
+      {/* RELATED */}
       {related.length > 0 && (
         <div className="mt-5">
           <h4 className="fw-bold mb-3">Related Products</h4>
