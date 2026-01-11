@@ -17,7 +17,7 @@ function ProductDetails() {
   const [loading, setLoading] = useState(true);
   const [activeImage, setActiveImage] = useState(null);
 
-  /* ================= SEO (MUST BE HERE, ALWAYS) ================= */
+  /* ================= SEO (ALWAYS CALLED) ================= */
   useSEO({
     title: product ? `${product.title} | MyShop` : "Product Details",
     description: product?.description || "",
@@ -25,7 +25,7 @@ function ProductDetails() {
     url: window.location.href,
   });
 
-  /* ================= FORCE SCROLL TOP ================= */
+  /* ================= SCROLL TO TOP ================= */
   useLayoutEffect(() => {
     window.scrollTo(0, 0);
   }, [id]);
@@ -41,6 +41,7 @@ function ProductDetails() {
         if (!mounted) return;
 
         const prod = res.data.product || res.data;
+
         setProduct(prod);
         setRelated(Array.isArray(res.data.related) ? res.data.related : []);
 
@@ -61,6 +62,22 @@ function ProductDetails() {
       mounted = false;
     };
   }, [id]);
+
+  /* ================= TIKTOK VIEW CONTENT ================= */
+  useEffect(() => {
+    if (!product) return;
+
+    if (window.ttq) {
+      window.ttq.track("ViewContent", {
+        content_id: product._id,
+        content_name: product.title,
+        content_type: "product",
+        value: Number(product.price || 0),
+        currency: "PKR",
+        quantity: 1,
+      });
+    }
+  }, [product]);
 
   /* ================= LOADING ================= */
   if (loading) {
@@ -93,7 +110,7 @@ function ProductDetails() {
   const mainImage = getImageUrl(activeImage);
   const price = Number(product.price || 0).toFixed(2);
 
-  const addItem = () =>
+  const addItem = () => {
     dispatch(
       addToCart({
         id: product._id,
@@ -102,6 +119,18 @@ function ProductDetails() {
         image: mainImage,
       })
     );
+
+    /* TikTok Add To Cart */
+    if (window.ttq) {
+      window.ttq.track("AddToCart", {
+        content_id: product._id,
+        content_name: product.title,
+        value: Number(product.price || 0),
+        currency: "PKR",
+        quantity: 1,
+      });
+    }
+  };
 
   /* ================= UI ================= */
   return (
