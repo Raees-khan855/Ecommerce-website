@@ -1,7 +1,13 @@
 import { Link } from "react-router-dom";
 import { FaCheckCircle, FaWhatsapp } from "react-icons/fa";
+import { useEffect } from "react";
 
 const OrderSuccess = () => {
+  // ✅ FORCE SCROLL TO TOP
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
+
   return (
     <div className="container my-5">
       <div
@@ -13,7 +19,8 @@ const OrderSuccess = () => {
         <h2 className="fw-bold mb-2">Order Placed Successfully! 🎉</h2>
 
         <p className="text-muted mb-4">
-          Thank you for shopping with <strong>RaeesProduct</strong>.<br />
+          Thank you for shopping with <strong>RaeesProduct</strong>.
+          <br />
           Your order has been received and will be delivered soon.
         </p>
 
