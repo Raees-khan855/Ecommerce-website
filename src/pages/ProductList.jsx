@@ -5,45 +5,53 @@ import BACKEND_URL from "../config";
 
 function ProductList() {
   const [products, setProducts] = useState([]);
+  const [searchInput, setSearchInput] = useState(""); // typing
+  const [searchQuery, setSearchQuery] = useState(""); // actual search
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
+  /* ================= FETCH PRODUCTS ================= */
   useEffect(() => {
-    let isMounted = true;
-
-    const loadProducts = async () => {
+    const fetchProducts = async () => {
       try {
-        const res = await axios.get(`${BACKEND_URL}/products`);
+        setLoading(true);
 
-        if (!isMounted) return;
+        const res = await axios.get(`${BACKEND_URL}/products`, {
+          params: {
+            search: searchQuery || undefined,
+          },
+        });
 
-        const productData = Array.isArray(res.data)
-          ? res.data
-          : res.data.products || [];
-
-        setProducts(productData);
+        setProducts(res.data);
+        setError(null);
       } catch (err) {
         console.error("Product fetch error:", err);
-        if (isMounted) {
-          setError("Unable to load products. Please try again later.");
-        }
+        setError("Unable to load products.");
       } finally {
-        if (isMounted) setLoading(false);
+        setLoading(false);
       }
     };
 
-    loadProducts();
+    fetchProducts();
+  }, [searchQuery]); // 🔥 ONLY when button clicked
 
-    return () => {
-      isMounted = false;
-    };
-  }, []);
+  /* ================= SEARCH CLICK ================= */
+  const handleSearch = () => {
+    setSearchQuery(searchInput.trim());
+  };
+
+  /* ================= ENTER KEY SUPPORT ================= */
+  const handleKeyDown = (e) => {
+    if (e.key === "Enter") {
+      handleSearch();
+    }
+  };
 
   /* ================= LOADING ================= */
   if (loading) {
     return (
-      <div className="d-flex justify-content-center align-items-center min-vh-100 bg-light">
-        <div className="spinner-border text-primary" role="status" />
+      <div className="d-flex justify-content-center align-items-center min-vh-100">
+        <div className="spinner-border text-primary" />
       </div>
     );
   }
@@ -52,16 +60,7 @@ function ProductList() {
   if (error) {
     return (
       <div className="container py-5 text-center">
-        <h5 className="text-danger fw-semibold">{error}</h5>
-      </div>
-    );
-  }
-
-  /* ================= EMPTY ================= */
-  if (products.length === 0) {
-    return (
-      <div className="container py-5 text-center">
-        <h5 className="text-muted">No products available.</h5>
+        <h5 className="text-danger">{error}</h5>
       </div>
     );
   }
@@ -72,7 +71,30 @@ function ProductList() {
       {/* HEADER */}
       <div className="text-center mb-4 px-3">
         <h2 className="fw-bold">Our Products</h2>
+
+        {/* 🔍 SEARCH BAR */}
+        <div className="d-flex justify-content-center mt-3">
+          <div className="input-group w-100 w-md-50">
+            <input
+              type="text"
+              className="form-control"
+              placeholder="Search products..."
+              value={searchInput}
+              onChange={(e) => setSearchInput(e.target.value)}
+              onKeyDown={handleKeyDown}
+            />
+
+            <button className="btn btn-primary" onClick={handleSearch}>
+              🔍
+            </button>
+          </div>
+        </div>
       </div>
+
+      {/* EMPTY */}
+      {products.length === 0 && (
+        <div className="text-center text-muted py-5">No products found.</div>
+      )}
 
       {/* GRID */}
       <div className="row g-3">
@@ -80,11 +102,11 @@ function ProductList() {
           <div
             key={p._id}
             className="
-              col-6        /* Mobile */
-              col-sm-6     /* Small phones */
-              col-md-4     /* Tablets */
-              col-lg-3     /* Laptops */
-              col-xl-2     /* Large screens */
+              col-6
+              col-sm-6
+              col-md-4
+              col-lg-3
+              col-xl-2
               d-flex
               justify-content-center
             "
