@@ -6,7 +6,14 @@ import { addToCart } from "../redux/cartSlice";
 import ProductCard from "../component/ProductCard";
 import BACKEND_URL from "../config";
 import useSEO from "../hooks/useSEO";
-import { FaStar, FaStarHalfAlt, FaRegStar } from "react-icons/fa";
+import {
+  FaStar,
+  FaStarHalfAlt,
+  FaRegStar,
+  FaShareAlt,
+  FaWhatsapp,
+  FaLink,
+} from "react-icons/fa";
 
 function ProductDetails() {
   const { id } = useParams();
@@ -18,12 +25,12 @@ function ProductDetails() {
   const [loading, setLoading] = useState(true);
   const [activeImage, setActiveImage] = useState(null);
   const [quantity, setQuantity] = useState(1);
+  const [isSharing, setIsSharing] = useState(false);
 
-  // ⭐ Fake rating (stable)
   const rating = 4.6;
   const reviewCount = 128;
 
-  /* ================= SEO (ALWAYS CALLED) ================= */
+  /* ================= SEO ================= */
   useSEO({
     title: product ? `${product.title} | RaeesProduct` : "Product Details",
     description: product?.description || "",
@@ -31,12 +38,10 @@ function ProductDetails() {
     url: window.location.href,
   });
 
-  /* ================= SCROLL TO TOP ================= */
   useLayoutEffect(() => {
     window.scrollTo(0, 0);
   }, [id]);
 
-  /* ================= FETCH PRODUCT ================= */
   useEffect(() => {
     let mounted = true;
     setLoading(true);
@@ -66,21 +71,77 @@ function ProductDetails() {
     return () => (mounted = false);
   }, [id]);
 
-  /* ================= TIKTOK VIEW CONTENT ================= */
-  useEffect(() => {
-    if (!product) return;
-    if (window.ttq) {
-      window.ttq.track("ViewContent", {
-        content_id: product._id,
-        content_name: product.title,
-        content_type: "product",
-        value: Number(product.price || 0),
-        currency: "PKR",
-      });
-    }
-  }, [product]);
+  const getImageUrl = (img) =>
+    img
+      ? img.startsWith("http")
+        ? img
+        : `${BACKEND_URL}/${img.replace(/^\/+/, "")}`
+      : "https://via.placeholder.com/400?text=No+Image";
 
-  /* ================= LOADING ================= */
+  const images =
+    Array.isArray(product?.images) && product.images.length > 0
+      ? product.images
+      : product?.image
+      ? [product.image]
+      : [];
+
+  const mainImage = getImageUrl(activeImage);
+  const price = Number(product?.price || 0).toFixed(2);
+
+  const increaseQty = () => setQuantity((q) => q + 1);
+  const decreaseQty = () => setQuantity((q) => (q > 1 ? q - 1 : 1));
+
+  const addItem = () => {
+    dispatch(
+      addToCart({
+        id: product._id,
+        title: product.title,
+        price: Number(product.price || 0),
+        image: mainImage,
+        quantity,
+      })
+    );
+  };
+
+  /* ================= SHARE HANDLER ================= */
+  const handleShare = async () => {
+    if (isSharing) return;
+    setIsSharing(true);
+
+    const url = window.location.href;
+    try {
+      if (navigator.share) {
+        await navigator.share({
+          title: product.title,
+          text: `Check out this product: ${product.title}`,
+          url,
+        });
+      } else {
+        await navigator.clipboard.writeText(url);
+        alert("Product link copied!");
+      }
+    } catch (err) {
+      if (err.name !== "AbortError") console.error("Share failed:", err);
+    } finally {
+      setIsSharing(false);
+    }
+  };
+
+  const handleWhatsappShare = () => {
+    const url = encodeURIComponent(window.location.href);
+    const text = encodeURIComponent(`Check out this product: ${product.title}`);
+    window.open(`https://wa.me/?text=${text}%20${url}`, "_blank");
+  };
+
+  const handleCopyLink = async () => {
+    try {
+      await navigator.clipboard.writeText(window.location.href);
+      alert("Product link copied!");
+    } catch (err) {
+      console.error("Copy failed:", err);
+    }
+  };
+
   if (loading) {
     return (
       <div className="d-flex justify-content-center align-items-center vh-100">
@@ -93,52 +154,6 @@ function ProductDetails() {
     return <h4 className="text-center mt-5 text-danger">Product not found</h4>;
   }
 
-  /* ================= HELPERS ================= */
-  const getImageUrl = (img) =>
-    img
-      ? img.startsWith("http")
-        ? img
-        : `${BACKEND_URL}/${img.replace(/^\/+/, "")}`
-      : "https://via.placeholder.com/400?text=No+Image";
-
-  const images =
-    Array.isArray(product.images) && product.images.length > 0
-      ? product.images
-      : product.image
-      ? [product.image]
-      : [];
-
-  const mainImage = getImageUrl(activeImage);
-  const price = Number(product.price || 0).toFixed(2);
-
-  /* ================= QUANTITY ================= */
-  const increaseQty = () => setQuantity((q) => q + 1);
-  const decreaseQty = () => setQuantity((q) => (q > 1 ? q - 1 : 1));
-
-  /* ================= ADD TO CART ================= */
-  const addItem = () => {
-    dispatch(
-      addToCart({
-        id: product._id,
-        title: product.title,
-        price: Number(product.price || 0),
-        image: mainImage,
-        quantity,
-      })
-    );
-
-    if (window.ttq) {
-      window.ttq.track("AddToCart", {
-        content_id: product._id,
-        content_name: product.title,
-        value: Number(product.price || 0) * quantity,
-        currency: "PKR",
-        quantity,
-      });
-    }
-  };
-
-  /* ================= UI ================= */
   return (
     <div className="container py-4">
       <div className="row g-4">
@@ -151,7 +166,6 @@ function ProductDetails() {
               className="img-fluid mb-3"
               style={{ maxHeight: "420px", objectFit: "contain" }}
             />
-
             {images.length > 1 && (
               <div className="d-flex justify-content-center gap-2 flex-wrap">
                 {images.map((img, i) => (
@@ -182,8 +196,8 @@ function ProductDetails() {
         <div className="col-12 col-md-6">
           <h2 className="fw-bold">{product.title}</h2>
 
-          {/* ⭐ RATING */}
-          <div className="d-flex align-items-center gap-1 mb-2">
+          {/* ⭐ Rating */}
+          <div className="d-flex align-items-center gap-1 mb-2 mt-2">
             {[1, 2, 3, 4, 5].map((i) => {
               if (rating >= i)
                 return <FaStar key={i} className="text-warning" />;
@@ -218,7 +232,8 @@ function ProductDetails() {
             </div>
           </div>
 
-          <div className="d-flex gap-3 flex-wrap">
+          {/* ACTION BUTTONS */}
+          <div className="d-flex gap-3 flex-wrap mb-2">
             <button className="btn btn-primary" onClick={addItem}>
               🛒 Add to Cart
             </button>
@@ -233,10 +248,38 @@ function ProductDetails() {
               ⚡ Buy Now
             </button>
           </div>
+
+          {/* SMALL SHARE ICONS */}
+          <div className="d-flex gap-2 mt-3">
+            <button
+              className="btn btn-outline-secondary btn-sm"
+              onClick={handleShare}
+              disabled={isSharing}
+              title="Share"
+            >
+              <FaShareAlt />
+            </button>
+
+            <button
+              className="btn btn-outline-success btn-sm"
+              onClick={handleWhatsappShare}
+              title="Share on WhatsApp"
+            >
+              <FaWhatsapp />
+            </button>
+
+            <button
+              className="btn btn-outline-primary btn-sm"
+              onClick={handleCopyLink}
+              title="Copy Link"
+            >
+              <FaLink />
+            </button>
+          </div>
         </div>
       </div>
 
-      {/* RELATED */}
+      {/* RELATED PRODUCTS */}
       {related.length > 0 && (
         <div className="mt-5">
           <h4 className="fw-bold mb-3">Related Products</h4>
