@@ -1,7 +1,7 @@
 import { HashRouter, Routes, Route, useLocation } from "react-router-dom";
 import { useEffect } from "react";
 import { useDispatch } from "react-redux";
-
+import ScrollToTop from "./component/ScrollToTop";
 import Navbar from "./component/Navbar";
 import Footer from "./component/Footer";
 
@@ -24,7 +24,6 @@ import { loginSuccess } from "./redux/userSlice";
 function AppContent() {
   const location = useLocation();
 
-  // ❌ Pages where WhatsApp should NOT show
   const hideWhatsappRoutes = [
     "/checkout",
     "/admin",
@@ -43,23 +42,15 @@ function AppContent() {
 
       <main className="min-vh-100">
         <Routes>
-          {/* HOME */}
           <Route path="/" element={<Home />} />
-
-          {/* PRODUCTS */}
           <Route path="/products" element={<ProductList />} />
           <Route path="/products/:id" element={<ProductDetails />} />
-
-          {/* CONTACT */}
           <Route path="/contact" element={<Contact />} />
-
-          {/* CART & CHECKOUT */}
           <Route path="/cart" element={<Cart />} />
           <Route path="/checkout" element={<Checkout />} />
           <Route path="/order-success" element={<OrderSuccess />} />
-
-          {/* ADMIN */}
           <Route path="/admin-login" element={<Login />} />
+
           <Route
             path="/admin"
             element={
@@ -71,7 +62,6 @@ function AppContent() {
         </Routes>
       </main>
 
-      {/* ✅ WhatsApp shows only on allowed pages */}
       {!shouldHideWhatsapp && <Whatsapp />}
 
       <Footer />
@@ -83,7 +73,6 @@ function AppContent() {
 function App() {
   const dispatch = useDispatch();
 
-  // ✅ Auto admin login
   useEffect(() => {
     const token = localStorage.getItem("adminToken");
     if (!token) return;
@@ -100,6 +89,9 @@ function App() {
 
   return (
     <HashRouter>
+      {/* ✅ THIS IS THE CORRECT PLACE */}
+      <ScrollToTop />
+
       <AppContent />
     </HashRouter>
   );
