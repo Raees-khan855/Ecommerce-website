@@ -25,7 +25,6 @@ function ProductDetails() {
   const [loading, setLoading] = useState(true);
   const [activeImage, setActiveImage] = useState(null);
   const [quantity, setQuantity] = useState(1);
-  const [isSharing, setIsSharing] = useState(false);
 
   const rating = 4.6;
   const reviewCount = 128;
@@ -38,10 +37,12 @@ function ProductDetails() {
     url: window.location.href,
   });
 
+  /* ================= SCROLL TO TOP ================= */
   useLayoutEffect(() => {
     window.scrollTo(0, 0);
   }, [id]);
 
+  /* ================= FETCH PRODUCT ================= */
   useEffect(() => {
     let mounted = true;
     setLoading(true);
@@ -82,8 +83,8 @@ function ProductDetails() {
     Array.isArray(product?.images) && product.images.length > 0
       ? product.images
       : product?.image
-      ? [product.image]
-      : [];
+        ? [product.image]
+        : [];
 
   const mainImage = getImageUrl(activeImage);
   const price = Number(product?.price || 0).toFixed(2);
@@ -91,6 +92,7 @@ function ProductDetails() {
   const increaseQty = () => setQuantity((q) => q + 1);
   const decreaseQty = () => setQuantity((q) => (q > 1 ? q - 1 : 1));
 
+  /* ================= ADD TO CART (DIRECT TO CART) ================= */
   const addItem = () => {
     dispatch(
       addToCart({
@@ -99,16 +101,28 @@ function ProductDetails() {
         price: Number(product.price || 0),
         image: mainImage,
         quantity,
-      })
+      }),
     );
+
+    // TikTok tracking (optional)
+    if (window.ttq) {
+      window.ttq.track("AddToCart", {
+        content_id: product._id,
+        content_name: product.title,
+        value: Number(product.price || 0) * quantity,
+        currency: "PKR",
+        quantity,
+      });
+    }
+
+    // Immediately go to cart
+    navigate("/cart");
   };
 
-  /* ================= SHARE HANDLER ================= */
+  /* ================= SHARE HANDLERS ================= */
   const handleShare = async () => {
-    if (isSharing) return;
-    setIsSharing(true);
-
     const url = window.location.href;
+
     try {
       if (navigator.share) {
         await navigator.share({
@@ -118,12 +132,10 @@ function ProductDetails() {
         });
       } else {
         await navigator.clipboard.writeText(url);
-        alert("Product link copied!");
+        alert("Product link copied to clipboard!");
       }
     } catch (err) {
-      if (err.name !== "AbortError") console.error("Share failed:", err);
-    } finally {
-      setIsSharing(false);
+      console.error("Share failed:", err);
     }
   };
 
@@ -136,12 +148,13 @@ function ProductDetails() {
   const handleCopyLink = async () => {
     try {
       await navigator.clipboard.writeText(window.location.href);
-      alert("Product link copied!");
+      alert("Product link copied to clipboard!");
     } catch (err) {
       console.error("Copy failed:", err);
     }
   };
 
+  /* ================= LOADING ================= */
   if (loading) {
     return (
       <div className="d-flex justify-content-center align-items-center vh-100">
@@ -154,6 +167,7 @@ function ProductDetails() {
     return <h4 className="text-center mt-5 text-danger">Product not found</h4>;
   }
 
+  /* ================= UI ================= */
   return (
     <div className="container py-4">
       <div className="row g-4">
@@ -241,7 +255,15 @@ function ProductDetails() {
             <button
               className="btn btn-success"
               onClick={() => {
-                addItem();
+                dispatch(
+                  addToCart({
+                    id: product._id,
+                    title: product.title,
+                    price: Number(product.price || 0),
+                    image: mainImage,
+                    quantity,
+                  }),
+                );
                 navigate("/checkout");
               }}
             >
@@ -250,11 +272,10 @@ function ProductDetails() {
           </div>
 
           {/* SMALL SHARE ICONS */}
-          <div className="d-flex gap-2 mt-3">
+          <div className="d-flex gap-2 mt-2">
             <button
               className="btn btn-outline-secondary btn-sm"
               onClick={handleShare}
-              disabled={isSharing}
               title="Share"
             >
               <FaShareAlt />
