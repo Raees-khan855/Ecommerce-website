@@ -1,8 +1,7 @@
+import React, { useMemo } from "react";
 import { Link } from "react-router-dom";
-import { useMemo } from "react";
 
 function Footer() {
-  // ✅ Memoize current year
   const currentYear = useMemo(() => new Date().getFullYear(), []);
 
   const scrollTop = () => window.scrollTo({ top: 0, behavior: "smooth" });
