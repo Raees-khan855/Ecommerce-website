@@ -92,8 +92,9 @@ function ProductDetails() {
   const increaseQty = () => setQuantity((q) => q + 1);
   const decreaseQty = () => setQuantity((q) => (q > 1 ? q - 1 : 1));
 
-  /* ================= ADD TO CART (DIRECT TO CART) ================= */
-  const addItem = () => {
+  /* ================= ADD TO CART ================= */
+  const addItem = (redirectToCheckout = false) => {
+    // Add to Redux cart
     dispatch(
       addToCart({
         id: product._id,
@@ -104,7 +105,7 @@ function ProductDetails() {
       }),
     );
 
-    // TikTok tracking (optional)
+    // TikTok AddToCart tracking
     if (window.ttq) {
       window.ttq.track("AddToCart", {
         content_id: product._id,
@@ -115,14 +116,17 @@ function ProductDetails() {
       });
     }
 
-    // Immediately go to cart
-    navigate("/cart");
+    // Navigate
+    if (redirectToCheckout) {
+      navigate("/checkout");
+    } else {
+      navigate("/cart");
+    }
   };
 
   /* ================= SHARE HANDLERS ================= */
   const handleShare = async () => {
     const url = window.location.href;
-
     try {
       if (navigator.share) {
         await navigator.share({
@@ -248,31 +252,17 @@ function ProductDetails() {
 
           {/* ACTION BUTTONS */}
           <div className="d-flex gap-3 flex-wrap mb-2">
-            <button className="btn btn-primary" onClick={addItem}>
+            <button className="btn btn-primary" onClick={() => addItem(false)}>
               🛒 Add to Cart
             </button>
 
-            <button
-              className="btn btn-success"
-              onClick={() => {
-                dispatch(
-                  addToCart({
-                    id: product._id,
-                    title: product.title,
-                    price: Number(product.price || 0),
-                    image: mainImage,
-                    quantity,
-                  }),
-                );
-                navigate("/checkout");
-              }}
-            >
+            <button className="btn btn-success" onClick={() => addItem(true)}>
               ⚡ Buy Now
             </button>
           </div>
 
-          {/* SMALL SHARE ICONS */}
-          <div className="d-flex gap-2 mt-60">
+          {/* SHARE ICONS */}
+          <div className="d-flex gap-2 mt-2">
             <button
               className="btn btn-outline-secondary btn-sm"
               onClick={handleShare}

@@ -9,7 +9,7 @@ function Cart() {
 
   // ✅ PKR total (no decimals)
   const total = Math.round(
-    items.reduce((sum, item) => sum + item.price * item.quantity, 0)
+    items.reduce((sum, item) => sum + item.price * item.quantity, 0),
   );
 
   if (items.length === 0)
@@ -73,7 +73,7 @@ function Cart() {
                       updateQuantity({
                         id: item.id,
                         quantity: Number(e.target.value),
-                      })
+                      }),
                     )
                   }
                   className="form-control form-control-sm"
@@ -102,15 +102,29 @@ function Cart() {
             🧹 Clear Cart
           </button>
 
+          {/* ✅ INITIATE CHECKOUT TRACKING */}
           <button
             className="btn btn-primary"
-            onClick={() => navigate("/checkout")}
+            onClick={() => {
+              window.ttq?.track("InitiateCheckout", {
+                value: total,
+                currency: "PKR",
+                contents: items.map((item) => ({
+                  content_id: item.id,
+                  content_name: item.title,
+                  price: item.price,
+                  quantity: item.quantity,
+                })),
+              });
+
+              navigate("/checkout");
+            }}
           >
             💳 Proceed to Checkout
           </button>
         </div>
 
-        {/* ✅ TOTAL PKR */}
+        {/* TOTAL */}
         <h5 className="fw-bold text-primary mt-3 mt-md-0">
           Total: Rs. {total}
         </h5>

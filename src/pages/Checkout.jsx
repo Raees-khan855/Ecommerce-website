@@ -5,6 +5,7 @@ import { useNavigate, Link } from "react-router-dom";
 import axios from "axios";
 import BACKEND_URL from "../config";
 import useSEO from "../hooks/useSEO";
+
 function Checkout() {
   useSEO({
     title: "Secure Checkout | MyShop",
@@ -12,6 +13,7 @@ function Checkout() {
       "Complete your order securely with Cash on Delivery and fast shipping.",
     url: window.location.href,
   });
+
   const items = useSelector((state) => state.cart.items);
   const dispatch = useDispatch();
   const navigate = useNavigate();
@@ -26,14 +28,14 @@ function Checkout() {
     paymentMethod: "COD",
   });
 
-  /* 🔼 SCROLL TO TOP WHEN PAGE LOADS */
+  /* 🔼 SCROLL TO TOP */
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: "smooth" });
   }, []);
 
   const totalAmount = items.reduce(
     (sum, item) => sum + item.price * item.quantity,
-    0
+    0,
   );
 
   const handleChange = (e) => {
@@ -66,6 +68,18 @@ function Checkout() {
           image: item.image,
         })),
         totalAmount,
+      });
+
+      /* ✅ TIKTOK PURCHASE TRACKING */
+      window.ttq?.track("Purchase", {
+        value: totalAmount,
+        currency: "PKR",
+        contents: items.map((item) => ({
+          content_id: item._id,
+          content_name: item.title,
+          price: item.price,
+          quantity: item.quantity,
+        })),
       });
 
       dispatch(clearCart());
@@ -154,12 +168,12 @@ function Checkout() {
                 />
               </div>
 
-              {/* 💳 PAYMENT METHOD */}
+              {/* PAYMENT METHOD */}
               <div className="mb-4">
                 <h6 className="fw-semibold mb-3">Payment Method</h6>
 
                 <label
-                  className={`w-100 border rounded-3 p-4 d-flex align-items-start gap-3 cursor-pointer ${
+                  className={`w-100 border rounded-3 p-4 d-flex gap-3 ${
                     formData.paymentMethod === "COD"
                       ? "border-primary bg-light"
                       : "border-secondary-subtle"
@@ -176,21 +190,13 @@ function Checkout() {
                   />
 
                   <div className="flex-grow-1">
-                    <div className="d-flex align-items-center gap-2">
-                      <span className="fw-bold fs-5">Cash on Delivery</span>
-                      <span className="badge bg-success">Available</span>
-                    </div>
-
+                    <span className="fw-bold fs-5">Cash on Delivery</span>
                     <p
                       className="text-muted mb-0 mt-1"
-                      style={{ fontSize: "14px" }}
+                      style={{ fontSize: 14 }}
                     >
-                      Pay cash at your doorstep after receiving the product.
+                      Pay cash at your doorstep.
                     </p>
-
-                    <small className="text-success fw-semibold d-block mt-2">
-                      ✔ Free Shipping • ✔ No Advance Payment
-                    </small>
                   </div>
                 </label>
               </div>
@@ -206,7 +212,7 @@ function Checkout() {
           </div>
         </div>
 
-        {/* ORDER SUMMARY */}
+        {/* ORDER SUMMARY WITH IMAGES */}
         <div className="col-12 col-lg-5">
           <div style={{ position: "sticky", top: "100px" }}>
             <div className="card border-0 shadow-lg p-4">
@@ -238,6 +244,7 @@ function Checkout() {
                           backgroundColor: "#f8f9fa",
                         }}
                       />
+
                       <div>
                         <strong className="d-block">{item.title}</strong>
                         <small className="text-muted">
@@ -245,6 +252,7 @@ function Checkout() {
                         </small>
                       </div>
                     </div>
+
                     <span className="fw-bold">
                       Rs.{(item.price * item.quantity).toFixed(2)}
                     </span>
@@ -254,9 +262,9 @@ function Checkout() {
 
               <hr />
 
-              <div className="d-flex justify-content-between align-items-center">
-                <span className="fw-semibold fs-5">Total</span>
-                <span className="fw-bold fs-4 text-primary">
+              <div className="d-flex justify-content-between fs-5 fw-bold">
+                <span>Total</span>
+                <span className="text-primary">
                   Rs.{totalAmount.toFixed(2)}
                 </span>
               </div>

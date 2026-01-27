@@ -3,9 +3,30 @@ import { FaCheckCircle, FaWhatsapp } from "react-icons/fa";
 import { useEffect } from "react";
 
 const OrderSuccess = () => {
-  // ✅ Scroll to top when page loads
   useEffect(() => {
     window.scrollTo(0, 0);
+
+    // ✅ TikTok Purchase tracking (optional, if not already fired in checkout)
+    // You can pass total value dynamically if stored in state/localStorage
+    if (window.ttq) {
+      const totalAmount = localStorage.getItem("orderTotal") || 0;
+      const orderItems = JSON.parse(localStorage.getItem("orderItems") || "[]");
+
+      window.ttq.track("Purchase", {
+        value: Number(totalAmount),
+        currency: "PKR",
+        contents: orderItems.map((item) => ({
+          content_id: item.id,
+          content_name: item.title,
+          price: item.price,
+          quantity: item.quantity,
+        })),
+      });
+
+      // Clear the stored data
+      localStorage.removeItem("orderTotal");
+      localStorage.removeItem("orderItems");
+    }
   }, []);
 
   return (
