@@ -272,7 +272,7 @@ function ProductDetails() {
           </div>
 
           {/* SMALL SHARE ICONS */}
-          <div className="d-flex gap-2 mt-2">
+          <div className="d-flex gap-2 mt-60">
             <button
               className="btn btn-outline-secondary btn-sm"
               onClick={handleShare}
