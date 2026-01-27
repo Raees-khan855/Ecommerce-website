@@ -1,5 +1,5 @@
 import { useSelector, useDispatch } from "react-redux";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { clearCart } from "../redux/cartSlice";
 import { useNavigate, Link } from "react-router-dom";
 import axios from "axios";
@@ -19,7 +19,6 @@ function Checkout() {
   const navigate = useNavigate();
 
   const [isSubmitting, setIsSubmitting] = useState(false);
-
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -28,69 +27,77 @@ function Checkout() {
     paymentMethod: "COD",
   });
 
-  /* 🔼 SCROLL TO TOP */
+  /* 🔼 Scroll once */
   useEffect(() => {
-    window.scrollTo({ top: 0, behavior: "smooth" });
+    window.scrollTo(0, 0);
   }, []);
 
-  const totalAmount = items.reduce(
-    (sum, item) => sum + item.price * item.quantity,
-    0,
+  /* ✅ Memoized total (performance win) */
+  const totalAmount = useMemo(
+    () => items.reduce((sum, item) => sum + item.price * item.quantity, 0),
+    [items],
   );
 
-  const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
-  };
+  const handleChange = useCallback((e) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
+  }, []);
 
   /* ================= PLACE ORDER ================= */
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+  const handleSubmit = useCallback(
+    async (e) => {
+      e.preventDefault();
 
-    if (!formData.name || !formData.phone || !formData.address) {
-      alert("Please fill all required fields");
-      return;
-    }
+      if (!formData.name || !formData.phone || !formData.address) {
+        alert("Please fill all required fields");
+        return;
+      }
 
-    setIsSubmitting(true);
+      if (isSubmitting) return;
+      setIsSubmitting(true);
 
-    try {
-      await axios.post(`${BACKEND_URL}/orders`, {
-        customerName: formData.name,
-        email: formData.email,
-        phone: formData.phone,
-        address: formData.address,
-        paymentMethod: formData.paymentMethod,
-        products: items.map((item) => ({
-          productId: item._id,
-          title: item.title,
-          price: item.price,
-          quantity: item.quantity,
-          image: item.image,
-        })),
-        totalAmount,
-      });
+      try {
+        await axios.post(`${BACKEND_URL}/orders`, {
+          customerName: formData.name,
+          email: formData.email,
+          phone: formData.phone,
+          address: formData.address,
+          paymentMethod: formData.paymentMethod,
+          products: items.map((item) => ({
+            productId: item._id,
+            title: item.title,
+            price: item.price,
+            quantity: item.quantity,
+            image: item.image,
+          })),
+          totalAmount,
+        });
 
-      /* ✅ TIKTOK PURCHASE TRACKING */
-      window.ttq?.track("Purchase", {
-        value: totalAmount,
-        currency: "PKR",
-        contents: items.map((item) => ({
-          content_id: item._id,
-          content_name: item.title,
-          price: item.price,
-          quantity: item.quantity,
-        })),
-      });
+        /* ✅ Defer TikTok tracking (non-blocking) */
+        setTimeout(() => {
+          window.ttq?.track("Purchase", {
+            value: totalAmount,
+            currency: "PKR",
+            contents: items.map((item) => ({
+              content_id: item._id,
+              content_name: item.title,
+              price: item.price,
+              quantity: item.quantity,
+            })),
+          });
+        }, 0);
 
-      dispatch(clearCart());
-      navigate("/order-success");
-    } catch (err) {
-      console.error(err);
-      alert("❌ Failed to place order");
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
+        dispatch(clearCart());
+        navigate("/order-success");
+      } catch (err) {
+        console.error(err);
+        alert("❌ Failed to place order");
+      } finally {
+        setIsSubmitting(false);
+      }
+    },
+    [formData, items, totalAmount, isSubmitting, dispatch, navigate],
+  );
 
   /* ================= EMPTY CART ================= */
   if (items.length === 0) {
@@ -107,9 +114,7 @@ function Checkout() {
   /* ================= UI ================= */
   return (
     <div className="container my-5">
-      <h3 className="text-center fw-bold text-uppercase mb-2">
-        Secure Checkout
-      </h3>
+      <h1 className="text-center fw-bold mb-2">Secure Checkout</h1>
       <p className="text-center text-muted mb-4">
         Please review your order before placing it
       </p>
@@ -120,7 +125,7 @@ function Checkout() {
           <div className="card border-0 shadow-lg p-4">
             <h5 className="mb-3 fw-semibold">Customer Details</h5>
 
-            <form onSubmit={handleSubmit}>
+            <form onSubmit={handleSubmit} noValidate>
               <div className="mb-3">
                 <label className="form-label">Full Name *</label>
                 <input
@@ -168,33 +173,20 @@ function Checkout() {
                 />
               </div>
 
-              {/* PAYMENT METHOD */}
+              {/* PAYMENT */}
               <div className="mb-4">
                 <h6 className="fw-semibold mb-3">Payment Method</h6>
 
-                <label
-                  className={`w-100 border rounded-3 p-4 d-flex gap-3 ${
-                    formData.paymentMethod === "COD"
-                      ? "border-primary bg-light"
-                      : "border-secondary-subtle"
-                  }`}
-                  style={{ cursor: "pointer" }}
-                >
+                <label className="w-100 border rounded-3 p-4 d-flex gap-3 border-primary bg-light">
                   <input
                     type="radio"
-                    name="paymentMethod"
-                    value="COD"
-                    checked={formData.paymentMethod === "COD"}
-                    onChange={handleChange}
+                    checked
+                    readOnly
                     className="form-check-input mt-1"
                   />
-
-                  <div className="flex-grow-1">
-                    <span className="fw-bold fs-5">Cash on Delivery</span>
-                    <p
-                      className="text-muted mb-0 mt-1"
-                      style={{ fontSize: 14 }}
-                    >
+                  <div>
+                    <strong className="fs-5">Cash on Delivery</strong>
+                    <p className="text-muted mb-0 mt-1">
                       Pay cash at your doorstep.
                     </p>
                   </div>
@@ -212,7 +204,7 @@ function Checkout() {
           </div>
         </div>
 
-        {/* ORDER SUMMARY WITH IMAGES */}
+        {/* ORDER SUMMARY */}
         <div className="col-12 col-lg-5">
           <div style={{ position: "sticky", top: "100px" }}>
             <div className="card border-0 shadow-lg p-4">
@@ -232,24 +224,24 @@ function Checkout() {
                             : `${BACKEND_URL}/${item.image}`
                         }
                         alt={item.title}
-                        onError={(e) =>
-                          (e.target.src =
-                            "https://via.placeholder.com/60?text=No+Image")
-                        }
+                        loading="lazy"
+                        width="60"
+                        height="60"
                         style={{
-                          width: "60px",
-                          height: "60px",
                           objectFit: "contain",
-                          borderRadius: "6px",
+                          borderRadius: 6,
                           backgroundColor: "#f8f9fa",
                         }}
+                        onError={(e) =>
+                          (e.currentTarget.src =
+                            "https://via.placeholder.com/60")
+                        }
                       />
-
                       <div>
-                        <strong className="d-block">{item.title}</strong>
-                        <small className="text-muted">
-                          Quantity: {item.quantity}
-                        </small>
+                        <strong>{item.title}</strong>
+                        <div className="small text-muted">
+                          Qty: {item.quantity}
+                        </div>
                       </div>
                     </div>
 

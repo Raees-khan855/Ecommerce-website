@@ -193,7 +193,7 @@ function AdminPanel() {
       const res = await axios.put(
         `${BACKEND_URL}/orders/${orderId}/confirm`,
         {},
-        { headers: { Authorization: `Bearer ${token}` } }
+        { headers: { Authorization: `Bearer ${token}` } },
       );
 
       setOrders((prev) => prev.map((o) => (o._id === orderId ? res.data : o)));

@@ -1,11 +1,17 @@
-import { Link, NavLink } from "react-router-dom";
+import { Link, NavLink, useLocation } from "react-router-dom";
 import { useSelector } from "react-redux";
+import { useState, useMemo } from "react";
 
 function Navbar() {
+  const [isOpen, setIsOpen] = useState(false);
+  const location = useLocation();
+
   const cartItems = useSelector((state) => state.cart?.items || []);
-  const cartCount = cartItems.reduce(
-    (sum, item) => sum + (item.quantity || 0),
-    0,
+
+  // ✅ Memoize cart count
+  const cartCount = useMemo(
+    () => cartItems.reduce((sum, item) => sum + (item.quantity || 0), 0),
+    [cartItems],
   );
 
   const navLinkClass = ({ isActive }) =>
@@ -34,14 +40,11 @@ function Navbar() {
             )}
           </NavLink>
 
-          {/* Mobile Toggle */}
+          {/* Mobile Toggle (React state instead of Bootstrap JS) */}
           <button
             className="navbar-toggler"
             type="button"
-            data-bs-toggle="collapse"
-            data-bs-target="#mainNavbar"
-            aria-controls="mainNavbar"
-            aria-expanded="false"
+            onClick={() => setIsOpen(!isOpen)}
             aria-label="Toggle navigation"
           >
             <span className="navbar-toggler-icon" />
@@ -49,20 +52,33 @@ function Navbar() {
         </div>
 
         {/* Collapsible Menu */}
-        <div className="collapse navbar-collapse" id="mainNavbar">
+        <div className={`collapse navbar-collapse ${isOpen ? "show" : ""}`}>
           <ul className="navbar-nav me-auto mb-2 mb-lg-0">
             <li className="nav-item">
-              <NavLink to="/" end className={navLinkClass}>
+              <NavLink
+                to="/"
+                end
+                className={navLinkClass}
+                onClick={() => setIsOpen(false)}
+              >
                 Home
               </NavLink>
             </li>
             <li className="nav-item">
-              <NavLink to="/products" className={navLinkClass}>
+              <NavLink
+                to="/products"
+                className={navLinkClass}
+                onClick={() => setIsOpen(false)}
+              >
                 Products
               </NavLink>
             </li>
             <li className="nav-item">
-              <NavLink to="/contact" className={navLinkClass}>
+              <NavLink
+                to="/contact"
+                className={navLinkClass}
+                onClick={() => setIsOpen(false)}
+              >
                 Contact Us
               </NavLink>
             </li>
@@ -85,4 +101,5 @@ function Navbar() {
   );
 }
 
+// ✅ Memoize Navbar to avoid unnecessary re-renders
 export default Navbar;

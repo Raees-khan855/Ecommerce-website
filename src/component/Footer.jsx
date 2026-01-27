@@ -1,7 +1,11 @@
 import { Link } from "react-router-dom";
+import { useMemo } from "react";
 
 function Footer() {
-  const scrollTop = () => window.scrollTo(0, 0);
+  // ✅ Memoize current year
+  const currentYear = useMemo(() => new Date().getFullYear(), []);
+
+  const scrollTop = () => window.scrollTo({ top: 0, behavior: "smooth" });
 
   return (
     <footer className="bg-dark text-light mt-5">
@@ -19,54 +23,29 @@ function Footer() {
           <div className="col-12 col-sm-6 col-md-4">
             <h6 className="fw-semibold mb-3">Quick Links</h6>
             <ul className="list-unstyled small mb-0">
-              <li className="mb-2">
-                <Link
-                  to="/"
-                  onClick={scrollTop}
-                  className="text-light text-decoration-none"
-                >
-                  Home
-                </Link>
-              </li>
-
-              <li className="mb-2">
-                <Link
-                  to="/products"
-                  onClick={scrollTop}
-                  className="text-light text-decoration-none"
-                >
-                  Products
-                </Link>
-              </li>
-
-              <li className="mb-2">
-                <Link
-                  to="/cart"
-                  onClick={scrollTop}
-                  className="text-light text-decoration-none"
-                >
-                  Cart
-                </Link>
-              </li>
-
-              <li>
-                <Link
-                  to="/checkout"
-                  onClick={scrollTop}
-                  className="text-light text-decoration-none"
-                >
-                  Checkout
-                </Link>
-              </li>
+              {[
+                { name: "Home", path: "/" },
+                { name: "Products", path: "/products" },
+                { name: "Cart", path: "/cart" },
+                { name: "Checkout", path: "/checkout" },
+              ].map((link) => (
+                <li key={link.path} className="mb-2">
+                  <Link
+                    to={link.path}
+                    onClick={scrollTop}
+                    className="text-light text-decoration-none"
+                  >
+                    {link.name}
+                  </Link>
+                </li>
+              ))}
             </ul>
           </div>
 
           {/* Contact */}
           <div className="col-12 col-sm-6 col-md-4">
             <h6 className="fw-semibold mb-3">Contact</h6>
-
             <p className="small mb-2">📍 Pakistan</p>
-
             <p className="small mb-2">
               <a
                 href="tel:+923254555681"
@@ -75,7 +54,6 @@ function Footer() {
                 📞 +92 325 4555681
               </a>
             </p>
-
             <p className="small mb-0">
               <a
                 href="mailto:support@sigmaraees183@gmail.com"
@@ -90,11 +68,12 @@ function Footer() {
         <hr className="border-secondary my-4" />
 
         <p className="text-center small mb-0 text-muted">
-          © {new Date().getFullYear()} RaeesProduct. All rights reserved.
+          © {currentYear} RaeesProduct. All rights reserved.
         </p>
       </div>
     </footer>
   );
 }
 
-export default Footer;
+// ✅ Memoize Footer to avoid re-render on parent changes
+export default React.memo(Footer);

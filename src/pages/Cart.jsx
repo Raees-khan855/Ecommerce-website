@@ -1,18 +1,54 @@
 import { useSelector, useDispatch } from "react-redux";
 import { removeFromCart, updateQuantity, clearCart } from "../redux/cartSlice";
 import { useNavigate } from "react-router-dom";
+import { useMemo, useCallback } from "react";
 
 function Cart() {
   const items = useSelector((state) => state.cart.items);
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
-  // ✅ PKR total (no decimals)
-  const total = Math.round(
-    items.reduce((sum, item) => sum + item.price * item.quantity, 0),
+  /* ✅ Memoized total */
+  const total = useMemo(
+    () =>
+      Math.round(
+        items.reduce((sum, item) => sum + item.price * item.quantity, 0),
+      ),
+    [items],
   );
 
-  if (items.length === 0)
+  const handleQtyChange = useCallback(
+    (id, value) => {
+      dispatch(updateQuantity({ id, quantity: value }));
+    },
+    [dispatch],
+  );
+
+  const handleRemove = useCallback(
+    (id) => {
+      dispatch(removeFromCart(id));
+    },
+    [dispatch],
+  );
+
+  const handleCheckout = useCallback(() => {
+    setTimeout(() => {
+      window.ttq?.track("InitiateCheckout", {
+        value: total,
+        currency: "PKR",
+        contents: items.map((item) => ({
+          content_id: item.id,
+          content_name: item.title,
+          price: item.price,
+          quantity: item.quantity,
+        })),
+      });
+    }, 0);
+
+    navigate("/checkout");
+  }, [items, total, navigate]);
+
+  if (items.length === 0) {
     return (
       <div className="text-center mt-5">
         <h4>Your cart is empty</h4>
@@ -24,10 +60,11 @@ function Cart() {
         </button>
       </div>
     );
+  }
 
   return (
     <div className="container my-5">
-      <h3 className="mb-4 text-center fw-semibold">🛒 Shopping Cart</h3>
+      <h1 className="mb-4 text-center fw-semibold">🛒 Shopping Cart</h1>
 
       <div className="list-group mb-4">
         {items.map((item) => (
@@ -35,46 +72,41 @@ function Cart() {
             key={item.id}
             className="list-group-item d-flex flex-column flex-sm-row align-items-sm-center gap-3 p-3 shadow-sm border-0 mb-2 rounded-3"
           >
-            {/* Product Image */}
+            {/* IMAGE (CLS safe) */}
             <img
               src={item.image}
               alt={item.title}
+              loading="lazy"
+              width="80"
+              height="80"
               className="rounded bg-light p-2"
-              style={{
-                width: "80px",
-                height: "80px",
-                objectFit: "contain",
-              }}
+              style={{ objectFit: "contain" }}
+              onError={(e) =>
+                (e.currentTarget.src = "https://via.placeholder.com/80")
+              }
             />
 
-            {/* Product Info */}
+            {/* INFO */}
             <div className="flex-grow-1 w-100">
               <div className="d-flex flex-column flex-md-row justify-content-between align-items-md-center">
-                <div className="mb-2 mb-md-0">
-                  <strong className="d-block">{item.title}</strong>
-                  <span className="text-muted small">
-                    Rs. {item.price} each
-                  </span>
+                <div>
+                  <strong>{item.title}</strong>
+                  <div className="text-muted small">Rs. {item.price} each</div>
                 </div>
 
-                <div className="fw-bold text-md-end text-primary">
+                <div className="fw-bold text-primary mt-2 mt-md-0">
                   Rs. {item.price * item.quantity}
                 </div>
               </div>
 
-              {/* Quantity Controls */}
-              <div className="mt-3 d-flex align-items-center flex-wrap gap-2">
+              {/* QTY */}
+              <div className="mt-3 d-flex align-items-center gap-2 flex-wrap">
                 <input
                   type="number"
                   min="1"
                   value={item.quantity}
                   onChange={(e) =>
-                    dispatch(
-                      updateQuantity({
-                        id: item.id,
-                        quantity: Number(e.target.value),
-                      }),
-                    )
+                    handleQtyChange(item.id, Number(e.target.value))
                   }
                   className="form-control form-control-sm"
                   style={{ width: "80px" }}
@@ -82,7 +114,7 @@ function Cart() {
 
                 <button
                   className="btn btn-sm btn-outline-danger"
-                  onClick={() => dispatch(removeFromCart(item.id))}
+                  onClick={() => handleRemove(item.id)}
                 >
                   ❌ Remove
                 </button>
@@ -92,9 +124,9 @@ function Cart() {
         ))}
       </div>
 
-      {/* Bottom Section */}
+      {/* FOOTER */}
       <div className="d-flex flex-column flex-md-row justify-content-between align-items-md-center mt-4">
-        <div className="mb-3 mb-md-0 d-flex flex-wrap gap-2">
+        <div className="d-flex gap-2 flex-wrap mb-3 mb-md-0">
           <button
             className="btn btn-outline-secondary"
             onClick={() => dispatch(clearCart())}
@@ -102,29 +134,11 @@ function Cart() {
             🧹 Clear Cart
           </button>
 
-          {/* ✅ INITIATE CHECKOUT TRACKING */}
-          <button
-            className="btn btn-primary"
-            onClick={() => {
-              window.ttq?.track("InitiateCheckout", {
-                value: total,
-                currency: "PKR",
-                contents: items.map((item) => ({
-                  content_id: item.id,
-                  content_name: item.title,
-                  price: item.price,
-                  quantity: item.quantity,
-                })),
-              });
-
-              navigate("/checkout");
-            }}
-          >
+          <button className="btn btn-primary" onClick={handleCheckout}>
             💳 Proceed to Checkout
           </button>
         </div>
 
-        {/* TOTAL */}
         <h5 className="fw-bold text-primary mt-3 mt-md-0">
           Total: Rs. {total}
         </h5>

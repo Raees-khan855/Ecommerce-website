@@ -1,11 +1,11 @@
 import { useParams, useNavigate } from "react-router-dom";
-import { useEffect, useLayoutEffect, useState } from "react";
+import { useEffect, useLayoutEffect, useState, lazy, Suspense } from "react";
 import axios from "axios";
 import { useDispatch } from "react-redux";
 import { addToCart } from "../redux/cartSlice";
-import ProductCard from "../component/ProductCard";
 import BACKEND_URL from "../config";
 import useSEO from "../hooks/useSEO";
+
 import {
   FaStar,
   FaStarHalfAlt,
@@ -15,6 +15,9 @@ import {
   FaLink,
 } from "react-icons/fa";
 
+/* 🔥 Lazy load related cards */
+const ProductCard = lazy(() => import("../component/ProductCard"));
+
 function ProductDetails() {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -22,9 +25,9 @@ function ProductDetails() {
 
   const [product, setProduct] = useState(null);
   const [related, setRelated] = useState([]);
-  const [loading, setLoading] = useState(true);
   const [activeImage, setActiveImage] = useState(null);
   const [quantity, setQuantity] = useState(1);
+  const [loading, setLoading] = useState(true);
 
   const rating = 4.6;
   const reviewCount = 128;
@@ -37,12 +40,12 @@ function ProductDetails() {
     url: window.location.href,
   });
 
-  /* ================= SCROLL TO TOP ================= */
+  /* ================= SCROLL ================= */
   useLayoutEffect(() => {
     window.scrollTo(0, 0);
   }, [id]);
 
-  /* ================= FETCH PRODUCT ================= */
+  /* ================= FETCH ================= */
   useEffect(() => {
     let mounted = true;
     setLoading(true);
@@ -56,11 +59,11 @@ function ProductDetails() {
         setProduct(prod);
         setRelated(Array.isArray(res.data.related) ? res.data.related : []);
 
-        if (Array.isArray(prod.images) && prod.images.length > 0) {
-          setActiveImage(prod.images[0]);
-        } else if (prod.image) {
-          setActiveImage(prod.image);
-        }
+        setActiveImage(
+          Array.isArray(prod.images) && prod.images.length > 0
+            ? prod.images[0]
+            : prod.image || null,
+        );
       } catch (err) {
         console.error("Product fetch error:", err);
       } finally {
@@ -72,6 +75,7 @@ function ProductDetails() {
     return () => (mounted = false);
   }, [id]);
 
+  /* ================= HELPERS ================= */
   const getImageUrl = (img) =>
     img
       ? img.startsWith("http")
@@ -89,12 +93,8 @@ function ProductDetails() {
   const mainImage = getImageUrl(activeImage);
   const price = Number(product?.price || 0).toFixed(2);
 
-  const increaseQty = () => setQuantity((q) => q + 1);
-  const decreaseQty = () => setQuantity((q) => (q > 1 ? q - 1 : 1));
-
-  /* ================= ADD TO CART ================= */
-  const addItem = (redirectToCheckout = false) => {
-    // Add to Redux cart
+  /* ================= CART ================= */
+  const addItem = (checkout = false) => {
     dispatch(
       addToCart({
         id: product._id,
@@ -105,7 +105,6 @@ function ProductDetails() {
       }),
     );
 
-    // TikTok AddToCart tracking
     if (window.ttq) {
       window.ttq.track("AddToCart", {
         content_id: product._id,
@@ -116,53 +115,25 @@ function ProductDetails() {
       });
     }
 
-    // Navigate
-    if (redirectToCheckout) {
-      navigate("/checkout");
-    } else {
-      navigate("/cart");
-    }
+    navigate(checkout ? "/checkout" : "/cart");
   };
 
-  /* ================= SHARE HANDLERS ================= */
-  const handleShare = async () => {
-    const url = window.location.href;
-    try {
-      if (navigator.share) {
-        await navigator.share({
-          title: product.title,
-          text: `Check out this product: ${product.title}`,
-          url,
-        });
-      } else {
-        await navigator.clipboard.writeText(url);
-        alert("Product link copied to clipboard!");
-      }
-    } catch (err) {
-      console.error("Share failed:", err);
-    }
-  };
-
-  const handleWhatsappShare = () => {
-    const url = encodeURIComponent(window.location.href);
-    const text = encodeURIComponent(`Check out this product: ${product.title}`);
-    window.open(`https://wa.me/?text=${text}%20${url}`, "_blank");
-  };
-
-  const handleCopyLink = async () => {
-    try {
-      await navigator.clipboard.writeText(window.location.href);
-      alert("Product link copied to clipboard!");
-    } catch (err) {
-      console.error("Copy failed:", err);
-    }
-  };
-
-  /* ================= LOADING ================= */
+  /* ================= LOADING SKELETON ================= */
   if (loading) {
     return (
-      <div className="d-flex justify-content-center align-items-center vh-100">
-        <div className="spinner-border text-primary" />
+      <div className="container py-5">
+        <div className="row g-4">
+          <div className="col-md-6">
+            <div className="bg-light rounded" style={{ height: 420 }} />
+          </div>
+          <div className="col-md-6">
+            <div className="placeholder-glow">
+              <span className="placeholder col-6 mb-2" />
+              <span className="placeholder col-4 mb-3" />
+              <span className="placeholder col-8" />
+            </div>
+          </div>
+        </div>
       </div>
     );
   }
@@ -181,20 +152,25 @@ function ProductDetails() {
             <img
               src={mainImage}
               alt={product.title}
+              loading="eager"
+              width="420"
+              height="420"
               className="img-fluid mb-3"
-              style={{ maxHeight: "420px", objectFit: "contain" }}
+              style={{ objectFit: "contain" }}
             />
+
             {images.length > 1 && (
               <div className="d-flex justify-content-center gap-2 flex-wrap">
                 {images.map((img, i) => (
                   <img
                     key={i}
                     src={getImageUrl(img)}
+                    loading="lazy"
+                    width="64"
+                    height="64"
                     alt="thumb"
                     onClick={() => setActiveImage(img)}
                     style={{
-                      width: 64,
-                      height: 64,
                       cursor: "pointer",
                       objectFit: "cover",
                       border:
@@ -214,90 +190,80 @@ function ProductDetails() {
         <div className="col-12 col-md-6">
           <h2 className="fw-bold">{product.title}</h2>
 
-          {/* ⭐ Rating */}
-          <div className="d-flex align-items-center gap-1 mb-2 mt-2">
-            {[1, 2, 3, 4, 5].map((i) => {
-              if (rating >= i)
-                return <FaStar key={i} className="text-warning" />;
-              if (rating >= i - 0.5)
-                return <FaStarHalfAlt key={i} className="text-warning" />;
-              return <FaRegStar key={i} className="text-warning" />;
-            })}
+          {/* RATING */}
+          <div className="d-flex align-items-center gap-1 mb-2">
+            {[1, 2, 3, 4, 5].map((i) =>
+              rating >= i ? (
+                <FaStar key={i} className="text-warning" />
+              ) : rating >= i - 0.5 ? (
+                <FaStarHalfAlt key={i} className="text-warning" />
+              ) : (
+                <FaRegStar key={i} className="text-warning" />
+              ),
+            )}
             <span className="small text-muted ms-2">
-              {rating} ({reviewCount} reviews)
+              {rating} ({reviewCount})
             </span>
           </div>
 
-          <p className="text-muted">
-            <strong>Category:</strong> {product.category}
-          </p>
-
           <h4 className="text-primary fw-bold mb-3">Rs. {price}</h4>
-
-          <p>{product.description || "No description available."}</p>
+          <p>{product.description}</p>
 
           {/* QUANTITY */}
           <div className="d-flex align-items-center gap-3 mb-3">
             <strong>Quantity:</strong>
             <div className="d-flex align-items-center border rounded">
-              <button className="btn btn-light px-3" onClick={decreaseQty}>
+              <button
+                className="btn btn-light px-3"
+                onClick={() => setQuantity((q) => Math.max(1, q - 1))}
+              >
                 −
               </button>
               <span className="px-3 fw-bold">{quantity}</span>
-              <button className="btn btn-light px-3" onClick={increaseQty}>
+              <button
+                className="btn btn-light px-3"
+                onClick={() => setQuantity((q) => q + 1)}
+              >
                 +
               </button>
             </div>
           </div>
 
-          {/* ACTION BUTTONS */}
-          <div className="d-flex gap-3 flex-wrap mb-2">
+          {/* ACTIONS */}
+          <div className="d-flex gap-3 mb-3">
             <button className="btn btn-primary" onClick={() => addItem(false)}>
               🛒 Add to Cart
             </button>
-
             <button className="btn btn-success" onClick={() => addItem(true)}>
               ⚡ Buy Now
             </button>
           </div>
 
-          {/* SHARE ICONS */}
-          <div className="d-flex gap-2 mt-2">
-            <button
-              className="btn btn-outline-secondary btn-sm"
-              onClick={handleShare}
-              title="Share"
-            >
+          {/* SHARE */}
+          <div className="d-flex gap-2">
+            <button className="btn btn-outline-secondary btn-sm">
               <FaShareAlt />
             </button>
-
-            <button
-              className="btn btn-outline-success btn-sm"
-              onClick={handleWhatsappShare}
-              title="Share on WhatsApp"
-            >
+            <button className="btn btn-outline-success btn-sm">
               <FaWhatsapp />
             </button>
-
-            <button
-              className="btn btn-outline-primary btn-sm"
-              onClick={handleCopyLink}
-              title="Copy Link"
-            >
+            <button className="btn btn-outline-primary btn-sm">
               <FaLink />
             </button>
           </div>
         </div>
       </div>
 
-      {/* RELATED PRODUCTS */}
+      {/* RELATED (LAZY) */}
       {related.length > 0 && (
         <div className="mt-5">
           <h4 className="fw-bold mb-3">Related Products</h4>
           <div className="row g-3">
             {related.map((p) => (
               <div key={p._id} className="col-6 col-md-4 col-lg-3">
-                <ProductCard product={p} />
+                <Suspense fallback={null}>
+                  <ProductCard product={p} />
+                </Suspense>
               </div>
             ))}
           </div>
