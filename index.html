@@ -7,80 +7,35 @@
         w.TiktokAnalyticsObject = t;
         var ttq = (w[t] = w[t] || []);
         ((ttq.methods = [
-          "page",
-          "track",
-          "identify",
-          "instances",
-          "debug",
-          "on",
-          "off",
-          "once",
-          "ready",
-          "alias",
-          "group",
-          "enableCookie",
-          "disableCookie",
-          "holdConsent",
-          "revokeConsent",
-          "grantConsent",
+          "page","track","identify","instances","debug","on","off","once","ready",
+          "alias","group","enableCookie","disableCookie","holdConsent","revokeConsent","grantConsent"
         ]),
-          (ttq.setAndDefer = function (t, e) {
-            t[e] = function () {
-              t.push([e].concat(Array.prototype.slice.call(arguments, 0)));
-            };
-          }));
-        for (var i = 0; i < ttq.methods.length; i++)
-          ttq.setAndDefer(ttq, ttq.methods[i]);
-        ((ttq.instance = function (t) {
-          for (var e = ttq._i[t] || [], n = 0; n < ttq.methods.length; n++)
-            ttq.setAndDefer(e, ttq.methods[n]);
-          return e;
-        }),
-          (ttq.load = function (e, n) {
-            var r = "https://analytics.tiktok.com/i18n/pixel/events.js",
-              o = n && n.partner;
-            ((ttq._i = ttq._i || {}),
-              (ttq._i[e] = []),
-              (ttq._i[e]._u = r),
-              (ttq._t = ttq._t || {}),
-              (ttq._t[e] = +new Date()),
-              (ttq._o = ttq._o || {}),
-              (ttq._o[e] = n || {}));
-            n = document.createElement("script");
-            ((n.type = "text/javascript"),
-              (n.async = !0),
-              (n.src = r + "?sdkid=" + e + "&lib=" + t));
-            e = document.getElementsByTagName("script")[0];
-            e.parentNode.insertBefore(n, e);
-          }));
-
-        ttq.load("D5SCVBJC77U7L31UK0H0");
-        ttq.page();
+        (ttq.setAndDefer = function(t,e){t[e]=function(){t.push([e].concat(Array.prototype.slice.call(arguments,0)));}});
+        for(var i=0;i<ttq.methods.length;i++) ttq.setAndDefer(ttq,ttq.methods[i]);
+        ((ttq.instance=function(t){for(var e=ttq._i[t]||[],n=0;n<ttq.methods.length;n++) ttq.setAndDefer(e,ttq.methods[n]); return e;}),
+        (ttq.load=function(e,n){
+          var r="https://analytics.tiktok.com/i18n/pixel/events.js", o=n&&n.partner;
+          ((ttq._i=ttq._i||{}),(ttq._i[e]=[]),(ttq._i[e]._u=r),(ttq._t=ttq._t||{}),(ttq._t[e]=+new Date()),(ttq._o=ttq._o||{}),(ttq._o[e]=n||{}));
+          n=document.createElement("script"); n.type="text/javascript"; n.async=!0; n.src=r+"?sdkid="+e+"&lib="+t;
+          e=document.getElementsByTagName("script")[0]; e.parentNode.insertBefore(n,e);
+        }));
+        ttq.load("D5SCVBJC77U7L31UK0H0"); ttq.page();
       })(window, document, "ttq");
     </script>
     <!-- TikTok Pixel Code End -->
+
     <meta charset="UTF-8" />
-    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
-    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
-    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
-    <link rel="manifest" href="/site.webmanifest" />
-    <meta
-      name="google-site-verification"
-      content="QVZbYtIoYgtlHCQTraKDPEytSgPSnJT5CvAI1ZlXgeU"
-    />
-
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>RaeesProduct | Online Shopping in Pakistan</title>
-
     <meta
       name="description"
       content="Buy quality products at RaeesProduct. Cash on Delivery, fast & free shipping across Pakistan."
     />
-
-    <meta name="robots" content="index, follow" />
-    <meta name="author" content="RaeesProduct" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-
     <link rel="canonical" href="https://raeesproduct.shop" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
+    <link rel="manifest" href="/site.webmanifest" />
 
     <!-- Open Graph -->
     <meta
@@ -100,10 +55,123 @@
     />
 
     <meta name="theme-color" content="#198754" />
+
+    <!-- ================= Critical CSS (inline for LCP) ================= -->
+    <style>
+      body {
+        margin: 0;
+        font-family: sans-serif;
+        background: #fff;
+      }
+      a {
+        text-decoration: none;
+      }
+      .btn {
+        padding: 0.5rem 1rem;
+        border-radius: 6px;
+        font-weight: bold;
+        cursor: pointer;
+      }
+
+      /* Navbar */
+      .navbar {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        background-color: #212529;
+        color: #fff;
+        padding: 0.5rem 1rem;
+      }
+      .navbar .navbar-brand {
+        font-weight: bold;
+        color: #fff;
+      }
+      .navbar .nav-link {
+        color: #fff;
+        margin-right: 1rem;
+      }
+      .navbar .nav-link.active {
+        font-weight: 600;
+      }
+
+      /* Hero */
+      .hero {
+        position: relative;
+        overflow: hidden;
+        width: 100%;
+        max-height: 420px;
+      }
+      .hero img {
+        width: 100%;
+        object-fit: cover;
+        display: block;
+        height: 100%;
+      }
+      .hero .overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.55);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        color: #fff;
+        flex-direction: column;
+      }
+      .hero h1 {
+        font-size: 2rem;
+        font-weight: bold;
+        margin-bottom: 0.5rem;
+      }
+      .hero p {
+        font-size: 1rem;
+        max-width: 720px;
+        margin: 0 auto;
+      }
+
+      /* Featured products above-the-fold cards */
+      .card {
+        border-radius: 8px;
+        overflow: hidden;
+        box-shadow: 0 1px 5px rgba(0, 0, 0, 0.1);
+      }
+      .card-body {
+        padding: 0.5rem;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+      .card img {
+        object-fit: contain;
+        max-height: 180px;
+        width: auto;
+        display: block;
+        margin: 0 auto;
+      }
+    </style>
+
+    <!-- ================= Load main CSS asynchronously ================= -->
+    <link
+      rel="preload"
+      href="/assets/index-D39IjZRk.css"
+      as="style"
+      onload="
+        this.onload = null;
+        this.rel = 'stylesheet';
+      "
+    />
+    <noscript
+      ><link rel="stylesheet" href="/assets/index-D39IjZRk.css"
+    /></noscript>
   </head>
 
   <body>
     <div id="root"></div>
+
+    <!-- React entry point -->
     <script type="module" src="/src/main.jsx"></script>
   </body>
 </html>
