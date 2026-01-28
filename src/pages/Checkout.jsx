@@ -170,7 +170,6 @@ function Checkout() {
                   value={formData.email}
                   onChange={handleChange}
                   className="form-control"
-                  placeholder="Optional"
                 />
               </div>
 
@@ -195,7 +194,6 @@ function Checkout() {
                   onChange={handleChange}
                   className="form-control"
                   required
-                  placeholder="Required"
                 />
               </div>
 
