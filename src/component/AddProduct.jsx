@@ -464,8 +464,20 @@ function AdminPanel() {
                       </small>
 
                       {o.phone && (
-                        <small className="text-muted">
-                          📞 <span className="ms-1">{o.phone}</span>
+                        <small className="text-muted d-flex align-items-center gap-2">
+                          📞 <span>{o.phone}</span>
+                          <a
+                            href={`https://wa.me/${o.phone.replace(/\D/g, "")}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            title="Send WhatsApp"
+                          >
+                            <img
+                              src="https://upload.wikimedia.org/wikipedia/commons/6/6b/WhatsApp.svg"
+                              alt="WhatsApp"
+                              style={{ width: 16, height: 16 }}
+                            />
+                          </a>
                         </small>
                       )}
 
