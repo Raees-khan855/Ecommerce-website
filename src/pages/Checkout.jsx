@@ -21,35 +21,52 @@ function Checkout() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState({
     name: "",
-    email: "",
+    email: "", // optional
     phone: "",
+    whatsapp: "", // required
     address: "",
     paymentMethod: "COD",
   });
 
-  /* 🔼 Scroll once */
+  // Scroll to top on mount
   useEffect(() => {
     window.scrollTo(0, 0);
   }, []);
 
-  /* ✅ Memoized total (performance win) */
+  // Calculate total
   const totalAmount = useMemo(
     () => items.reduce((sum, item) => sum + item.price * item.quantity, 0),
     [items],
   );
 
+  // Handle input changes
   const handleChange = useCallback((e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
   }, []);
 
-  /* ================= PLACE ORDER ================= */
+  // Submit order
   const handleSubmit = useCallback(
     async (e) => {
       e.preventDefault();
 
-      if (!formData.name || !formData.phone || !formData.address) {
+      // Required fields: name, phone, whatsapp, address
+      if (
+        !formData.name ||
+        !formData.phone ||
+        !formData.whatsapp ||
+        !formData.address
+      ) {
         alert("Please fill all required fields");
+        return;
+      }
+
+      // Optional email validation
+      if (
+        formData.email &&
+        !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)
+      ) {
+        alert("Please enter a valid email address");
         return;
       }
 
@@ -59,8 +76,9 @@ function Checkout() {
       try {
         await axios.post(`${BACKEND_URL}/orders`, {
           customerName: formData.name,
-          email: formData.email,
+          email: formData.email || "", // optional, empty string if not entered
           phone: formData.phone,
+          whatsapp: formData.whatsapp, // required
           address: formData.address,
           paymentMethod: formData.paymentMethod,
           products: items.map((item) => ({
@@ -68,12 +86,14 @@ function Checkout() {
             title: item.title,
             price: item.price,
             quantity: item.quantity,
-            image: item.image,
+            image: item.image?.startsWith("http")
+              ? item.image
+              : `${BACKEND_URL}/${item.image}`,
           })),
           totalAmount,
         });
 
-        /* ✅ Defer TikTok tracking (non-blocking) */
+        // TikTok tracking (optional)
         setTimeout(() => {
           window.ttq?.track("Purchase", {
             value: totalAmount,
@@ -90,8 +110,11 @@ function Checkout() {
         dispatch(clearCart());
         navigate("/order-success");
       } catch (err) {
-        console.error(err);
-        alert("❌ Failed to place order");
+        console.error("ORDER ERROR:", err.response?.data || err.message);
+        alert(
+          err.response?.data?.message ||
+            "❌ Failed to place order. Check console.",
+        );
       } finally {
         setIsSubmitting(false);
       }
@@ -99,7 +122,7 @@ function Checkout() {
     [formData, items, totalAmount, isSubmitting, dispatch, navigate],
   );
 
-  /* ================= EMPTY CART ================= */
+  // Empty cart UI
   if (items.length === 0) {
     return (
       <div className="text-center my-5">
@@ -111,7 +134,6 @@ function Checkout() {
     );
   }
 
-  /* ================= UI ================= */
   return (
     <div className="container my-5">
       <h1 className="text-center fw-bold mb-2">Secure Checkout</h1>
@@ -139,13 +161,16 @@ function Checkout() {
               </div>
 
               <div className="mb-3">
-                <label className="form-label">Email</label>
+                <label className="form-label">
+                  Email <span className="text-muted">(optional)</span>
+                </label>
                 <input
                   type="email"
                   name="email"
                   value={formData.email}
                   onChange={handleChange}
                   className="form-control"
+                  placeholder="Optional"
                 />
               </div>
 
@@ -162,6 +187,19 @@ function Checkout() {
               </div>
 
               <div className="mb-3">
+                <label className="form-label">WhatsApp Number *</label>
+                <input
+                  type="tel"
+                  name="whatsapp"
+                  value={formData.whatsapp}
+                  onChange={handleChange}
+                  className="form-control"
+                  required
+                  placeholder="Required"
+                />
+              </div>
+
+              <div className="mb-3">
                 <label className="form-label">Delivery Address *</label>
                 <textarea
                   name="address"
@@ -173,10 +211,8 @@ function Checkout() {
                 />
               </div>
 
-              {/* PAYMENT */}
               <div className="mb-4">
                 <h6 className="fw-semibold mb-3">Payment Method</h6>
-
                 <label className="w-100 border rounded-3 p-4 d-flex gap-3 border-primary bg-light">
                   <input
                     type="radio"
