@@ -459,15 +459,26 @@ function AdminPanel() {
                     <h6 className="mb-1 fw-bold">{o.customerName}</h6>
 
                     <div className="d-flex flex-column gap-1">
-                      <small className="text-muted">
-                        📧 <span className="ms-1">{o.email}</span>
-                      </small>
+                      {/* Email */}
+                      {o.email && (
+                        <small className="text-muted">
+                          📧 <span className="ms-1">{o.email}</span>
+                        </small>
+                      )}
 
+                      {/* Phone */}
                       {o.phone && (
-                        <small className="text-muted d-flex align-items-center gap-2">
+                        <small className="text-muted d-flex align-items-center gap-2 flex-wrap">
                           📞 <span>{o.phone}</span>
+                        </small>
+                      )}
+
+                      {/* WhatsApp */}
+                      {o.whatsapp && (
+                        <small className="text-muted d-flex align-items-center gap-2 flex-wrap">
+                          🟢 <span>{o.whatsapp}</span>
                           <a
-                            href={`https://wa.me/${o.phone.replace(/\D/g, "")}`}
+                            href={`https://wa.me/${o.whatsapp.replace(/\D/g, "")}`}
                             target="_blank"
                             rel="noopener noreferrer"
                             title="Send WhatsApp"
@@ -475,15 +486,18 @@ function AdminPanel() {
                             <img
                               src="https://upload.wikimedia.org/wikipedia/commons/6/6b/WhatsApp.svg"
                               alt="WhatsApp"
-                              style={{ width: 16, height: 16 }}
+                              style={{ width: 20, height: 20 }}
                             />
                           </a>
                         </small>
                       )}
 
-                      <small className="text-muted">
-                        🏠 <span className="ms-1">{o.address}</span>
-                      </small>
+                      {/* Address */}
+                      {o.address && (
+                        <small className="text-muted">
+                          🏠 <span className="ms-1">{o.address}</span>
+                        </small>
+                      )}
                     </div>
                   </div>
 

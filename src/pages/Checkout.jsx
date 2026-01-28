@@ -28,44 +28,42 @@ function Checkout() {
     paymentMethod: "COD",
   });
 
-  // Scroll to top on mount
   useEffect(() => {
     window.scrollTo(0, 0);
   }, []);
 
-  // Calculate total
-  const totalAmount = useMemo(
-    () => items.reduce((sum, item) => sum + item.price * item.quantity, 0),
-    [items],
-  );
+  // Safe total calculation
+  const totalAmount = useMemo(() => {
+    return items.reduce(
+      (sum, item) => sum + Number(item.price || 0) * Number(item.quantity || 0),
+      0,
+    );
+  }, [items]);
 
-  // Handle input changes
   const handleChange = useCallback((e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
   }, []);
 
-  // Submit order
   const handleSubmit = useCallback(
     async (e) => {
       e.preventDefault();
 
-      // Required fields: name, phone, whatsapp, address
-      if (
-        !formData.name ||
-        !formData.phone ||
-        !formData.whatsapp ||
-        !formData.address
-      ) {
+      // Trim fields
+      const name = formData.name.trim();
+      const email = formData.email.trim();
+      const phone = formData.phone.trim();
+      const whatsapp = formData.whatsapp.trim();
+      const address = formData.address.trim();
+
+      // Validate required fields
+      if (!name || !phone || !whatsapp || !address) {
         alert("Please fill all required fields");
         return;
       }
 
       // Optional email validation
-      if (
-        formData.email &&
-        !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)
-      ) {
+      if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
         alert("Please enter a valid email address");
         return;
       }
@@ -74,38 +72,29 @@ function Checkout() {
       setIsSubmitting(true);
 
       try {
-        await axios.post(`${BACKEND_URL}/orders`, {
-          customerName: formData.name,
-          email: formData.email || "", // optional, empty string if not entered
-          phone: formData.phone,
-          whatsapp: formData.whatsapp, // required
-          address: formData.address,
+        const orderPayload = {
+          customerName: name,
+          email: email || "",
+          phone,
+          whatsapp,
+          address,
           paymentMethod: formData.paymentMethod,
           products: items.map((item) => ({
             productId: item._id,
             title: item.title,
-            price: item.price,
-            quantity: item.quantity,
+            price: Number(item.price || 0),
+            quantity: Number(item.quantity || 0),
             image: item.image?.startsWith("http")
               ? item.image
               : `${BACKEND_URL}/${item.image}`,
           })),
           totalAmount,
-        });
+        };
 
-        // TikTok tracking (optional)
-        setTimeout(() => {
-          window.ttq?.track("Purchase", {
-            value: totalAmount,
-            currency: "PKR",
-            contents: items.map((item) => ({
-              content_id: item._id,
-              content_name: item.title,
-              price: item.price,
-              quantity: item.quantity,
-            })),
-          });
-        }, 0);
+        // Debug: log payload before sending
+        console.log("Submitting order:", orderPayload);
+
+        await axios.post(`${BACKEND_URL}/orders`, orderPayload);
 
         dispatch(clearCart());
         navigate("/order-success");
@@ -113,6 +102,7 @@ function Checkout() {
         console.error("ORDER ERROR:", err.response?.data || err.message);
         alert(
           err.response?.data?.message ||
+            JSON.stringify(err.response?.data) ||
             "❌ Failed to place order. Check console.",
         );
       } finally {
@@ -122,7 +112,6 @@ function Checkout() {
     [formData, items, totalAmount, isSubmitting, dispatch, navigate],
   );
 
-  // Empty cart UI
   if (items.length === 0) {
     return (
       <div className="text-center my-5">
