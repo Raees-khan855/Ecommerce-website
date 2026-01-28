@@ -9,13 +9,11 @@ function ProductCard({ product, showShare = false }) {
   const dispatch = useDispatch();
   const [isSharing, setIsSharing] = useState(false);
 
-  // ⭐ Memoize fake rating so it doesn't recalc on every render
   const rating = useMemo(
     () => (Math.random() * (5 - 3.8) + 3.8).toFixed(1),
-    [product._id], // recalc only if product changes
+    [product._id],
   );
 
-  // ================= IMAGE =================
   const rawImage =
     Array.isArray(product.images) && product.images.length > 0
       ? product.images[0]
@@ -29,7 +27,6 @@ function ProductCard({ product, showShare = false }) {
 
   const productUrl = `${window.location.origin}/#/products/${product._id}`;
 
-  // ================= ADD TO CART =================
   const handleAdd = () => {
     dispatch(
       addToCart({
@@ -41,7 +38,6 @@ function ProductCard({ product, showShare = false }) {
     );
   };
 
-  // ================= SHARE =================
   const handleShare = async () => {
     if (isSharing) return;
     setIsSharing(true);
@@ -64,7 +60,20 @@ function ProductCard({ product, showShare = false }) {
   };
 
   return (
-    <div className="card h-100 shadow-sm border-0 rounded-3 overflow-hidden">
+    <div
+      className="card h-100 shadow-sm border-0 rounded-3 overflow-hidden"
+      style={{
+        transition: "transform 0.3s ease, box-shadow 0.3s ease",
+      }}
+      onMouseEnter={(e) => {
+        e.currentTarget.style.transform = "translateY(-5px)";
+        e.currentTarget.style.boxShadow = "0 8px 20px rgba(0,0,0,0.15)";
+      }}
+      onMouseLeave={(e) => {
+        e.currentTarget.style.transform = "translateY(0)";
+        e.currentTarget.style.boxShadow = "0 4px 12px rgba(0,0,0,0.1)";
+      }}
+    >
       {/* IMAGE */}
       <div
         className="bg-light d-flex align-items-center justify-content-center"
@@ -75,19 +84,39 @@ function ProductCard({ product, showShare = false }) {
           alt={product.title}
           className="img-fluid"
           style={{ maxHeight: "100%", objectFit: "contain" }}
-          loading="lazy" // ✅ lazy load
+          loading="lazy"
         />
       </div>
 
       {/* BODY */}
-      <div className="card-body d-flex flex-column text-center p-3">
-        <h6 className="fw-semibold mb-1 text-truncate">{product.title}</h6>
-        <span className="text-muted small mb-1">
+      <div className="card-body d-flex flex-column p-2">
+        {/* TITLE 3 LINES */}
+        <h6
+          title={product.title}
+          style={{
+            display: "-webkit-box",
+            WebkitLineClamp: 3,
+            WebkitBoxOrient: "vertical",
+            overflow: "hidden",
+            textOverflow: "ellipsis",
+            fontWeight: 600,
+            margin: "0.25rem 0 0.5rem 0",
+            paddingLeft: "0.5rem",
+          }}
+        >
+          {product.title}
+        </h6>
+
+        {/* PRICE */}
+        <span
+          className="text-muted small mb-1"
+          style={{ paddingLeft: "0.5rem" }}
+        >
           Rs.{Number(product.price).toFixed(2)}
         </span>
 
         {/* STARS */}
-        <div className="d-flex justify-content-center align-items-center gap-1 mb-3">
+        <div className="d-flex justify-content-start align-items-center gap-1 mb-3 ps-1">
           {[1, 2, 3, 4, 5].map((i) =>
             rating >= i ? (
               <FaStar key={i} className="text-warning" size={14} />
@@ -101,7 +130,7 @@ function ProductCard({ product, showShare = false }) {
         </div>
 
         {/* ACTIONS */}
-        <div className="mt-auto d-flex gap-2">
+        <div className="mt-auto d-flex gap-2 px-1 pb-1">
           <Link
             to={`/products/${product._id}`}
             className="btn btn-outline-primary btn-sm flex-grow-1"
@@ -130,5 +159,4 @@ function ProductCard({ product, showShare = false }) {
   );
 }
 
-// ✅ Memoize entire component to avoid re-renders if props don't change
 export default React.memo(ProductCard);
