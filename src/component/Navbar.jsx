@@ -8,7 +8,7 @@ function Navbar() {
 
   const cartItems = useSelector((state) => state.cart?.items || []);
 
-  // ✅ Memoize cart count
+  // Memoize cart count
   const cartCount = useMemo(
     () => cartItems.reduce((sum, item) => sum + (item.quantity || 0), 0),
     [cartItems],
@@ -30,7 +30,8 @@ function Navbar() {
           {/* Cart Icon (mobile only) */}
           <NavLink
             to="/cart"
-            className="btn btn-primary d-lg-none position-relative me-2"
+            className="d-lg-none position-relative me-2 text-white"
+            style={{ fontSize: "1.25rem" }}
           >
             🛒
             {cartCount > 0 && (
@@ -40,7 +41,7 @@ function Navbar() {
             )}
           </NavLink>
 
-          {/* Mobile Toggle (React state instead of Bootstrap JS) */}
+          {/* Mobile Toggle */}
           <button
             className="navbar-toggler"
             type="button"
@@ -86,8 +87,12 @@ function Navbar() {
 
           {/* Desktop Cart Icon */}
           <div className="d-none d-lg-flex align-items-center">
-            <NavLink to="/cart" className="btn btn-primary position-relative">
-              🛒 Cart
+            <NavLink
+              to="/cart"
+              className="position-relative text-white"
+              style={{ fontSize: "1.25rem" }}
+            >
+              🛒
               {cartCount > 0 && (
                 <span className="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
                   {cartCount}
@@ -101,5 +106,4 @@ function Navbar() {
   );
 }
 
-// ✅ Memoize Navbar to avoid unnecessary re-renders
 export default Navbar;
