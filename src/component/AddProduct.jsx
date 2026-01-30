@@ -280,7 +280,15 @@ function AdminPanel() {
         { headers: { Authorization: `Bearer ${token}` } },
       );
 
-      setOrders((prev) => prev.map((o) => (o._id === orderId ? res.data : o)));
+      // Merge updated status with existing order details
+      setOrders((prev) =>
+        prev.map((o) => {
+          if (o._id === orderId) {
+            return { ...o, status: res.data.status || "Confirmed" };
+          }
+          return o;
+        }),
+      );
     } catch {
       alert("Confirm failed");
     }
@@ -592,7 +600,9 @@ function AdminPanel() {
                 <div className="card-body">
                   {/* CUSTOMER INFO */}
                   <div className="mb-3">
-                    <h6 className="mb-1 fw-bold">{o.customerName}</h6>
+                    <h6 className="mb-1 fw-bold">
+                      {o.customerName || "Unknown Customer"}
+                    </h6>
                     <div className="d-flex flex-column gap-1">
                       {o.email && (
                         <small className="text-muted">📧 {o.email}</small>
@@ -628,7 +638,7 @@ function AdminPanel() {
                     <span
                       className={`badge ${o.status === "Confirmed" ? "bg-success" : "bg-info"}`}
                     >
-                      {o.status}
+                      {o.status || "Pending"}
                     </span>
                     <div className="d-flex gap-2">
                       {o.status !== "Confirmed" && (
@@ -648,7 +658,7 @@ function AdminPanel() {
                     </div>
                   </div>
 
-                  {/* PRODUCTS */}
+                  {/* PRODUCTS LIST */}
                   <ul className="list-group list-group-flush mb-2">
                     {(o.products || []).map((p, i) => (
                       <li
@@ -656,8 +666,8 @@ function AdminPanel() {
                         className="list-group-item d-flex align-items-center gap-3 px-0"
                       >
                         <img
-                          src={getImageUrl(p.image)}
-                          alt={p.title}
+                          src={getImageUrl(p?.image)}
+                          alt={p?.title || "Product"}
                           style={{
                             width: "48px",
                             height: "48px",
@@ -666,23 +676,28 @@ function AdminPanel() {
                           }}
                         />
                         <div className="flex-grow-1">
-                          <div className="fw-semibold">{p.title}</div>
+                          <div className="fw-semibold">
+                            {p?.title || "Unknown Product"}
+                          </div>
                           <small className="text-muted">
-                            Qty: {p.quantity}
+                            Qty: {p?.quantity || 0}
                           </small>
                         </div>
                         <span className="fw-semibold">
-                          Rs.{(p.price * p.quantity).toFixed(2)}
+                          Rs.
+                          {Number((p?.price || 0) * (p?.quantity || 0)).toFixed(
+                            2,
+                          )}
                         </span>
                       </li>
                     ))}
                   </ul>
                 </div>
 
-                {/* TOTAL */}
+                {/* TOTAL AMOUNT */}
                 <div className="card-footer bg-white border-top d-flex justify-content-between align-items-center">
                   <strong className="fs-6">
-                    Rs.{Number((p.price || 0) * (p.quantity || 0)).toFixed(2)}
+                    Total: Rs.{Number(o?.totalAmount || 0).toFixed(2)}
                   </strong>
                 </div>
               </div>
