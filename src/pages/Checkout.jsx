@@ -1,10 +1,22 @@
+import React, { useState, useEffect, useCallback, useMemo } from "react";
 import { useSelector, useDispatch } from "react-redux";
-import { useState, useEffect, useCallback, useMemo } from "react";
 import { clearCart } from "../redux/cartSlice";
 import { useNavigate, Link } from "react-router-dom";
 import axios from "axios";
 import BACKEND_URL from "../config";
 import useSEO from "../hooks/useSEO";
+
+import PhoneInput from "react-phone-input-2";
+import "react-phone-input-2/lib/style.css"; // required styles
+
+// Helper to normalize number to +923...
+const formatWhatsApp = (num) => {
+  if (!num) return "";
+  let cleaned = num.replace(/\D/g, "");
+  if (cleaned.startsWith("0")) cleaned = "92" + cleaned.slice(1);
+  if (!cleaned.startsWith("92")) cleaned = "92" + cleaned;
+  return "+" + cleaned;
+};
 
 function Checkout() {
   useSEO({
@@ -21,9 +33,9 @@ function Checkout() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState({
     name: "",
-    email: "", // optional
+    email: "",
     phone: "",
-    whatsapp: "", // required
+    whatsapp: "",
     address: "",
     paymentMethod: "COD",
   });
@@ -32,7 +44,6 @@ function Checkout() {
     window.scrollTo(0, 0);
   }, []);
 
-  // Safe total calculation
   const totalAmount = useMemo(() => {
     return items.reduce(
       (sum, item) => sum + Number(item.price || 0) * Number(item.quantity || 0),
@@ -45,24 +56,30 @@ function Checkout() {
     setFormData((prev) => ({ ...prev, [name]: value }));
   }, []);
 
+  // Phone input handler
+  const handlePhoneChange = (value) => {
+    setFormData((prev) => ({ ...prev, phone: value }));
+  };
+
+  const handleWhatsAppChange = (value) => {
+    setFormData((prev) => ({ ...prev, whatsapp: value }));
+  };
+
   const handleSubmit = useCallback(
     async (e) => {
       e.preventDefault();
 
-      // Trim fields
       const name = formData.name.trim();
       const email = formData.email.trim();
       const phone = formData.phone.trim();
       const whatsapp = formData.whatsapp.trim();
       const address = formData.address.trim();
 
-      // Validate required fields
       if (!name || !phone || !whatsapp || !address) {
         alert("Please fill all required fields");
         return;
       }
 
-      // Optional email validation
       if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
         alert("Please enter a valid email address");
         return;
@@ -75,8 +92,8 @@ function Checkout() {
         const orderPayload = {
           customerName: name,
           email: email || "",
-          phone,
-          whatsapp,
+          phone: formatWhatsApp(phone),
+          whatsapp: formatWhatsApp(whatsapp),
           address,
           paymentMethod: formData.paymentMethod,
           products: items.map((item) => ({
@@ -91,7 +108,6 @@ function Checkout() {
           totalAmount,
         };
 
-        // Debug: log payload before sending
         console.log("Submitting order:", orderPayload);
 
         await axios.post(`${BACKEND_URL}/orders`, orderPayload);
@@ -162,27 +178,37 @@ function Checkout() {
                 />
               </div>
 
+              {/* PHONE INPUT WITH FLAG */}
               <div className="mb-3">
                 <label className="form-label">Phone *</label>
-                <input
-                  type="tel"
-                  name="phone"
+                <PhoneInput
+                  country={"pk"}
                   value={formData.phone}
-                  onChange={handleChange}
-                  className="form-control"
-                  required
+                  onChange={handlePhoneChange}
+                  onlyCountries={["pk"]}
+                  countryCodeEditable={false}
+                  inputStyle={{ width: "100%" }}
+                  inputProps={{
+                    name: "phone",
+                    required: true,
+                  }}
                 />
               </div>
 
+              {/* WHATSAPP INPUT WITH FLAG */}
               <div className="mb-3">
                 <label className="form-label">WhatsApp Number *</label>
-                <input
-                  type="tel"
-                  name="whatsapp"
+                <PhoneInput
+                  country={"pk"}
                   value={formData.whatsapp}
-                  onChange={handleChange}
-                  className="form-control"
-                  required
+                  onChange={handleWhatsAppChange}
+                  onlyCountries={["pk"]}
+                  countryCodeEditable={false}
+                  inputStyle={{ width: "100%" }}
+                  inputProps={{
+                    name: "whatsapp",
+                    required: true,
+                  }}
                 />
               </div>
 
@@ -198,6 +224,7 @@ function Checkout() {
                 />
               </div>
 
+              {/* PAYMENT METHOD */}
               <div className="mb-4">
                 <h6 className="fw-semibold mb-3">Payment Method</h6>
                 <label className="w-100 border rounded-3 p-4 d-flex gap-3 border-primary bg-light">
@@ -247,7 +274,6 @@ function Checkout() {
                             : `${BACKEND_URL}/${item.image}`
                         }
                         alt={item.title}
-                        loading="lazy"
                         width="60"
                         height="60"
                         style={{

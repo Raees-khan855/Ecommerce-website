@@ -2,6 +2,50 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import BACKEND_URL from "../config";
 
+// Format WhatsApp number for wa.me
+const formatWhatsApp = (num) => {
+  if (!num) return "";
+  let cleaned = num.replace(/\D/g, "");
+  if (cleaned.startsWith("0")) cleaned = "92" + cleaned.slice(1);
+  if (!cleaned.startsWith("92")) cleaned = "92" + cleaned;
+  return cleaned; // no '+' for wa.me URL
+};
+
+// ---------------- WHATSAPP MESSAGE FUNCTION ----------------
+const generateWhatsAppMessage = (customerName, products, totalAmount) => {
+  let msg = `🛒 *Hello ${customerName || "Customer"}!*\n\n`;
+  msg += `Here are your order details:\n\n`;
+
+  products.forEach((p, i) => {
+    msg += `*${i + 1}. ${p.title}*\n`;
+    msg += `   📦 Qty: ${p.quantity}\n`;
+    msg += `   💰 Price: Rs.${(p.price * p.quantity).toFixed(2)}\n\n`;
+  });
+
+  msg += `*💵 Total Amount:* Rs.${totalAmount.toFixed(2)}\n`;
+  msg += `⏱️ Delivery: 3-6 days\n`;
+  msg += `\nThank you for shopping with us! ❤️`;
+
+  // DO NOT use encodeURIComponent — WhatsApp will parse emojis correctly
+  return msg;
+};
+
+// ---------------- SEND WHATSAPP ORDER ----------------
+const handleSendOrderWhatsApp = (order) => {
+  if (!order.whatsapp) return alert("WhatsApp number missing!");
+
+  const phone = formatWhatsApp(order.whatsapp);
+  const message = generateWhatsAppMessage(
+    order.customerName,
+    order.products,
+    order.totalAmount,
+  );
+
+  // Use encodeURIComponent only on the whole message when opening wa.me
+  const url = `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
+  window.open(url, "_blank");
+};
+
 function AdminPanel() {
   /* ================= AUTH ================= */
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -457,46 +501,32 @@ function AdminPanel() {
                   {/* CUSTOMER INFO */}
                   <div className="mb-3">
                     <h6 className="mb-1 fw-bold">{o.customerName}</h6>
-
                     <div className="d-flex flex-column gap-1">
-                      {/* Email */}
                       {o.email && (
-                        <small className="text-muted">
-                          📧 <span className="ms-1">{o.email}</span>
-                        </small>
+                        <small className="text-muted">📧 {o.email}</small>
                       )}
-
-                      {/* Phone */}
                       {o.phone && (
-                        <small className="text-muted d-flex align-items-center gap-2 flex-wrap">
-                          📞 <span>{o.phone}</span>
-                        </small>
+                        <small className="text-muted">📞 {o.phone}</small>
                       )}
-
-                      {/* WhatsApp */}
                       {o.whatsapp && (
-                        <small className="text-muted d-flex align-items-center gap-2 flex-wrap">
-                          🟢 <span>{o.whatsapp}</span>
-                          <a
-                            href={`https://wa.me/${o.whatsapp.replace(/\D/g, "")}`}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            title="Send WhatsApp"
+                        <div className="d-flex align-items-center gap-2 flex-wrap">
+                          <span className="text-success">🟢 {o.whatsapp}</span>
+                          <button
+                            type="button"
+                            className="btn p-0"
+                            onClick={() => handleSendOrderWhatsApp(o)}
+                            title="Send Order on WhatsApp"
                           >
                             <img
                               src="https://upload.wikimedia.org/wikipedia/commons/6/6b/WhatsApp.svg"
                               alt="WhatsApp"
                               style={{ width: 20, height: 20 }}
                             />
-                          </a>
-                        </small>
+                          </button>
+                        </div>
                       )}
-
-                      {/* Address */}
                       {o.address && (
-                        <small className="text-muted">
-                          🏠 <span className="ms-1">{o.address}</span>
-                        </small>
+                        <small className="text-muted">🏠 {o.address}</small>
                       )}
                     </div>
                   </div>
@@ -504,13 +534,10 @@ function AdminPanel() {
                   {/* STATUS + ACTIONS */}
                   <div className="d-flex justify-content-between align-items-center mb-3">
                     <span
-                      className={`badge ${
-                        o.status === "Confirmed" ? "bg-success" : "bg-info"
-                      }`}
+                      className={`badge ${o.status === "Confirmed" ? "bg-success" : "bg-info"}`}
                     >
                       {o.status}
                     </span>
-
                     <div className="d-flex gap-2">
                       {o.status !== "Confirmed" && (
                         <button
@@ -520,7 +547,6 @@ function AdminPanel() {
                           Confirm
                         </button>
                       )}
-
                       <button
                         className="btn btn-danger btn-sm"
                         onClick={() => handleDeleteOrder(o._id)}
@@ -531,7 +557,7 @@ function AdminPanel() {
                   </div>
 
                   {/* PRODUCTS */}
-                  <ul className="list-group list-group-flush">
+                  <ul className="list-group list-group-flush mb-2">
                     {(o.products || []).map((p, i) => (
                       <li
                         key={i}
@@ -547,23 +573,25 @@ function AdminPanel() {
                             borderRadius: "6px",
                           }}
                         />
-
                         <div className="flex-grow-1">
                           <div className="fw-semibold">{p.title}</div>
                           <small className="text-muted">
                             Qty: {p.quantity}
                           </small>
                         </div>
+                        <span className="fw-semibold">
+                          Rs.{(p.price * p.quantity).toFixed(2)}
+                        </span>
                       </li>
                     ))}
                   </ul>
                 </div>
 
                 {/* TOTAL */}
-                <div className="card-footer bg-white border-top">
-                  <div className="d-flex justify-content-end">
-                    <strong className="fs-6">Total: Rs.{o.totalAmount}</strong>
-                  </div>
+                <div className="card-footer bg-white border-top d-flex justify-content-between align-items-center">
+                  <strong className="fs-6">
+                    Total: Rs.{o.totalAmount.toFixed(2)}
+                  </strong>
                 </div>
               </div>
             </div>
