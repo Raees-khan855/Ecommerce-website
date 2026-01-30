@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import axios from "axios";
 import BACKEND_URL from "../config";
 
@@ -72,6 +72,46 @@ function AdminPanel() {
   const [editingProductId, setEditingProductId] = useState(null);
   const [productPreview, setProductPreview] = useState(null);
   const [featured, setFeatured] = useState(false);
+  /* ===== DRAG & DROP IMAGE HELPERS ===== */
+  const fileInputRef = useRef();
+
+  const processFiles = (files) => {
+    const selected = Array.from(files).slice(0, 5);
+    setImages(selected);
+    setProductPreviews(selected.map((f) => URL.createObjectURL(f)));
+  };
+
+  const handleDrop = (e) => {
+    e.preventDefault();
+    processFiles(e.dataTransfer.files);
+  };
+
+  const removeImage = (index) => {
+    const newImgs = [...images];
+    const newPrev = [...productPreviews];
+
+    newImgs.splice(index, 1);
+    newPrev.splice(index, 1);
+
+    setImages(newImgs);
+    setProductPreviews(newPrev);
+  };
+  /* ===== REORDER IMAGES (DRAG SORT) ===== */
+  const moveImage = (fromIndex, toIndex) => {
+    if (fromIndex === toIndex) return;
+
+    const newPreviews = [...productPreviews];
+    const newImages = [...images];
+
+    const [p] = newPreviews.splice(fromIndex, 1);
+    const [i] = newImages.splice(fromIndex, 1);
+
+    newPreviews.splice(toIndex, 0, p);
+    newImages.splice(toIndex, 0, i);
+
+    setProductPreviews(newPreviews);
+    setImages(newImages);
+  };
 
   /* ================= ORDERS ================= */
   const [orders, setOrders] = useState([]);
@@ -409,25 +449,77 @@ function AdminPanel() {
                 onChange={(e) => setCategory(e.target.value)}
                 required
               />
-              <input
-                type="file"
-                className="form-control mb-2"
-                accept="image/*"
-                multiple
-                onChange={handleImageChange}
-              />
+              {/* ===== Drag & Drop Upload ===== */}
+              <div
+                className="border rounded p-4 text-center mb-3"
+                style={{ background: "#fafafa", cursor: "pointer" }}
+                onDragOver={(e) => e.preventDefault()}
+                onDrop={handleDrop}
+                onClick={() => fileInputRef.current.click()}
+              >
+                <p className="mb-1">📂 Drag & Drop images here</p>
+                <small className="text-muted">or click to browse (max 5)</small>
+
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  hidden
+                  multiple
+                  accept="image/*"
+                  onChange={handleImageChange}
+                />
+              </div>
+
               <div className="d-flex flex-wrap gap-2 mb-2">
                 {productPreviews.map((img, i) => (
-                  <img
+                  <div
                     key={i}
-                    src={img}
-                    style={{
-                      width: 80,
-                      height: 80,
-                      objectFit: "cover",
-                      borderRadius: 6,
+                    draggable
+                    onDragStart={(e) => {
+                      e.dataTransfer.setData("from", i);
                     }}
-                  />
+                    onDragOver={(e) => e.preventDefault()}
+                    onDrop={(e) => {
+                      const from = Number(e.dataTransfer.getData("from"));
+                      moveImage(from, i);
+                    }}
+                    style={{
+                      position: "relative",
+                      cursor: "grab",
+                      touchAction: "none",
+                    }}
+                  >
+                    <img
+                      src={img}
+                      style={{
+                        width: 80,
+                        height: 80,
+                        objectFit: "cover",
+                        borderRadius: 6,
+                        border: "2px solid #eee",
+                      }}
+                    />
+
+                    {/* remove button */}
+                    <button
+                      type="button"
+                      onClick={() => removeImage(i)}
+                      style={{
+                        position: "absolute",
+                        top: -6,
+                        right: -6,
+                        background: "red",
+                        color: "white",
+                        border: "none",
+                        borderRadius: "50%",
+                        width: 20,
+                        height: 20,
+                        fontSize: 12,
+                      }}
+                    >
+                      ✕
+                    </button>
+                  </div>
                 ))}
               </div>
 
@@ -590,7 +682,7 @@ function AdminPanel() {
                 {/* TOTAL */}
                 <div className="card-footer bg-white border-top d-flex justify-content-between align-items-center">
                   <strong className="fs-6">
-                    Total: Rs.{o.totalAmount.toFixed(2)}
+                    Rs.{Number((p.price || 0) * (p.quantity || 0)).toFixed(2)}
                   </strong>
                 </div>
               </div>

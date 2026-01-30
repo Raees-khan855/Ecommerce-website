@@ -17,33 +17,77 @@ function Cart() {
     [items],
   );
 
+  /* ===== Handle Quantity Change with TikTok Tracking ===== */
   const handleQtyChange = useCallback(
     (id, value) => {
+      const item = items.find((i) => i.id === id);
+      if (!item || value < 1) return;
+
       dispatch(updateQuantity({ id, quantity: value }));
+
+      // TikTok Pixel: AddToCart (quantity update)
+      if (window.ttq?.track) {
+        window.ttq.track("AddToCart", {
+          value: item.price * value,
+          currency: "PKR",
+          contents: [
+            {
+              content_id: item.id,
+              content_name: item.title,
+              quantity: value,
+              price: item.price,
+              content_type: "product",
+            },
+          ],
+        });
+      }
     },
-    [dispatch],
+    [dispatch, items],
   );
 
+  /* ===== Handle Item Removal with TikTok Tracking ===== */
   const handleRemove = useCallback(
     (id) => {
+      const item = items.find((i) => i.id === id);
+      if (!item) return;
+
       dispatch(removeFromCart(id));
+
+      // TikTok Pixel: RemoveFromCart
+      if (window.ttq?.track) {
+        window.ttq.track("RemoveFromCart", {
+          value: item.price * item.quantity,
+          currency: "PKR",
+          contents: [
+            {
+              content_id: item.id,
+              content_name: item.title,
+              quantity: item.quantity,
+              price: item.price,
+              content_type: "product",
+            },
+          ],
+        });
+      }
     },
-    [dispatch],
+    [dispatch, items],
   );
 
+  /* ===== Handle Checkout with TikTok Tracking ===== */
   const handleCheckout = useCallback(() => {
-    setTimeout(() => {
-      window.ttq?.track("InitiateCheckout", {
+    if (window.ttq?.track) {
+      window.ttq.track("InitiateCheckout", {
         value: total,
         currency: "PKR",
         contents: items.map((item) => ({
           content_id: item.id,
           content_name: item.title,
-          price: item.price,
           quantity: item.quantity,
+          price: item.price,
+          content_type: "product",
         })),
       });
-    }, 0);
+    }
 
     navigate("/checkout");
   }, [items, total, navigate]);
@@ -72,7 +116,7 @@ function Cart() {
             key={item.id}
             className="list-group-item d-flex flex-column flex-sm-row align-items-sm-center gap-3 p-3 shadow-sm border-0 mb-2 rounded-3"
           >
-            {/* IMAGE (CLS safe) */}
+            {/* IMAGE */}
             <img
               src={item.image}
               alt={item.title}
