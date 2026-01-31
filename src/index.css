@@ -10,3 +10,11 @@
 .whatsapp-btn svg {
   animation: whatsapp-vibrate 1.9s infinite;
 }
+.share-btn {
+  width: 34px;
+  height: 34px;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}

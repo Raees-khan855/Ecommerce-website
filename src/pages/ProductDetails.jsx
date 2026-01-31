@@ -56,6 +56,7 @@ function ProductDetails() {
         if (!mounted) return;
 
         const prod = res.data.product || res.data;
+
         setProduct(prod);
         setRelated(Array.isArray(res.data.related) ? res.data.related : []);
 
@@ -105,20 +106,41 @@ function ProductDetails() {
       }),
     );
 
-    if (window.ttq) {
-      window.ttq.track("AddToCart", {
-        content_id: product._id,
-        content_name: product.title,
-        value: Number(product.price || 0) * quantity,
-        currency: "PKR",
-        quantity,
-      });
-    }
-
     navigate(checkout ? "/checkout" : "/cart");
   };
 
-  /* ================= LOADING SKELETON ================= */
+  /* ================= SHARE FIX (ONLY FOR THIS PAGE) ================= */
+
+  const productUrl = window.location.href;
+
+  const handleWhatsAppShare = () => {
+    window.open(
+      `https://wa.me/?text=${encodeURIComponent(productUrl)}`,
+      "_blank",
+    );
+  };
+
+  const handleCopyLink = async () => {
+    try {
+      await navigator.clipboard.writeText(productUrl);
+      alert("Link copied!");
+    } catch {
+      alert("Copy failed");
+    }
+  };
+
+  const handleNativeShare = async () => {
+    if (!navigator.share) return handleWhatsAppShare();
+
+    try {
+      await navigator.share({
+        title: product.title,
+        url: productUrl,
+      });
+    } catch {}
+  };
+
+  /* ================= LOADING ================= */
   if (loading) {
     return (
       <div className="container py-5">
@@ -165,7 +187,6 @@ function ProductDetails() {
                   <img
                     key={i}
                     src={getImageUrl(img)}
-                    loading="lazy"
                     width="64"
                     height="64"
                     alt="thumb"
@@ -239,22 +260,33 @@ function ProductDetails() {
             </button>
           </div>
 
-          {/* SHARE */}
+          {/* SHARE (FIXED ONLY HERE) */}
           <div className="d-flex gap-2">
-            <button className="btn btn-outline-secondary btn-sm">
+            <button
+              className="btn btn-outline-secondary btn-sm"
+              onClick={handleNativeShare}
+            >
               <FaShareAlt />
             </button>
-            <button className="btn btn-outline-success btn-sm">
+
+            <button
+              className="btn btn-outline-success btn-sm"
+              onClick={handleWhatsAppShare}
+            >
               <FaWhatsapp />
             </button>
-            <button className="btn btn-outline-primary btn-sm">
+
+            <button
+              className="btn btn-outline-primary btn-sm"
+              onClick={handleCopyLink}
+            >
               <FaLink />
             </button>
           </div>
         </div>
       </div>
 
-      {/* RELATED (LAZY) */}
+      {/* RELATED (UNCHANGED) */}
       {related.length > 0 && (
         <div className="mt-5">
           <h4 className="fw-bold mb-3">Related Products</h4>

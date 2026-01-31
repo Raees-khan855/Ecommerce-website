@@ -3,11 +3,20 @@ import { useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { addToCart } from "../redux/cartSlice";
 import BACKEND_URL from "../config";
-import { FaStar, FaStarHalfAlt, FaRegStar, FaShareAlt } from "react-icons/fa";
+
+import {
+  FaStar,
+  FaStarHalfAlt,
+  FaRegStar,
+  FaWhatsapp,
+  FaCopy,
+  FaShareAlt,
+} from "react-icons/fa";
 
 function ProductCard({ product, showShare = false }) {
   const dispatch = useDispatch();
   const navigate = useNavigate();
+
   const [isSharing, setIsSharing] = useState(false);
 
   /* ================= IMAGE ================= */
@@ -22,15 +31,17 @@ function ProductCard({ product, showShare = false }) {
       : `${BACKEND_URL}/${rawImage.replace(/^\/+/, "")}`
     : "https://via.placeholder.com/300?text=No+Image";
 
-  /* ================= RATING (fake demo rating) ================= */
+  /* ================= DEMO RATING ================= */
   const rating = useMemo(
     () => (Math.random() * (5 - 3.8) + 3.8).toFixed(1),
     [product._id],
   );
 
+  /* ================= URL ================= */
+  const productUrl = `${window.location.origin}/products/${product._id}`;
+
   /* ================= NAVIGATION ================= */
   const goToProduct = useCallback(() => {
-    // 🔥 ID based route (best for ads + tracking)
     navigate(`/products/${product._id}`);
   }, [navigate, product._id]);
 
@@ -47,68 +58,83 @@ function ProductCard({ product, showShare = false }) {
           image: productImage,
         }),
       );
-
-      /* ===== TikTok Pixel (optional but recommended) ===== */
-      if (window.ttq) {
-        window.ttq.track("AddToCart", {
-          content_id: product._id,
-          content_name: product.title,
-          value: Number(product.price),
-          currency: "PKR",
-        });
-      }
-
-      /* ===== Facebook Pixel (optional) ===== */
-      if (window.fbq) {
-        window.fbq("track", "AddToCart", {
-          content_ids: [product._id],
-          content_type: "product",
-          value: Number(product.price),
-          currency: "PKR",
-        });
-      }
     },
     [dispatch, product, productImage],
   );
 
-  /* ================= SHARE ================= */
-  const handleShare = useCallback(
+  /* ================= SHARE FUNCTIONS ================= */
+
+  // ✅ WhatsApp (guaranteed — no popup block)
+  const handleWhatsApp = useCallback(
+    (e) => {
+      e.stopPropagation();
+      const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(productUrl)}`;
+      window.location.href = whatsappUrl;
+    },
+    [productUrl],
+  );
+
+  // ✅ Copy (works even on old browsers)
+  const handleCopy = useCallback(
+    (e) => {
+      e.stopPropagation();
+
+      try {
+        if (navigator.clipboard) {
+          navigator.clipboard.writeText(productUrl);
+        } else {
+          const input = document.createElement("input");
+          input.value = productUrl;
+          document.body.appendChild(input);
+          input.select();
+          document.execCommand("copy");
+          document.body.removeChild(input);
+        }
+
+        alert("Link copied!");
+      } catch {
+        alert("Copy failed");
+      }
+    },
+    [productUrl],
+  );
+
+  // ✅ Native share
+  const handleNativeShare = useCallback(
     async (e) => {
       e.stopPropagation();
 
+      if (!navigator.share) return handleWhatsApp(e);
+
       if (isSharing) return;
+
       setIsSharing(true);
 
-      const url = `${window.location.origin}/#/products/${product._id}`;
-
       try {
-        if (navigator.share) {
-          await navigator.share({
-            title: product.title,
-            text: `Check out this product: ${product.title}`,
-            url,
-          });
-        } else {
-          await navigator.clipboard.writeText(url);
-          alert("Product link copied!");
-        }
-      } catch (err) {
-        if (err.name !== "AbortError") console.error(err);
-      } finally {
-        setIsSharing(false);
-      }
+        await navigator.share({
+          title: product.title,
+          text: product.title,
+          url: productUrl,
+        });
+      } catch {}
+
+      setIsSharing(false);
     },
-    [isSharing, product],
+    [product, productUrl, isSharing, handleWhatsApp],
   );
 
   /* ================= UI ================= */
   return (
     <div
-      onClick={goToProduct}
+      /* 🔥 CRITICAL FIX: only navigate if NOT clicking a button */
+      onClick={(e) => {
+        if (e.target.closest("button")) return;
+        goToProduct();
+      }}
       className="card h-100 shadow-sm border-0 rounded-3 overflow-hidden"
       style={{
         cursor: "pointer",
-        touchAction: "manipulation", // 🔥 mobile faster taps
+        touchAction: "manipulation",
         transition: "transform .25s ease, box-shadow .25s ease",
       }}
       onMouseEnter={(e) => {
@@ -120,7 +146,7 @@ function ProductCard({ product, showShare = false }) {
         e.currentTarget.style.boxShadow = "0 4px 12px rgba(0,0,0,0.1)";
       }}
     >
-      {/* ================= IMAGE ================= */}
+      {/* IMAGE */}
       <div
         className="bg-light d-flex align-items-center justify-content-center"
         style={{ height: 200, padding: 12 }}
@@ -134,9 +160,8 @@ function ProductCard({ product, showShare = false }) {
         />
       </div>
 
-      {/* ================= BODY ================= */}
+      {/* BODY */}
       <div className="card-body d-flex flex-column p-2">
-        {/* TITLE */}
         <h6
           title={product.title}
           style={{
@@ -151,7 +176,6 @@ function ProductCard({ product, showShare = false }) {
           {product.title}
         </h6>
 
-        {/* PRICE */}
         <span className="text-muted small mb-1">
           Rs.{Number(product.price).toFixed(2)}
         </span>
@@ -171,12 +195,9 @@ function ProductCard({ product, showShare = false }) {
         </div>
 
         {/* ACTIONS */}
-        <div className="mt-auto d-flex gap-2">
+        <div className="mt-auto d-flex gap-2 align-items-center">
           <button
-            onClick={(e) => {
-              e.stopPropagation();
-              goToProduct();
-            }}
+            onClick={goToProduct}
             className="btn btn-outline-primary btn-sm flex-grow-1"
           >
             View
@@ -190,13 +211,28 @@ function ProductCard({ product, showShare = false }) {
           </button>
 
           {showShare && (
-            <button
-              onClick={handleShare}
-              disabled={isSharing}
-              className="btn btn-outline-secondary btn-sm"
-            >
-              {isSharing ? "..." : <FaShareAlt />}
-            </button>
+            <>
+              <button
+                onClick={handleWhatsApp}
+                className="btn btn-success btn-sm share-btn"
+              >
+                <FaWhatsapp />
+              </button>
+
+              <button
+                onClick={handleCopy}
+                className="btn btn-outline-secondary btn-sm share-btn"
+              >
+                <FaCopy />
+              </button>
+
+              <button
+                onClick={handleNativeShare}
+                className="btn btn-outline-dark btn-sm share-btn"
+              >
+                <FaShareAlt />
+              </button>
+            </>
           )}
         </div>
       </div>
