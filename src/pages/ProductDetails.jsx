@@ -29,6 +29,8 @@ function ProductDetails() {
   const [quantity, setQuantity] = useState(1);
   const [loading, setLoading] = useState(true);
 
+  const [copied, setCopied] = useState(false); // ✅ state for copy feedback
+
   const rating = 4.6;
   const reviewCount = 128;
 
@@ -56,7 +58,6 @@ function ProductDetails() {
         if (!mounted) return;
 
         const prod = res.data.product || res.data;
-
         setProduct(prod);
         setRelated(Array.isArray(res.data.related) ? res.data.related : []);
 
@@ -109,8 +110,7 @@ function ProductDetails() {
     navigate(checkout ? "/checkout" : "/cart");
   };
 
-  /* ================= SHARE FIX (ONLY FOR THIS PAGE) ================= */
-
+  /* ================= SHARE ================= */
   const productUrl = window.location.href;
 
   const handleWhatsAppShare = () => {
@@ -123,9 +123,11 @@ function ProductDetails() {
   const handleCopyLink = async () => {
     try {
       await navigator.clipboard.writeText(productUrl);
-      alert("Link copied!");
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000); // hide after 2 seconds
     } catch {
-      alert("Copy failed");
+      setCopied(false);
+      console.error("Copy failed");
     }
   };
 
@@ -260,8 +262,8 @@ function ProductDetails() {
             </button>
           </div>
 
-          {/* SHARE (FIXED ONLY HERE) */}
-          <div className="d-flex gap-2">
+          {/* SHARE (with copied feedback) */}
+          <div className="d-flex gap-2 position-relative">
             <button
               className="btn btn-outline-secondary btn-sm"
               onClick={handleNativeShare}
@@ -276,12 +278,32 @@ function ProductDetails() {
               <FaWhatsapp />
             </button>
 
-            <button
-              className="btn btn-outline-primary btn-sm"
-              onClick={handleCopyLink}
-            >
-              <FaLink />
-            </button>
+            <div className="position-relative">
+              <button
+                className="btn btn-outline-primary btn-sm"
+                onClick={handleCopyLink}
+              >
+                <FaLink />
+              </button>
+              {copied && (
+                <span
+                  style={{
+                    position: "absolute",
+                    top: "-20px",
+                    left: "50%",
+                    transform: "translateX(-50%)",
+                    background: "#000",
+                    color: "#fff",
+                    padding: "2px 6px",
+                    borderRadius: 4,
+                    fontSize: 12,
+                    pointerEvents: "none",
+                  }}
+                >
+                  Copied!
+                </span>
+              )}
+            </div>
           </div>
         </div>
       </div>
