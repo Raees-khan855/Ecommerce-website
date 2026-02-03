@@ -60,7 +60,6 @@ function Checkout() {
     setFormData((prev) => ({ ...prev, [name]: value }));
   }, []);
 
-  // PHONE INPUT HANDLERS
   const handlePhoneChange = (value) => {
     let cleaned = value.replace(/\D/g, "");
     if (cleaned.startsWith("92") && cleaned[2] === "0") {
@@ -124,7 +123,7 @@ function Checkout() {
           address,
           paymentMethod: formData.paymentMethod,
           products: items.map((item) => ({
-            productId: item.id, // or item._id if your cart uses _id
+            productId: item.id,
             title: item.title,
             price: Number(item.price || 0),
             quantity: Number(item.quantity || 0),
@@ -134,7 +133,6 @@ function Checkout() {
               ? item.image
               : `${BACKEND_URL}/${item.image}`,
           })),
-
           totalAmount,
         };
 
@@ -293,7 +291,7 @@ function Checkout() {
               <ul className="list-group list-group-flush mb-3">
                 {items.map((item) => (
                   <li
-                    key={item._id}
+                    key={`${item.id}-${item.selectedColor}-${item.selectedSize}`}
                     className="list-group-item d-flex justify-content-between align-items-center"
                   >
                     <div className="d-flex align-items-center gap-3">
@@ -318,15 +316,26 @@ function Checkout() {
                       />
                       <div>
                         <strong>{item.title}</strong>
-                        <div className="small text-muted">
+                        <div className="small text-muted d-flex gap-2 align-items-center">
                           Qty: {item.quantity}
                           {item.selectedColor && (
-                            <span className="ms-2">| Color: ...</span>
+                            <span className="d-flex align-items-center">
+                              | Color:{" "}
+                              <span
+                                style={{
+                                  display: "inline-block",
+                                  width: 16,
+                                  height: 16,
+                                  borderRadius: "50%",
+                                  backgroundColor: item.selectedColor,
+                                  marginLeft: 4,
+                                  border: "1px solid #ccc",
+                                }}
+                              />
+                            </span>
                           )}
                           {item.selectedSize && (
-                            <span className="ms-2">
-                              | Size: {item.selectedSize}
-                            </span>
+                            <span>| Size: {item.selectedSize}</span>
                           )}
                         </div>
                       </div>
