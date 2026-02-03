@@ -25,8 +25,8 @@ function Cart() {
       dispatch(
         updateQuantity({
           id: item.id,
-          color: item.color,
-          size: item.size,
+          selectedColor: item.selectedColor,
+          selectedSize: item.selectedSize,
           quantity: value,
         }),
       );
@@ -40,8 +40,8 @@ function Cart() {
       dispatch(
         removeFromCart({
           id: item.id,
-          color: item.color,
-          size: item.size,
+          selectedColor: item.selectedColor,
+          selectedSize: item.selectedSize,
         }),
       );
     },
@@ -74,8 +74,7 @@ function Cart() {
       <div className="list-group mb-4">
         {items.map((item) => (
           <div
-            /* 🔥 key must include size+color */
-            key={`${item.id}-${item.color}-${item.size}`}
+            key={`${item.id}-${item.selectedColor}-${item.selectedSize}`} // fixed key
             className="list-group-item d-flex flex-column flex-sm-row align-items-sm-center gap-3 p-3 shadow-sm border-0 mb-2 rounded-3"
           >
             {/* IMAGE */}
@@ -99,7 +98,8 @@ function Cart() {
 
                   {/* ✅ SHOW COLOR + SIZE */}
                   <div className="small text-muted">
-                    Size: <b>{item.size}</b> | Color: <b>{item.color}</b>
+                    Size: <b>{item.selectedSize}</b> | Color:{" "}
+                    <b>{item.selectedColor}</b>
                   </div>
 
                   <div className="text-muted small">Rs. {item.price} each</div>
