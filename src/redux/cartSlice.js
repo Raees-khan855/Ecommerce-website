@@ -7,6 +7,7 @@ const initialState = {
   items: savedCart ? JSON.parse(savedCart) : [],
 };
 
+// Save cart to localStorage
 const saveCart = (items) => {
   localStorage.setItem("cartItems", JSON.stringify(items));
 };
@@ -19,12 +20,12 @@ const cartSlice = createSlice({
     addToCart: (state, action) => {
       const incoming = action.payload;
 
-      // ✅ match id + selectedColor + selectedSize
+      // Match by id + selectedColor + selectedSize
       const existing = state.items.find(
         (i) =>
           i.id === incoming.id &&
-          i.selectedColor === incoming.selectedColor &&
-          i.selectedSize === incoming.selectedSize,
+          (i.selectedColor || "") === (incoming.selectedColor || "") &&
+          (i.selectedSize || "") === (incoming.selectedSize || ""),
       );
 
       if (existing) {
@@ -39,41 +40,47 @@ const cartSlice = createSlice({
       saveCart(state.items);
     },
 
-    /* ================= REMOVE ================= */
+    /* ================= REMOVE FROM CART ================= */
     removeFromCart: (state, action) => {
-      const { id, selectedColor, selectedSize } = action.payload;
+      const { id, selectedColor = "", selectedSize = "" } = action.payload;
 
       state.items = state.items.filter(
         (i) =>
           !(
             i.id === id &&
-            i.selectedColor === selectedColor &&
-            i.selectedSize === selectedSize
+            (i.selectedColor || "") === selectedColor &&
+            (i.selectedSize || "") === selectedSize
           ),
       );
 
       saveCart(state.items);
     },
 
-    /* ================= UPDATE QTY ================= */
+    /* ================= UPDATE QUANTITY ================= */
     updateQuantity: (state, action) => {
-      const { id, selectedColor, selectedSize, quantity } = action.payload;
+      const {
+        id,
+        selectedColor = "",
+        selectedSize = "",
+        quantity,
+      } = action.payload;
 
       const item = state.items.find(
         (i) =>
           i.id === id &&
-          i.selectedColor === selectedColor &&
-          i.selectedSize === selectedSize,
+          (i.selectedColor || "") === selectedColor &&
+          (i.selectedSize || "") === selectedSize,
       );
 
       if (item) item.quantity = quantity;
 
+      // Remove items with 0 quantity
       state.items = state.items.filter((i) => i.quantity > 0);
 
       saveCart(state.items);
     },
 
-    /* ================= CLEAR ================= */
+    /* ================= CLEAR CART ================= */
     clearCart: (state) => {
       state.items = [];
       localStorage.removeItem("cartItems");
