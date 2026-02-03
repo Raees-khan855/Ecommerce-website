@@ -96,18 +96,28 @@ function AdminPanel() {
     setImages(newImgs);
     setProductPreviews(newPrev);
   };
-  /* ===== REORDER IMAGES (DRAG SORT) ===== */
-  const moveImage = (fromIndex, toIndex) => {
-    if (fromIndex === toIndex) return;
-
+  /* ===== REORDER IMAGES (MOBILE SAFE) ===== */
+  const moveImage = (index, direction) => {
     const newPreviews = [...productPreviews];
     const newImages = [...images];
 
-    const [p] = newPreviews.splice(fromIndex, 1);
-    const [i] = newImages.splice(fromIndex, 1);
+    const newIndex = index + direction;
 
-    newPreviews.splice(toIndex, 0, p);
-    newImages.splice(toIndex, 0, i);
+    if (newIndex < 0 || newIndex >= newPreviews.length) return;
+
+    // swap previews
+    [newPreviews[index], newPreviews[newIndex]] = [
+      newPreviews[newIndex],
+      newPreviews[index],
+    ];
+
+    // swap files only if they exist
+    if (newImages.length) {
+      [newImages[index], newImages[newIndex]] = [
+        newImages[newIndex],
+        newImages[index],
+      ];
+    }
 
     setProductPreviews(newPreviews);
     setImages(newImages);
@@ -185,9 +195,12 @@ function AdminPanel() {
   };
 
   const handleImageChange = (e) => {
-    const files = Array.from(e.target.files).slice(0, 5);
-    setImages(files);
-    setProductPreviews(files.map((f) => URL.createObjectURL(f)));
+    const selected = Array.from(e.target.files);
+
+    const newFiles = [...images, ...selected].slice(0, 5);
+
+    setImages(newFiles);
+    setProductPreviews(newFiles.map((f) => URL.createObjectURL(f)));
   };
 
   const handleProductSubmit = async (e) => {
@@ -200,10 +213,12 @@ function AdminPanel() {
     formData.append("category", category);
     formData.append("featured", featured ? "true" : "false");
 
-    // add 1–5 images
     images.forEach((img) => {
       formData.append("images", img);
     });
+
+    // ⭐ MUST SEND ORDER
+    formData.append("imageOrder", JSON.stringify(productPreviews));
 
     const headers = {
       Authorization: `Bearer ${token}`,
@@ -232,7 +247,11 @@ function AdminPanel() {
     setPrice(p.price);
     setCategory(p.category);
     setFeatured(p.featured);
+
+    // existing server images (no files yet)
+    setImages([]);
     setProductPreviews(p.images?.map(getImageUrl) || []);
+
     setActiveTab("product");
   };
 
@@ -482,20 +501,7 @@ function AdminPanel() {
                 {productPreviews.map((img, i) => (
                   <div
                     key={i}
-                    draggable
-                    onDragStart={(e) => {
-                      e.dataTransfer.setData("from", i);
-                    }}
-                    onDragOver={(e) => e.preventDefault()}
-                    onDrop={(e) => {
-                      const from = Number(e.dataTransfer.getData("from"));
-                      moveImage(from, i);
-                    }}
-                    style={{
-                      position: "relative",
-                      cursor: "grab",
-                      touchAction: "none",
-                    }}
+                    style={{ position: "relative", textAlign: "center" }}
                   >
                     <img
                       src={img}
@@ -504,29 +510,52 @@ function AdminPanel() {
                         height: 80,
                         objectFit: "cover",
                         borderRadius: 6,
-                        border: "2px solid #eee",
+                        border: i === 0 ? "3px solid green" : "2px solid #eee",
                       }}
                     />
 
-                    {/* remove button */}
-                    <button
-                      type="button"
-                      onClick={() => removeImage(i)}
+                    {/* order badge */}
+                    <span
                       style={{
                         position: "absolute",
-                        top: -6,
-                        right: -6,
-                        background: "red",
-                        color: "white",
-                        border: "none",
-                        borderRadius: "50%",
-                        width: 20,
-                        height: 20,
-                        fontSize: 12,
+                        top: 2,
+                        left: 2,
+                        background: "#000",
+                        color: "#fff",
+                        fontSize: 11,
+                        padding: "2px 5px",
+                        borderRadius: 4,
                       }}
                     >
-                      ✕
-                    </button>
+                      {i + 1}
+                    </span>
+
+                    {/* controls */}
+                    <div className="d-flex gap-1 mt-1 justify-content-center">
+                      <button
+                        type="button"
+                        className="btn btn-light btn-sm"
+                        onClick={() => moveImage(i, -1)}
+                      >
+                        ⬆
+                      </button>
+
+                      <button
+                        type="button"
+                        className="btn btn-light btn-sm"
+                        onClick={() => moveImage(i, 1)}
+                      >
+                        ⬇
+                      </button>
+
+                      <button
+                        type="button"
+                        className="btn btn-danger btn-sm"
+                        onClick={() => removeImage(i)}
+                      >
+                        ✕
+                      </button>
+                    </div>
                   </div>
                 ))}
               </div>

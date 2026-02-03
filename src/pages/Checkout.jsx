@@ -7,14 +7,18 @@ import BACKEND_URL from "../config";
 import useSEO from "../hooks/useSEO";
 
 import PhoneInput from "react-phone-input-2";
-import "react-phone-input-2/lib/style.css"; // required styles
+import "react-phone-input-2/lib/style.css";
 
-// Helper to normalize number to +923...
-const formatWhatsApp = (num) => {
+// Helper to normalize number to +923xxxxxxxxx
+const normalizeNumber = (num) => {
   if (!num) return "";
-  let cleaned = num.replace(/\D/g, "");
-  if (cleaned.startsWith("0")) cleaned = "92" + cleaned.slice(1);
-  if (!cleaned.startsWith("92")) cleaned = "92" + cleaned;
+  let cleaned = num.replace(/\D/g, ""); // only digits
+  if (cleaned.startsWith("92") && cleaned[2] === "0") {
+    cleaned = "92" + cleaned.slice(3);
+  } else if (cleaned.startsWith("0")) {
+    cleaned = cleaned.slice(1);
+  }
+  if (!cleaned.startsWith("92")) cleaned = "92" + cleaned; // add country code if missing
   return "+" + cleaned;
 };
 
@@ -56,13 +60,27 @@ function Checkout() {
     setFormData((prev) => ({ ...prev, [name]: value }));
   }, []);
 
-  // Phone input handler
+  // PHONE INPUT HANDLERS
   const handlePhoneChange = (value) => {
-    setFormData((prev) => ({ ...prev, phone: value }));
+    let cleaned = value.replace(/\D/g, "");
+    if (cleaned.startsWith("92") && cleaned[2] === "0") {
+      cleaned = "92" + cleaned.slice(3);
+    } else if (cleaned.startsWith("0")) {
+      cleaned = cleaned.slice(1);
+    }
+    if (cleaned.length > 12) cleaned = cleaned.slice(0, 12); // 92 + 10 digits max
+    setFormData((prev) => ({ ...prev, phone: cleaned }));
   };
 
   const handleWhatsAppChange = (value) => {
-    setFormData((prev) => ({ ...prev, whatsapp: value }));
+    let cleaned = value.replace(/\D/g, "");
+    if (cleaned.startsWith("92") && cleaned[2] === "0") {
+      cleaned = "92" + cleaned.slice(3);
+    } else if (cleaned.startsWith("0")) {
+      cleaned = cleaned.slice(1);
+    }
+    if (cleaned.length > 12) cleaned = cleaned.slice(0, 12);
+    setFormData((prev) => ({ ...prev, whatsapp: cleaned }));
   };
 
   const handleSubmit = useCallback(
@@ -80,6 +98,16 @@ function Checkout() {
         return;
       }
 
+      // Ensure 10 digits after country code
+      if (phone.replace(/^92/, "").length !== 10) {
+        alert("Phone number must be 10 digits");
+        return;
+      }
+      if (whatsapp.replace(/^92/, "").length !== 10) {
+        alert("WhatsApp number must be 10 digits");
+        return;
+      }
+
       if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
         alert("Please enter a valid email address");
         return;
@@ -92,8 +120,8 @@ function Checkout() {
         const orderPayload = {
           customerName: name,
           email: email || "",
-          phone: formatWhatsApp(phone),
-          whatsapp: formatWhatsApp(whatsapp),
+          phone: normalizeNumber(phone),
+          whatsapp: normalizeNumber(whatsapp),
           address,
           paymentMethod: formData.paymentMethod,
           products: items.map((item) => ({
@@ -178,7 +206,7 @@ function Checkout() {
                 />
               </div>
 
-              {/* PHONE INPUT WITH FLAG */}
+              {/* PHONE INPUT */}
               <div className="mb-3">
                 <label className="form-label">Phone *</label>
                 <PhoneInput
@@ -195,7 +223,7 @@ function Checkout() {
                 />
               </div>
 
-              {/* WHATSAPP INPUT WITH FLAG */}
+              {/* WHATSAPP INPUT */}
               <div className="mb-3">
                 <label className="form-label">WhatsApp Number *</label>
                 <PhoneInput
