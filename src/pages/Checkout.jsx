@@ -12,13 +12,13 @@ import "react-phone-input-2/lib/style.css";
 // Helper to normalize number to +923xxxxxxxxx
 const normalizeNumber = (num) => {
   if (!num) return "";
-  let cleaned = num.replace(/\D/g, ""); // only digits
+  let cleaned = num.replace(/\D/g, "");
   if (cleaned.startsWith("92") && cleaned[2] === "0") {
     cleaned = "92" + cleaned.slice(3);
   } else if (cleaned.startsWith("0")) {
     cleaned = cleaned.slice(1);
   }
-  if (!cleaned.startsWith("92")) cleaned = "92" + cleaned; // add country code if missing
+  if (!cleaned.startsWith("92")) cleaned = "92" + cleaned;
   return "+" + cleaned;
 };
 
@@ -68,7 +68,7 @@ function Checkout() {
     } else if (cleaned.startsWith("0")) {
       cleaned = cleaned.slice(1);
     }
-    if (cleaned.length > 12) cleaned = cleaned.slice(0, 12); // 92 + 10 digits max
+    if (cleaned.length > 12) cleaned = cleaned.slice(0, 12);
     setFormData((prev) => ({ ...prev, phone: cleaned }));
   };
 
@@ -98,7 +98,6 @@ function Checkout() {
         return;
       }
 
-      // Ensure 10 digits after country code
       if (phone.replace(/^92/, "").length !== 10) {
         alert("Phone number must be 10 digits");
         return;
@@ -125,14 +124,17 @@ function Checkout() {
           address,
           paymentMethod: formData.paymentMethod,
           products: items.map((item) => ({
-            productId: item._id,
+            productId: item.id, // or item._id if your cart uses _id
             title: item.title,
             price: Number(item.price || 0),
             quantity: Number(item.quantity || 0),
+            selectedColor: item.selectedColor || "",
+            selectedSize: item.selectedSize || "",
             image: item.image?.startsWith("http")
               ? item.image
               : `${BACKEND_URL}/${item.image}`,
           })),
+
           totalAmount,
         };
 
@@ -318,6 +320,14 @@ function Checkout() {
                         <strong>{item.title}</strong>
                         <div className="small text-muted">
                           Qty: {item.quantity}
+                          {item.selectedColor && (
+                            <span className="ms-2">| Color: ...</span>
+                          )}
+                          {item.selectedSize && (
+                            <span className="ms-2">
+                              | Size: {item.selectedSize}
+                            </span>
+                          )}
                         </div>
                       </div>
                     </div>

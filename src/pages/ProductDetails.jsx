@@ -15,7 +15,7 @@ import {
   FaLink,
 } from "react-icons/fa";
 
-/* 🔥 Lazy load related cards */
+/* Lazy load ProductCard */
 const ProductCard = lazy(() => import("../component/ProductCard"));
 
 function ProductDetails() {
@@ -27,14 +27,15 @@ function ProductDetails() {
   const [related, setRelated] = useState([]);
   const [activeImage, setActiveImage] = useState(null);
   const [quantity, setQuantity] = useState(1);
+  const [selectedColor, setSelectedColor] = useState("");
+  const [selectedSize, setSelectedSize] = useState("");
   const [loading, setLoading] = useState(true);
-
-  const [copied, setCopied] = useState(false); // ✅ state for copy feedback
+  const [copied, setCopied] = useState(false);
 
   const rating = 4.6;
   const reviewCount = 128;
 
-  /* ================= SEO ================= */
+  /* SEO */
   useSEO({
     title: product ? `${product.title} | RaeesProduct` : "Product Details",
     description: product?.description || "",
@@ -42,12 +43,12 @@ function ProductDetails() {
     url: window.location.href,
   });
 
-  /* ================= SCROLL ================= */
+  /* Scroll to top */
   useLayoutEffect(() => {
     window.scrollTo(0, 0);
   }, [id]);
 
-  /* ================= FETCH ================= */
+  /* Fetch product */
   useEffect(() => {
     let mounted = true;
     setLoading(true);
@@ -60,12 +61,19 @@ function ProductDetails() {
         const prod = res.data.product || res.data;
         setProduct(prod);
         setRelated(Array.isArray(res.data.related) ? res.data.related : []);
-
         setActiveImage(
           Array.isArray(prod.images) && prod.images.length > 0
             ? prod.images[0]
             : prod.image || null,
         );
+
+        // Default first color/size
+        if (Array.isArray(prod.colors) && prod.colors.length > 0) {
+          setSelectedColor(prod.colors[0]);
+        }
+        if (Array.isArray(prod.sizes) && prod.sizes.length > 0) {
+          setSelectedSize(prod.sizes[0]);
+        }
       } catch (err) {
         console.error("Product fetch error:", err);
       } finally {
@@ -77,7 +85,7 @@ function ProductDetails() {
     return () => (mounted = false);
   }, [id]);
 
-  /* ================= HELPERS ================= */
+  /* Helpers */
   const getImageUrl = (img) =>
     img
       ? img.startsWith("http")
@@ -95,7 +103,7 @@ function ProductDetails() {
   const mainImage = getImageUrl(activeImage);
   const price = Number(product?.price || 0).toFixed(2);
 
-  /* ================= CART ================= */
+  /* Add to cart */
   const addItem = (checkout = false) => {
     dispatch(
       addToCart({
@@ -104,13 +112,15 @@ function ProductDetails() {
         price: Number(product.price || 0),
         image: mainImage,
         quantity,
+        selectedColor: selectedColor,
+        selectedSize: selectedSize,
       }),
     );
 
     navigate(checkout ? "/checkout" : "/cart");
   };
 
-  /* ================= SHARE ================= */
+  /* Share */
   const productUrl = window.location.href;
 
   const handleWhatsAppShare = () => {
@@ -124,7 +134,7 @@ function ProductDetails() {
     try {
       await navigator.clipboard.writeText(productUrl);
       setCopied(true);
-      setTimeout(() => setCopied(false), 2000); // hide after 2 seconds
+      setTimeout(() => setCopied(false), 2000);
     } catch {
       setCopied(false);
       console.error("Copy failed");
@@ -133,7 +143,6 @@ function ProductDetails() {
 
   const handleNativeShare = async () => {
     if (!navigator.share) return handleWhatsAppShare();
-
     try {
       await navigator.share({
         title: product.title,
@@ -142,7 +151,7 @@ function ProductDetails() {
     } catch {}
   };
 
-  /* ================= LOADING ================= */
+  /* Loading UI */
   if (loading) {
     return (
       <div className="container py-5">
@@ -166,7 +175,7 @@ function ProductDetails() {
     return <h4 className="text-center mt-5 text-danger">Product not found</h4>;
   }
 
-  /* ================= UI ================= */
+  /* Main UI */
   return (
     <div className="container py-4">
       <div className="row g-4">
@@ -182,7 +191,6 @@ function ProductDetails() {
               className="img-fluid mb-3"
               style={{ objectFit: "contain" }}
             />
-
             {images.length > 1 && (
               <div className="d-flex justify-content-center gap-2 flex-wrap">
                 {images.map((img, i) => (
@@ -232,6 +240,61 @@ function ProductDetails() {
           <h4 className="text-primary fw-bold mb-3">Rs. {price}</h4>
           <p>{product.description}</p>
 
+          {/* COLOR BOXES */}
+          {product.colors && product.colors.length > 0 && (
+            <div className="mb-3">
+              <strong>Color:</strong>
+              <div className="d-flex gap-2 mt-1">
+                {product.colors.map((color) => (
+                  <div
+                    key={color}
+                    onClick={() => setSelectedColor(color)}
+                    style={{
+                      width: 28,
+                      height: 28,
+                      borderRadius: "50%",
+                      backgroundColor: color,
+                      border:
+                        selectedColor === color
+                          ? "2px solid #0d6efd"
+                          : "1px solid #ddd",
+                      cursor: "pointer",
+                    }}
+                    title={color}
+                  />
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* SIZE BOXES */}
+          {product.sizes && product.sizes.length > 0 && (
+            <div className="mb-3">
+              <strong>Size:</strong>
+              <div className="d-flex gap-2 mt-1 flex-wrap">
+                {product.sizes.map((size) => (
+                  <div
+                    key={size}
+                    onClick={() => setSelectedSize(size)}
+                    style={{
+                      padding: "4px 12px",
+                      borderRadius: 6,
+                      border:
+                        selectedSize === size
+                          ? "2px solid #0d6efd"
+                          : "1px solid #ddd",
+                      cursor: "pointer",
+                      backgroundColor: "#f8f9fa",
+                      fontSize: 14,
+                    }}
+                  >
+                    {size}
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
           {/* QUANTITY */}
           <div className="d-flex align-items-center gap-3 mb-3">
             <strong>Quantity:</strong>
@@ -262,7 +325,7 @@ function ProductDetails() {
             </button>
           </div>
 
-          {/* SHARE (with copied feedback) */}
+          {/* SHARE */}
           <div className="d-flex gap-2 position-relative">
             <button
               className="btn btn-outline-secondary btn-sm"
@@ -270,14 +333,12 @@ function ProductDetails() {
             >
               <FaShareAlt />
             </button>
-
             <button
               className="btn btn-outline-success btn-sm"
               onClick={handleWhatsAppShare}
             >
               <FaWhatsapp />
             </button>
-
             <div className="position-relative">
               <button
                 className="btn btn-outline-primary btn-sm"
@@ -308,7 +369,7 @@ function ProductDetails() {
         </div>
       </div>
 
-      {/* RELATED (UNCHANGED) */}
+      {/* RELATED PRODUCTS */}
       {related.length > 0 && (
         <div className="mt-5">
           <h4 className="fw-bold mb-3">Related Products</h4>

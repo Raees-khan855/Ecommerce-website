@@ -14,19 +14,24 @@ const formatWhatsApp = (num) => {
 // ---------------- WHATSAPP MESSAGE FUNCTION ----------------
 const generateWhatsAppMessage = (customerName, products, totalAmount) => {
   let msg = `🛒 *Hello ${customerName || "Customer"}!*\n\n`;
-  msg += `Here are your order details:\n\n`;
+  msg += `Here are your order details:\n`;
 
   products.forEach((p, i) => {
-    msg += `*${i + 1}. ${p.title}*\n`;
+    msg += `\n*${i + 1}. ${p.title}*\n`;
+
+    // Add size & color if available
+    if (p.selectedSize) msg += `   📏 Size: ${p.selectedSize}\n`;
+    if (p.selectedColor) msg += `   🎨 Color: ${p.selectedColor}\n`;
+
     msg += `   📦 Qty: ${p.quantity}\n`;
-    msg += `   💰 Price: Rs.${(p.price * p.quantity).toFixed(2)}\n\n`;
+    msg += `   💰 Price: Rs.${(p.price * p.quantity).toFixed(2)}\n`;
   });
 
-  msg += `*💵 Total Amount:* Rs.${totalAmount.toFixed(2)}\n`;
+  // Add total & delivery info
+  msg += `\n*💵 Total Amount:* Rs.${totalAmount.toFixed(2)}\n`;
   msg += `⏱️ Delivery: 3-6 days\n`;
   msg += `\nThank you for shopping with us! ❤️`;
 
-  // DO NOT use encodeURIComponent — WhatsApp will parse emojis correctly
   return msg;
 };
 
@@ -52,6 +57,8 @@ function AdminPanel() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [message, setMessage] = useState("");
+  const [colorsInput, setColorsInput] = useState(""); // comma separated input
+  const [sizesInput, setSizesInput] = useState(""); // comma separated input
 
   const token = localStorage.getItem("adminToken");
 
@@ -212,6 +219,24 @@ function AdminPanel() {
     formData.append("price", price);
     formData.append("category", category);
     formData.append("featured", featured ? "true" : "false");
+    formData.append(
+      "colors",
+      JSON.stringify(
+        colorsInput
+          .split(",")
+          .map((c) => c.trim())
+          .filter((c) => c),
+      ),
+    );
+    formData.append(
+      "sizes",
+      JSON.stringify(
+        sizesInput
+          .split(",")
+          .map((s) => s.trim())
+          .filter((s) => s),
+      ),
+    );
 
     images.forEach((img) => {
       formData.append("images", img);
@@ -238,6 +263,8 @@ function AdminPanel() {
     resetForm();
     fetchProducts();
     setActiveTab("manage");
+    setColorsInput("");
+    setSizesInput("");
   };
 
   const handleEdit = (p) => {
@@ -247,6 +274,8 @@ function AdminPanel() {
     setPrice(p.price);
     setCategory(p.category);
     setFeatured(p.featured);
+    setColorsInput(p.colors?.join(", ") || "");
+    setSizesInput(p.sizes?.join(", ") || "");
 
     // existing server images (no files yet)
     setImages([]);
@@ -476,6 +505,22 @@ function AdminPanel() {
                 onChange={(e) => setCategory(e.target.value)}
                 required
               />
+              {/* COLORS */}
+              <input
+                className="form-control mb-2"
+                placeholder="Colors (comma separated, e.g. Red, Blue, White)"
+                value={colorsInput}
+                onChange={(e) => setColorsInput(e.target.value)}
+              />
+
+              {/* SIZES */}
+              <input
+                className="form-control mb-2"
+                placeholder="Sizes (comma separated, e.g. S, M, L, XL)"
+                value={sizesInput}
+                onChange={(e) => setSizesInput(e.target.value)}
+              />
+
               {/* ===== Drag & Drop Upload ===== */}
               <div
                 className="border rounded p-4 text-center mb-3"
@@ -708,9 +753,19 @@ function AdminPanel() {
                           <div className="fw-semibold">
                             {p?.title || "Unknown Product"}
                           </div>
-                          <small className="text-muted">
+                          <div className="small text-muted">
                             Qty: {p?.quantity || 0}
-                          </small>
+                            {p?.selectedSize && (
+                              <span className="ms-2">
+                                | Size: <b>{p.selectedSize}</b>
+                              </span>
+                            )}
+                            {p?.selectedColor && (
+                              <span className="ms-2">
+                                | Color: <b>{p.selectedColor}</b>
+                              </span>
+                            )}
+                          </div>
                         </div>
                         <span className="fw-semibold">
                           Rs.

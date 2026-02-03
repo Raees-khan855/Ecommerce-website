@@ -17,80 +17,41 @@ function Cart() {
     [items],
   );
 
-  /* ===== Handle Quantity Change with TikTok Tracking ===== */
+  /* ===== Handle Quantity Change ===== */
   const handleQtyChange = useCallback(
-    (id, value) => {
-      const item = items.find((i) => i.id === id);
-      if (!item || value < 1) return;
+    (item, value) => {
+      if (value < 1) return;
 
-      dispatch(updateQuantity({ id, quantity: value }));
-
-      // TikTok Pixel: AddToCart (quantity update)
-      if (window.ttq?.track) {
-        window.ttq.track("AddToCart", {
-          value: item.price * value,
-          currency: "PKR",
-          contents: [
-            {
-              content_id: item.id,
-              content_name: item.title,
-              quantity: value,
-              price: item.price,
-              content_type: "product",
-            },
-          ],
-        });
-      }
+      dispatch(
+        updateQuantity({
+          id: item.id,
+          color: item.color,
+          size: item.size,
+          quantity: value,
+        }),
+      );
     },
-    [dispatch, items],
+    [dispatch],
   );
 
-  /* ===== Handle Item Removal with TikTok Tracking ===== */
+  /* ===== Remove ===== */
   const handleRemove = useCallback(
-    (id) => {
-      const item = items.find((i) => i.id === id);
-      if (!item) return;
-
-      dispatch(removeFromCart(id));
-
-      // TikTok Pixel: RemoveFromCart
-      if (window.ttq?.track) {
-        window.ttq.track("RemoveFromCart", {
-          value: item.price * item.quantity,
-          currency: "PKR",
-          contents: [
-            {
-              content_id: item.id,
-              content_name: item.title,
-              quantity: item.quantity,
-              price: item.price,
-              content_type: "product",
-            },
-          ],
-        });
-      }
+    (item) => {
+      dispatch(
+        removeFromCart({
+          id: item.id,
+          color: item.color,
+          size: item.size,
+        }),
+      );
     },
-    [dispatch, items],
+    [dispatch],
   );
 
-  /* ===== Handle Checkout with TikTok Tracking ===== */
+  /* ===== Checkout ===== */
   const handleCheckout = useCallback(() => {
-    if (window.ttq?.track) {
-      window.ttq.track("InitiateCheckout", {
-        value: total,
-        currency: "PKR",
-        contents: items.map((item) => ({
-          content_id: item.id,
-          content_name: item.title,
-          quantity: item.quantity,
-          price: item.price,
-          content_type: "product",
-        })),
-      });
-    }
-
     navigate("/checkout");
-  }, [items, total, navigate]);
+  }, [navigate]);
 
   if (items.length === 0) {
     return (
@@ -113,14 +74,14 @@ function Cart() {
       <div className="list-group mb-4">
         {items.map((item) => (
           <div
-            key={item.id}
+            /* 🔥 key must include size+color */
+            key={`${item.id}-${item.color}-${item.size}`}
             className="list-group-item d-flex flex-column flex-sm-row align-items-sm-center gap-3 p-3 shadow-sm border-0 mb-2 rounded-3"
           >
             {/* IMAGE */}
             <img
               src={item.image}
               alt={item.title}
-              loading="lazy"
               width="80"
               height="80"
               className="rounded bg-light p-2"
@@ -135,6 +96,12 @@ function Cart() {
               <div className="d-flex flex-column flex-md-row justify-content-between align-items-md-center">
                 <div>
                   <strong>{item.title}</strong>
+
+                  {/* ✅ SHOW COLOR + SIZE */}
+                  <div className="small text-muted">
+                    Size: <b>{item.size}</b> | Color: <b>{item.color}</b>
+                  </div>
+
                   <div className="text-muted small">Rs. {item.price} each</div>
                 </div>
 
@@ -150,7 +117,7 @@ function Cart() {
                   min="1"
                   value={item.quantity}
                   onChange={(e) =>
-                    handleQtyChange(item.id, Number(e.target.value))
+                    handleQtyChange(item, Number(e.target.value))
                   }
                   className="form-control form-control-sm"
                   style={{ width: "80px" }}
@@ -158,7 +125,7 @@ function Cart() {
 
                 <button
                   className="btn btn-sm btn-outline-danger"
-                  onClick={() => handleRemove(item.id)}
+                  onClick={() => handleRemove(item)}
                 >
                   ❌ Remove
                 </button>
