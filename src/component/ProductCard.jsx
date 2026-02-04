@@ -13,10 +13,11 @@ import {
   FaShareAlt,
 } from "react-icons/fa";
 
+import { optimizeCloudinary } from "../utils/cloudinary";
+
 function ProductCard({ product, showShare = false }) {
   const dispatch = useDispatch();
   const navigate = useNavigate();
-
   const [isSharing, setIsSharing] = useState(false);
 
   /* ================= IMAGE ================= */
@@ -27,7 +28,7 @@ function ProductCard({ product, showShare = false }) {
 
   const productImage = rawImage
     ? rawImage.startsWith("http")
-      ? rawImage
+      ? optimizeCloudinary(rawImage, 400)
       : `${BACKEND_URL}/${rawImage.replace(/^\/+/, "")}`
     : "https://via.placeholder.com/300?text=No+Image";
 
@@ -49,7 +50,6 @@ function ProductCard({ product, showShare = false }) {
   const handleAdd = useCallback(
     (e) => {
       e.stopPropagation();
-
       dispatch(
         addToCart({
           id: product._id,
@@ -63,22 +63,20 @@ function ProductCard({ product, showShare = false }) {
   );
 
   /* ================= SHARE FUNCTIONS ================= */
-
-  // ✅ WhatsApp (guaranteed — no popup block)
   const handleWhatsApp = useCallback(
     (e) => {
       e.stopPropagation();
-      const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(productUrl)}`;
+      const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(
+        productUrl,
+      )}`;
       window.location.href = whatsappUrl;
     },
     [productUrl],
   );
 
-  // ✅ Copy (works even on old browsers)
   const handleCopy = useCallback(
     (e) => {
       e.stopPropagation();
-
       try {
         if (navigator.clipboard) {
           navigator.clipboard.writeText(productUrl);
@@ -90,7 +88,6 @@ function ProductCard({ product, showShare = false }) {
           document.execCommand("copy");
           document.body.removeChild(input);
         }
-
         alert("Link copied!");
       } catch {
         alert("Copy failed");
@@ -99,17 +96,12 @@ function ProductCard({ product, showShare = false }) {
     [productUrl],
   );
 
-  // ✅ Native share
   const handleNativeShare = useCallback(
     async (e) => {
       e.stopPropagation();
-
       if (!navigator.share) return handleWhatsApp(e);
-
       if (isSharing) return;
-
       setIsSharing(true);
-
       try {
         await navigator.share({
           title: product.title,
@@ -117,7 +109,6 @@ function ProductCard({ product, showShare = false }) {
           url: productUrl,
         });
       } catch {}
-
       setIsSharing(false);
     },
     [product, productUrl, isSharing, handleWhatsApp],
@@ -126,7 +117,6 @@ function ProductCard({ product, showShare = false }) {
   /* ================= UI ================= */
   return (
     <div
-      /* 🔥 CRITICAL FIX: only navigate if NOT clicking a button */
       onClick={(e) => {
         if (e.target.closest("button")) return;
         goToProduct();
@@ -153,6 +143,16 @@ function ProductCard({ product, showShare = false }) {
       >
         <img
           src={productImage}
+          srcSet={
+            rawImage && rawImage.startsWith("http")
+              ? `
+                ${optimizeCloudinary(rawImage, 300)} 300w,
+                ${optimizeCloudinary(rawImage, 600)} 600w,
+                ${optimizeCloudinary(rawImage, 900)} 900w
+              `
+              : undefined
+          }
+          sizes="(max-width: 600px) 300px, (max-width: 900px) 600px, 900px"
           alt={product.title}
           loading="lazy"
           className="img-fluid"

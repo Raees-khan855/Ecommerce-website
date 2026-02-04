@@ -3,8 +3,9 @@ import { Link } from "react-router-dom";
 import axios from "axios";
 import BACKEND_URL from "../config";
 import useSEO from "../hooks/useSEO";
+import { optimizeCloudinary } from "../utils/cloudinary";
 
-/* 🔥 reuse same card everywhere */
+/* 🔥 Reuse same card everywhere */
 const ProductCard = lazy(() => import("../component/ProductCard"));
 
 function Home() {
@@ -53,7 +54,7 @@ function Home() {
   /* ================= HERO IMAGE ================= */
   const heroImg = hero?.image
     ? hero.image.startsWith("http")
-      ? hero.image
+      ? optimizeCloudinary(hero.image, 900) // width 900px for hero
       : `${BACKEND_URL}/${hero.image.replace(/^\/+/, "")}`
     : "https://images.unsplash.com/photo-1616627982421-74db63b3f8a0?auto=format&fit=crop&w=1470&q=80";
 
@@ -106,7 +107,6 @@ function Home() {
             {featuredProducts.map((p) => (
               <div key={p._id} className="col-6 col-md-4 col-lg-3">
                 <Suspense fallback={null}>
-                  {/* 🔥 same card component */}
                   <ProductCard product={p} />
                 </Suspense>
               </div>
