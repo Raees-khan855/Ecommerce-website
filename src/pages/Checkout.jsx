@@ -243,6 +243,7 @@ function Checkout() {
               <div className="mb-3">
                 <label className="form-label">Delivery Address *</label>
                 <textarea
+                  placeholder="House/Flat #, Street, Area, City"
                   name="address"
                   rows="3"
                   value={formData.address}
