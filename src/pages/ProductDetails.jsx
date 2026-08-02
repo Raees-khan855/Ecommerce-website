@@ -31,9 +31,14 @@ function ProductDetails() {
   const [selectedSize, setSelectedSize] = useState("");
   const [loading, setLoading] = useState(true);
   const [copied, setCopied] = useState(false);
+  const [reviews, setReviews] = useState([]);
 
-  const rating = 4.6;
-  const reviewCount = 128;
+  const reviewCount = reviews.length;
+
+  const rating =
+    reviewCount > 0
+      ? (reviews.reduce((sum, r) => sum + r.rating, 0) / reviewCount).toFixed(1)
+      : 0;
 
   /* SEO */
   useSEO({
@@ -47,7 +52,17 @@ function ProductDetails() {
   useLayoutEffect(() => {
     window.scrollTo(0, 0);
   }, [id]);
+  const fetchReviews = async (productId) => {
+    try {
+      const res = await axios.get(
+        `${BACKEND_URL}/api/reviews/product/${productId}`,
+      );
 
+      setReviews(res.data);
+    } catch (err) {
+      console.error("Review fetch error:", err);
+    }
+  };
   /* Fetch product */
   useEffect(() => {
     let mounted = true;
@@ -60,6 +75,7 @@ function ProductDetails() {
 
         const prod = res.data.product || res.data;
         setProduct(prod);
+        await fetchReviews(prod._id);
         setRelated(Array.isArray(res.data.related) ? res.data.related : []);
         setActiveImage(
           Array.isArray(prod.images) && prod.images.length > 0
@@ -368,7 +384,48 @@ function ProductDetails() {
           </div>
         </div>
       </div>
+      {/* CUSTOMER REVIEWS */}
 
+      <div className="mt-5">
+        <h3 className="fw-bold mb-4">Customer Reviews ({reviews.length})</h3>
+
+        {reviews.length === 0 ? (
+          <p>No reviews yet.</p>
+        ) : (
+          reviews.map((review) => (
+            <div key={review._id} className="border rounded p-3 mb-3 shadow-sm">
+              <div className="d-flex align-items-center">
+                {review.image && (
+                  <img
+                    src={review.image}
+                    alt={review.customerName}
+                    style={{
+                      width: 60,
+                      height: 60,
+                      borderRadius: "50%",
+                      objectFit: "cover",
+                    }}
+                  />
+                )}
+
+                <div className="ms-3">
+                  <h6 className="mb-1">
+                    {review.customerName}
+
+                    {review.verified && (
+                      <span className="badge bg-success ms-2">Verified</span>
+                    )}
+                  </h6>
+
+                  <div>{"⭐".repeat(review.rating)}</div>
+                </div>
+              </div>
+
+              <p className="mt-3 mb-0">{review.comment}</p>
+            </div>
+          ))
+        )}
+      </div>
       {/* RELATED PRODUCTS */}
       {related.length > 0 && (
         <div className="mt-5">
