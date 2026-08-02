@@ -68,6 +68,48 @@ function AdminPanel() {
   const [heroImage, setHeroImage] = useState(null);
   const [heroPreview, setHeroPreview] = useState(null);
 
+  const handleReviewSubmit = async (e) => {
+    e.preventDefault();
+
+    const formData = new FormData();
+
+    formData.append("productId", reviewProductId);
+    formData.append("customerName", customerName);
+    formData.append("rating", rating);
+    formData.append("comment", comment);
+    formData.append("verified", verified);
+
+    if (reviewImage) {
+      formData.append("image", reviewImage);
+    }
+
+    await axios.post(`${BACKEND_URL}/api/reviews`, formData, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "multipart/form-data",
+      },
+    });
+
+    alert("Review Added");
+
+    setCustomerName("");
+    setComment("");
+    setReviewImage(null);
+  };
+  /*=====Add Review====*/
+  const [reviews, setReviews] = useState([]);
+
+  const [reviewProductId, setReviewProductId] = useState("");
+
+  const [customerName, setCustomerName] = useState("");
+
+  const [rating, setRating] = useState(5);
+
+  const [comment, setComment] = useState("");
+
+  const [reviewImage, setReviewImage] = useState(null);
+
+  const [verified, setVerified] = useState(true);
   /* ================= PRODUCTS ================= */
   const [products, setProducts] = useState([]);
   const [title, setTitle] = useState("");
@@ -429,7 +471,14 @@ function AdminPanel() {
           </button>
         </div>
       </div>
-
+      <div className="col-6 col-md-3">
+        <button
+          className="btn btn-dark w-100"
+          onClick={() => setActiveTab("reviews")}
+        >
+          Reviews
+        </button>
+      </div>
       {/* HERO */}
       {activeTab === "hero" && (
         <div className="row justify-content-center">
@@ -659,7 +708,76 @@ function AdminPanel() {
           ))}
         </div>
       )}
+      {activeTab === "reviews" && (
+        <div className="row justify-content-center">
+          <div className="col-lg-6">
+            <form onSubmit={handleReviewSubmit} className="card p-3 shadow">
+              <h4>Add Review</h4>
 
+              <select
+                className="form-select mb-3"
+                value={reviewProductId}
+                onChange={(e) => setReviewProductId(e.target.value)}
+                required
+              >
+                <option value="">Select Product</option>
+
+                {products.map((product) => (
+                  <option key={product._id} value={product._id}>
+                    {product.title}
+                  </option>
+                ))}
+              </select>
+
+              <input
+                className="form-control mb-3"
+                placeholder="Customer Name"
+                value={customerName}
+                onChange={(e) => setCustomerName(e.target.value)}
+              />
+
+              <select
+                className="form-select mb-3"
+                value={rating}
+                onChange={(e) => setRating(e.target.value)}
+              >
+                <option value="5">★★★★★</option>
+                <option value="4">★★★★☆</option>
+                <option value="3">★★★☆☆</option>
+                <option value="2">★★☆☆☆</option>
+                <option value="1">★☆☆☆☆</option>
+              </select>
+
+              <textarea
+                className="form-control mb-3"
+                rows="4"
+                placeholder="Review"
+                value={comment}
+                onChange={(e) => setComment(e.target.value)}
+              />
+
+              <input
+                type="file"
+                className="form-control mb-3"
+                onChange={(e) => setReviewImage(e.target.files[0])}
+              />
+
+              <div className="form-check mb-3">
+                <input
+                  className="form-check-input"
+                  type="checkbox"
+                  checked={verified}
+                  onChange={(e) => setVerified(e.target.checked)}
+                />
+
+                <label className="form-check-label">Verified Purchase</label>
+              </div>
+
+              <button className="btn btn-success w-100">Add Review</button>
+            </form>
+          </div>
+        </div>
+      )}
       {/* ORDERS */}
       {activeTab === "orders" && (
         <div className="row g-3">
