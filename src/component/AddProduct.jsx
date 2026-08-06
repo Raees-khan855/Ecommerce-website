@@ -59,9 +59,46 @@ function AdminPanel() {
   const [message, setMessage] = useState("");
   const [colorsInput, setColorsInput] = useState(""); // comma separated input
   const [sizesInput, setSizesInput] = useState(""); // comma separated input
-
+  const [editingReviewId, setEditingReviewId] = useState(null);
   const token = localStorage.getItem("adminToken");
+  const handleDeleteReview = async (id) => {
+    if (!window.confirm("Delete this review?")) return;
 
+    await axios.delete(`${BACKEND_URL}/api/reviews/${id}`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    fetchReviews();
+  };
+  const handleEditReview = (review) => {
+    setEditingReviewId(review._id);
+
+    // productId is populated object
+    setReviewProductId(
+      typeof review.productId === "object"
+        ? review.productId._id
+        : review.productId,
+    );
+
+    setCustomerName(review.customerName || "");
+    setRating(Number(review.rating));
+    setComment(review.comment || "");
+    setVerified(Boolean(review.verified));
+
+    if (review.image) {
+      setReviewImage(null); // keep old image unless user selects new one
+    }
+
+    // Open the review form
+    setActiveTab("reviews");
+
+    window.scrollTo({
+      top: 0,
+      behavior: "smooth",
+    });
+  };
   /* ================= HERO ================= */
   const [heroTitle, setHeroTitle] = useState("");
   const [heroSubtitle, setHeroSubtitle] = useState("");
@@ -83,22 +120,60 @@ function AdminPanel() {
       formData.append("image", reviewImage);
     }
 
-    await axios.post(`${BACKEND_URL}/api/reviews`, formData, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-        "Content-Type": "multipart/form-data",
-      },
-    });
+    try {
+      if (editingReviewId) {
+        await axios.put(
+          `${BACKEND_URL}/api/reviews/${editingReviewId}`,
+          formData,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "multipart/form-data",
+            },
+          },
+        );
 
-    alert("Review Added");
+        alert("Review Updated");
+      } else {
+        await axios.post(`${BACKEND_URL}/api/reviews`, formData, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "multipart/form-data",
+          },
+        });
 
-    setCustomerName("");
-    setComment("");
-    setReviewImage(null);
+        alert("Review Added");
+      }
+
+      setEditingReviewId(null);
+      setReviewProductId("");
+      setCustomerName("");
+      setRating(5);
+      setComment("");
+      setVerified(true);
+      setReviewImage(null);
+
+      fetchReviews();
+    } catch (err) {
+      console.log(err);
+      alert("Failed to save review");
+    }
   };
   /*=====Add Review====*/
   const [reviews, setReviews] = useState([]);
+  const fetchReviews = async () => {
+    try {
+      const res = await axios.get(`${BACKEND_URL}/api/reviews`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
 
+      setReviews(res.data);
+    } catch (err) {
+      console.log(err);
+    }
+  };
   const [reviewProductId, setReviewProductId] = useState("");
 
   const [customerName, setCustomerName] = useState("");
@@ -191,6 +266,7 @@ function AdminPanel() {
       fetchHero();
       fetchProducts();
       fetchOrders();
+      fetchReviews();
     }
   }, []);
 
@@ -773,8 +849,61 @@ function AdminPanel() {
                 <label className="form-check-label">Verified Purchase</label>
               </div>
 
-              <button className="btn btn-success w-100">Add Review</button>
+              <button className="btn btn-success w-100">
+                {editingReviewId ? "Update Review" : "Add Review"}
+              </button>
             </form>
+            <hr className="my-4" />
+
+            <h4>Manage Reviews</h4>
+
+            {reviews.map((review) => {
+              const product = products.find((p) => p._id === review.productId);
+
+              return (
+                <div key={review._id} className="card mb-3 shadow-sm">
+                  <div className="card-body">
+                    <h5>{review.customerName}</h5>
+
+                    <p className="mb-1">
+                      Product:
+                      <strong>{product?.title || "Deleted Product"}</strong>
+                    </p>
+
+                    <p className="mb-1">
+                      Rating:
+                      {"⭐".repeat(review.rating)}
+                    </p>
+
+                    <p>{review.comment}</p>
+
+                    {review.image && (
+                      <img
+                        src={review.image}
+                        width="100"
+                        className="rounded mb-2"
+                      />
+                    )}
+
+                    <div className="d-flex gap-2">
+                      <button
+                        className="btn btn-warning btn-sm"
+                        onClick={() => handleEditReview(review)}
+                      >
+                        Edit
+                      </button>
+
+                      <button
+                        className="btn btn-danger btn-sm"
+                        onClick={() => handleDeleteReview(review._id)}
+                      >
+                        Delete
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
           </div>
         </div>
       )}
