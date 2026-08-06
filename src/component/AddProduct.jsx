@@ -61,6 +61,14 @@ function AdminPanel() {
   const [sizesInput, setSizesInput] = useState(""); // comma separated input
   const [editingReviewId, setEditingReviewId] = useState(null);
   const token = localStorage.getItem("adminToken");
+  const fetchFaqs = async () => {
+    try {
+      const res = await axios.get(`${BACKEND_URL}/api/faqs`);
+      setFaqs(res.data);
+    } catch (err) {
+      console.log(err);
+    }
+  };
   const handleDeleteReview = async (id) => {
     if (!window.confirm("Delete this review?")) return;
 
@@ -158,6 +166,15 @@ function AdminPanel() {
       console.log(err);
       alert("Failed to save review");
     }
+    const fetchFaqs = async () => {
+      try {
+        const res = await axios.get(`${BACKEND_URL}/api/faqs`);
+
+        setFaqs(res.data);
+      } catch (err) {
+        console.log(err);
+      }
+    };
   };
   /*=====Add Review====*/
   const [reviews, setReviews] = useState([]);
@@ -185,6 +202,17 @@ function AdminPanel() {
   const [reviewImage, setReviewImage] = useState(null);
 
   const [verified, setVerified] = useState(true);
+  /* ================= FAQ ================= */
+
+  const [faqs, setFaqs] = useState([]);
+
+  const [question, setQuestion] = useState("");
+
+  const [answer, setAnswer] = useState("");
+
+  const [faqActive, setFaqActive] = useState(true);
+
+  const [editingFaqId, setEditingFaqId] = useState(null);
   /* ================= PRODUCTS ================= */
   const [products, setProducts] = useState([]);
   const [title, setTitle] = useState("");
@@ -267,6 +295,7 @@ function AdminPanel() {
       fetchProducts();
       fetchOrders();
       fetchReviews();
+      fetchFaqs();
     }
   }, []);
 
@@ -852,6 +881,14 @@ function AdminPanel() {
               <button className="btn btn-success w-100">
                 {editingReviewId ? "Update Review" : "Add Review"}
               </button>
+              <div className="col-6 col-md-3">
+                <button
+                  className="btn btn-primary w-100"
+                  onClick={() => setActiveTab("faq")}
+                >
+                  FAQ
+                </button>
+              </div>
             </form>
             <hr className="my-4" />
 
@@ -905,6 +942,11 @@ function AdminPanel() {
               );
             })}
           </div>
+        </div>
+      )}
+      {activeTab === "faq" && (
+        <div className="container">
+          <h3 className="mb-4">FAQ Management</h3>
         </div>
       )}
       {/* ORDERS */}
