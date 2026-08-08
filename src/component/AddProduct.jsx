@@ -69,6 +69,84 @@ function AdminPanel() {
       console.log(err);
     }
   };
+  const handleFaqSubmit = async (e) => {
+    e.preventDefault();
+
+    if (!question.trim() || !answer.trim()) {
+      alert("Please enter both question and answer.");
+      return;
+    }
+
+    try {
+      const data = {
+        question: question.trim(),
+        answer: answer.trim(),
+        active: faqActive,
+      };
+
+      if (editingFaqId) {
+        await axios.put(`${BACKEND_URL}/api/faqs/${editingFaqId}`, data, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        alert("FAQ updated successfully!");
+      } else {
+        await axios.post(`${BACKEND_URL}/api/faqs`, data, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        alert("FAQ added successfully!");
+      }
+
+      setQuestion("");
+      setAnswer("");
+      setFaqActive(true);
+      setEditingFaqId(null);
+
+      fetchFaqs();
+    } catch (err) {
+      console.error("FAQ save error:", err);
+
+      alert(err.response?.data?.message || "Failed to save FAQ.");
+    }
+  };
+  const handleEditFaq = (faq) => {
+    setEditingFaqId(faq._id);
+    setQuestion(faq.question || "");
+    setAnswer(faq.answer || "");
+    setFaqActive(faq.active !== false);
+
+    setActiveTab("faq");
+
+    window.scrollTo({
+      top: 0,
+      behavior: "smooth",
+    });
+  };
+  const handleDeleteFaq = async (id) => {
+    if (!window.confirm("Delete this FAQ?")) return;
+
+    try {
+      await axios.delete(`${BACKEND_URL}/api/faqs/${id}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      alert("FAQ deleted successfully!");
+
+      fetchFaqs();
+    } catch (err) {
+      console.error("FAQ delete error:", err);
+
+      alert(err.response?.data?.message || "Failed to delete FAQ.");
+    }
+  };
+
   const handleDeleteReview = async (id) => {
     if (!window.confirm("Delete this review?")) return;
 
@@ -166,15 +244,6 @@ function AdminPanel() {
       console.log(err);
       alert("Failed to save review");
     }
-    const fetchFaqs = async () => {
-      try {
-        const res = await axios.get(`${BACKEND_URL}/api/faqs`);
-
-        setFaqs(res.data);
-      } catch (err) {
-        console.log(err);
-      }
-    };
   };
   /*=====Add Review====*/
   const [reviews, setReviews] = useState([]);
@@ -542,6 +611,7 @@ function AdminPanel() {
       <h2 className="text-center mb-4">Admin Panel</h2>
 
       {/* TABS */}
+      {/* TABS */}
       <div className="row g-2 mb-4">
         <div className="col-6 col-md-3">
           <button
@@ -551,6 +621,7 @@ function AdminPanel() {
             Hero
           </button>
         </div>
+
         <div className="col-6 col-md-3">
           <button
             className="btn btn-primary w-100"
@@ -559,6 +630,7 @@ function AdminPanel() {
             Add Product
           </button>
         </div>
+
         <div className="col-6 col-md-3">
           <button
             className="btn btn-secondary w-100"
@@ -567,6 +639,7 @@ function AdminPanel() {
             Manage
           </button>
         </div>
+
         <div className="col-6 col-md-3">
           <button
             className="btn btn-success w-100"
@@ -575,14 +648,24 @@ function AdminPanel() {
             Orders
           </button>
         </div>
-      </div>
-      <div className="col-6 col-md-3">
-        <button
-          className="btn btn-dark w-100"
-          onClick={() => setActiveTab("reviews")}
-        >
-          Reviews
-        </button>
+
+        <div className="col-6 col-md-3">
+          <button
+            className="btn btn-dark w-100"
+            onClick={() => setActiveTab("reviews")}
+          >
+            Reviews
+          </button>
+        </div>
+
+        <div className="col-6 col-md-3">
+          <button
+            className="btn btn-primary w-100"
+            onClick={() => setActiveTab("faq")}
+          >
+            FAQ
+          </button>
+        </div>
       </div>
       {/* HERO */}
       {activeTab === "hero" && (
@@ -881,14 +964,6 @@ function AdminPanel() {
               <button className="btn btn-success w-100">
                 {editingReviewId ? "Update Review" : "Add Review"}
               </button>
-              <div className="col-6 col-md-3">
-                <button
-                  className="btn btn-primary w-100"
-                  onClick={() => setActiveTab("faq")}
-                >
-                  FAQ
-                </button>
-              </div>
             </form>
             <hr className="my-4" />
 
@@ -944,9 +1019,130 @@ function AdminPanel() {
           </div>
         </div>
       )}
+      {/* ================= FAQ ================= */}
+
       {activeTab === "faq" && (
-        <div className="container">
-          <h3 className="mb-4">FAQ Management</h3>
+        <div className="row justify-content-center">
+          {/* FAQ FORM */}
+
+          <div className="col-12 col-lg-6 mb-4">
+            <div className="card shadow-sm p-4">
+              <h3 className="mb-4">{editingFaqId ? "Edit FAQ" : "Add FAQ"}</h3>
+
+              <form onSubmit={handleFaqSubmit}>
+                <div className="mb-3">
+                  <label className="form-label">Question</label>
+
+                  <input
+                    type="text"
+                    className="form-control"
+                    placeholder="Enter FAQ question"
+                    value={question}
+                    onChange={(e) => setQuestion(e.target.value)}
+                    required
+                  />
+                </div>
+
+                <div className="mb-3">
+                  <label className="form-label">Answer</label>
+
+                  <textarea
+                    className="form-control"
+                    rows="5"
+                    placeholder="Enter FAQ answer"
+                    value={answer}
+                    onChange={(e) => setAnswer(e.target.value)}
+                    required
+                  />
+                </div>
+
+                <div className="form-check mb-3">
+                  <input
+                    type="checkbox"
+                    className="form-check-input"
+                    id="faqActive"
+                    checked={faqActive}
+                    onChange={(e) => setFaqActive(e.target.checked)}
+                  />
+
+                  <label className="form-check-label" htmlFor="faqActive">
+                    Active
+                  </label>
+                </div>
+
+                <div className="d-flex gap-2">
+                  <button type="submit" className="btn btn-success flex-grow-1">
+                    {editingFaqId ? "Update FAQ" : "Add FAQ"}
+                  </button>
+
+                  {editingFaqId && (
+                    <button
+                      type="button"
+                      className="btn btn-secondary"
+                      onClick={() => {
+                        setEditingFaqId(null);
+                        setQuestion("");
+                        setAnswer("");
+                        setFaqActive(true);
+                      }}
+                    >
+                      Cancel
+                    </button>
+                  )}
+                </div>
+              </form>
+            </div>
+          </div>
+
+          {/* FAQ LIST */}
+
+          <div className="col-12">
+            <h3 className="mb-3">Manage FAQs</h3>
+
+            {faqs.length === 0 ? (
+              <div className="alert alert-info">No FAQs found.</div>
+            ) : (
+              faqs.map((faq) => (
+                <div key={faq._id} className="card shadow-sm mb-3">
+                  <div className="card-body">
+                    <div className="d-flex justify-content-between align-items-start gap-3">
+                      <div className="flex-grow-1">
+                        <h5 className="mb-2">{faq.question}</h5>
+
+                        <p className="text-muted mb-2">{faq.answer}</p>
+
+                        <span
+                          className={`badge ${
+                            faq.active !== false ? "bg-success" : "bg-secondary"
+                          }`}
+                        >
+                          {faq.active !== false ? "Active" : "Inactive"}
+                        </span>
+                      </div>
+
+                      <div className="d-flex gap-2">
+                        <button
+                          type="button"
+                          className="btn btn-warning btn-sm"
+                          onClick={() => handleEditFaq(faq)}
+                        >
+                          Edit
+                        </button>
+
+                        <button
+                          type="button"
+                          className="btn btn-danger btn-sm"
+                          onClick={() => handleDeleteFaq(faq._id)}
+                        >
+                          Delete
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
         </div>
       )}
       {/* ORDERS */}
