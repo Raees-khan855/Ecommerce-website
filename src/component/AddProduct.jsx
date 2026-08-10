@@ -72,16 +72,34 @@ function AdminPanel() {
   const handleFaqSubmit = async (e) => {
     e.preventDefault();
 
-    if (!question.trim() || !answer.trim()) {
-      alert("Please enter both question and answer.");
+    if (!faqProductId) {
+      alert("Please select a product.");
+      return;
+    }
+
+    // Only save FAQs where both question and answer are entered
+    const validFaqs = faqItems
+      .map((faq) => ({
+        question: faq.question.trim(),
+        answer: faq.answer.trim(),
+        active: faq.active,
+      }))
+      .filter((faq) => faq.question && faq.answer);
+
+    if (validFaqs.length === 0) {
+      alert("Please enter at least one question and answer.");
+      return;
+    }
+
+    if (validFaqs.length > 10) {
+      alert("Maximum 10 FAQs are allowed.");
       return;
     }
 
     try {
       const data = {
-        question: question.trim(),
-        answer: answer.trim(),
-        active: faqActive,
+        productId: faqProductId,
+        faqs: validFaqs,
       };
 
       if (editingFaqId) {
@@ -91,7 +109,7 @@ function AdminPanel() {
           },
         });
 
-        alert("FAQ updated successfully!");
+        alert("FAQs updated successfully!");
       } else {
         await axios.post(`${BACKEND_URL}/api/faqs`, data, {
           headers: {
@@ -99,26 +117,34 @@ function AdminPanel() {
           },
         });
 
-        alert("FAQ added successfully!");
+        alert("FAQs added successfully!");
       }
 
-      setQuestion("");
-      setAnswer("");
-      setFaqActive(true);
-      setEditingFaqId(null);
-
+      resetFaqForm();
       fetchFaqs();
     } catch (err) {
       console.error("FAQ save error:", err);
 
-      alert(err.response?.data?.message || "Failed to save FAQ.");
+      alert(err.response?.data?.message || "Failed to save FAQs.");
     }
   };
   const handleEditFaq = (faq) => {
     setEditingFaqId(faq._id);
-    setQuestion(faq.question || "");
-    setAnswer(faq.answer || "");
-    setFaqActive(faq.active !== false);
+
+    setFaqProductId(
+      typeof faq.productId === "object"
+        ? faq.productId?._id || ""
+        : faq.productId || "",
+    );
+
+    const existingFaqs = Array.isArray(faq.faqs) ? faq.faqs : [];
+
+    const formattedFaqs = Array.from(
+      { length: 10 },
+      (_, index) => existingFaqs[index] || createEmptyFaq(),
+    );
+
+    setFaqItems(formattedFaqs);
 
     setActiveTab("faq");
 
@@ -272,15 +298,37 @@ function AdminPanel() {
 
   const [verified, setVerified] = useState(true);
   /* ================= FAQ ================= */
+  const updateFaqItem = (index, field, value) => {
+    setFaqItems((prev) =>
+      prev.map((faq, i) =>
+        i === index
+          ? {
+              ...faq,
+              [field]: value,
+            }
+          : faq,
+      ),
+    );
+  };
 
+  const resetFaqForm = () => {
+    setFaqProductId("");
+    setFaqItems(Array.from({ length: 10 }, createEmptyFaq));
+    setEditingFaqId(null);
+  };
   const [faqs, setFaqs] = useState([]);
 
-  const [question, setQuestion] = useState("");
+  const [faqProductId, setFaqProductId] = useState("");
 
-  const [answer, setAnswer] = useState("");
+  const createEmptyFaq = () => ({
+    question: "",
+    answer: "",
+    active: true,
+  });
 
-  const [faqActive, setFaqActive] = useState(true);
-
+  const [faqItems, setFaqItems] = useState(
+    Array.from({ length: 10 }, createEmptyFaq),
+  );
   const [editingFaqId, setEditingFaqId] = useState(null);
   /* ================= PRODUCTS ================= */
   const [products, setProducts] = useState([]);
@@ -1020,107 +1068,147 @@ function AdminPanel() {
         </div>
       )}
       {/* ================= FAQ ================= */}
-
       {activeTab === "faq" && (
         <div className="row justify-content-center">
-          {/* FAQ FORM */}
+          <div className="col-12 col-lg-8">
+            {/* FAQ FORM */}
+            <form
+              onSubmit={handleFaqSubmit}
+              className="card p-3 shadow-sm mb-4"
+            >
+              <h4 className="mb-3">
+                {editingFaqId ? "Edit Product FAQs" : "Add Product FAQs"}
+              </h4>
 
-          <div className="col-12 col-lg-6 mb-4">
-            <div className="card shadow-sm p-4">
-              <h3 className="mb-4">{editingFaqId ? "Edit FAQ" : "Add FAQ"}</h3>
+              {/* SELECT PRODUCT */}
+              <label className="form-label fw-semibold">Select Product</label>
 
-              <form onSubmit={handleFaqSubmit}>
-                <div className="mb-3">
-                  <label className="form-label">Question</label>
+              <select
+                className="form-select mb-3"
+                value={faqProductId}
+                onChange={(e) => setFaqProductId(e.target.value)}
+                required
+              >
+                <option value="">Select a product</option>
 
+                {products.map((product) => (
+                  <option key={product._id} value={product._id}>
+                    {product.title}
+                  </option>
+                ))}
+              </select>
+
+              <p className="text-muted small">
+                Add up to 10 questions and answers for this product.
+              </p>
+
+              {/* 10 FAQ QUESTIONS */}
+              {faqItems.map((faq, index) => (
+                <div key={index} className="card mb-3 p-3 border">
+                  <h6 className="mb-3">Question {index + 1}</h6>
+
+                  {/* QUESTION */}
                   <input
                     type="text"
-                    className="form-control"
-                    placeholder="Enter FAQ question"
-                    value={question}
-                    onChange={(e) => setQuestion(e.target.value)}
-                    required
+                    className="form-control mb-2"
+                    placeholder={`Enter question ${index + 1}`}
+                    value={faq.question}
+                    onChange={(e) =>
+                      updateFaqItem(index, "question", e.target.value)
+                    }
                   />
-                </div>
 
-                <div className="mb-3">
-                  <label className="form-label">Answer</label>
-
+                  {/* ANSWER */}
                   <textarea
-                    className="form-control"
-                    rows="5"
-                    placeholder="Enter FAQ answer"
-                    value={answer}
-                    onChange={(e) => setAnswer(e.target.value)}
-                    required
-                  />
-                </div>
-
-                <div className="form-check mb-3">
-                  <input
-                    type="checkbox"
-                    className="form-check-input"
-                    id="faqActive"
-                    checked={faqActive}
-                    onChange={(e) => setFaqActive(e.target.checked)}
+                    className="form-control mb-2"
+                    rows="3"
+                    placeholder={`Enter answer ${index + 1}`}
+                    value={faq.answer}
+                    onChange={(e) =>
+                      updateFaqItem(index, "answer", e.target.value)
+                    }
                   />
 
-                  <label className="form-check-label" htmlFor="faqActive">
-                    Active
-                  </label>
-                </div>
+                  {/* ACTIVE */}
+                  <div className="form-check">
+                    <input
+                      type="checkbox"
+                      className="form-check-input"
+                      id={`faq-active-${index}`}
+                      checked={faq.active}
+                      onChange={(e) =>
+                        updateFaqItem(index, "active", e.target.checked)
+                      }
+                    />
 
-                <div className="d-flex gap-2">
-                  <button type="submit" className="btn btn-success flex-grow-1">
-                    {editingFaqId ? "Update FAQ" : "Add FAQ"}
-                  </button>
-
-                  {editingFaqId && (
-                    <button
-                      type="button"
-                      className="btn btn-secondary"
-                      onClick={() => {
-                        setEditingFaqId(null);
-                        setQuestion("");
-                        setAnswer("");
-                        setFaqActive(true);
-                      }}
+                    <label
+                      className="form-check-label"
+                      htmlFor={`faq-active-${index}`}
                     >
-                      Cancel
-                    </button>
-                  )}
+                      Active
+                    </label>
+                  </div>
                 </div>
-              </form>
-            </div>
-          </div>
+              ))}
 
-          {/* FAQ LIST */}
+              {/* SUBMIT BUTTON */}
+              <button type="submit" className="btn btn-success w-100">
+                {editingFaqId ? "Update FAQs" : "Add FAQs"}
+              </button>
 
-          <div className="col-12">
-            <h3 className="mb-3">Manage FAQs</h3>
+              {/* CANCEL EDIT */}
+              {editingFaqId && (
+                <button
+                  type="button"
+                  className="btn btn-secondary w-100 mt-2"
+                  onClick={resetFaqForm}
+                >
+                  Cancel Edit
+                </button>
+              )}
+            </form>
 
-            {faqs.length === 0 ? (
-              <div className="alert alert-info">No FAQs found.</div>
-            ) : (
-              faqs.map((faq) => (
-                <div key={faq._id} className="card shadow-sm mb-3">
-                  <div className="card-body">
-                    <div className="d-flex justify-content-between align-items-start gap-3">
-                      <div className="flex-grow-1">
-                        <h5 className="mb-2">{faq.question}</h5>
+            {/* FAQ LIST */}
+            <div>
+              <h3 className="mb-3">Manage FAQs</h3>
 
-                        <p className="text-muted mb-2">{faq.answer}</p>
-
-                        <span
-                          className={`badge ${
-                            faq.active !== false ? "bg-success" : "bg-secondary"
-                          }`}
-                        >
-                          {faq.active !== false ? "Active" : "Inactive"}
+              {faqs.length === 0 ? (
+                <div className="alert alert-info">No FAQs found.</div>
+              ) : (
+                faqs.map((faq) => (
+                  <div key={faq._id} className="card shadow-sm mb-3">
+                    <div className="card-body">
+                      {/* PRODUCT */}
+                      <div className="mb-2">
+                        <span className="badge bg-primary">
+                          {faq.productId?.title || "Product FAQ"}
                         </span>
                       </div>
 
-                      <div className="d-flex gap-2">
+                      {/* QUESTIONS */}
+                      {Array.isArray(faq.faqs) &&
+                        faq.faqs.map((item, index) => (
+                          <div key={index} className="mb-3">
+                            <h6 className="mb-1">
+                              {index + 1}. {item.question}
+                            </h6>
+
+                            <p className="text-muted mb-1">{item.answer}</p>
+
+                            <span
+                              className={`badge ${
+                                item.active !== false
+                                  ? "bg-success"
+                                  : "bg-secondary"
+                              }`}
+                            >
+                              {item.active !== false ? "Active" : "Inactive"}
+                            </span>
+                          </div>
+                        ))}
+
+                      {/* ACTIONS */}
+                      <div className="d-flex gap-2 mt-3">
                         <button
                           type="button"
                           className="btn btn-warning btn-sm"
@@ -1139,9 +1227,9 @@ function AdminPanel() {
                       </div>
                     </div>
                   </div>
-                </div>
-              ))
-            )}
+                ))
+              )}
+            </div>
           </div>
         </div>
       )}

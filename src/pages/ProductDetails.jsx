@@ -32,7 +32,7 @@ function ProductDetails() {
   const [loading, setLoading] = useState(true);
   const [copied, setCopied] = useState(false);
   const [reviews, setReviews] = useState([]);
-
+  const [faqs, setFaqs] = useState([]);
   const reviewCount = reviews.length;
 
   const rating =
@@ -52,6 +52,18 @@ function ProductDetails() {
   useLayoutEffect(() => {
     window.scrollTo(0, 0);
   }, [id]);
+  const fetchFaqs = async (productId) => {
+    try {
+      const res = await axios.get(
+        `${BACKEND_URL}/api/faqs/product/${productId}`,
+      );
+
+      setFaqs(Array.isArray(res.data) ? res.data : []);
+    } catch (err) {
+      console.error("FAQ fetch error:", err);
+      setFaqs([]);
+    }
+  };
   const fetchReviews = async (productId) => {
     try {
       const res = await axios.get(
@@ -75,7 +87,10 @@ function ProductDetails() {
 
         const prod = res.data.product || res.data;
         setProduct(prod);
+
         await fetchReviews(prod._id);
+        await fetchFaqs(prod._id);
+
         setRelated(Array.isArray(res.data.related) ? res.data.related : []);
         setActiveImage(
           Array.isArray(prod.images) && prod.images.length > 0
@@ -430,6 +445,7 @@ function ProductDetails() {
       {related.length > 0 && (
         <div className="mt-5">
           <h4 className="fw-bold mb-3">Related Products</h4>
+
           <div className="row g-3">
             {related.map((p) => (
               <div key={p._id} className="col-6 col-md-4 col-lg-3">
@@ -439,6 +455,56 @@ function ProductDetails() {
               </div>
             ))}
           </div>
+        </div>
+      )}
+
+      {/* PRODUCT FAQS */}
+      {faqs.length > 0 && (
+        <div className="mt-5 mb-5">
+          <h3 className="fw-bold mb-4">Frequently Asked Questions</h3>
+
+          <div className="accordion" id="productFaqAccordion">
+            {faqs.map((faq, index) => (
+              <div className="accordion-item mb-2" key={faq._id}>
+                <h2 className="accordion-header" id={`heading-${faq._id}`}>
+                  <button
+                    className={`accordion-button ${
+                      index !== 0 ? "collapsed" : ""
+                    }`}
+                    type="button"
+                    data-bs-toggle="collapse"
+                    data-bs-target={`#collapse-${faq._id}`}
+                    aria-expanded={index === 0 ? "true" : "false"}
+                    aria-controls={`collapse-${faq._id}`}
+                  >
+                    {faq.question}
+                  </button>
+                </h2>
+
+                <div
+                  id={`collapse-${faq._id}`}
+                  className={`accordion-collapse collapse ${
+                    index === 0 ? "show" : ""
+                  }`}
+                  aria-labelledby={`heading-${faq._id}`}
+                  data-bs-parent="#productFaqAccordion"
+                >
+                  <div className="accordion-body">{faq.answer}</div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* No FAQs */}
+      {faqs.length === 0 && (
+        <div className="mt-5 mb-5">
+          <h3 className="fw-bold mb-3">Frequently Asked Questions</h3>
+
+          <p className="text-muted">
+            No frequently asked questions available for this product.
+          </p>
         </div>
       )}
     </div>
