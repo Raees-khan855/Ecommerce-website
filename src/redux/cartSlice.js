@@ -1,6 +1,6 @@
 import { createSlice } from "@reduxjs/toolkit";
 
-// Load initial cart from localStorage if found
+// Load initial cart from localStorage
 const savedCart = localStorage.getItem("cartItems");
 
 const initialState = {
@@ -14,26 +14,33 @@ const saveCart = (items) => {
 
 const cartSlice = createSlice({
   name: "cart",
+
   initialState,
+
   reducers: {
     /* ================= ADD TO CART ================= */
     addToCart: (state, action) => {
       const incoming = action.payload;
 
-      // Match by id + selectedColor + selectedSize
+      // Always use one consistent ID
+      const incomingId = incoming.id || incoming._id;
+
       const existing = state.items.find(
-        (i) =>
-          i.id === incoming.id &&
-          (i.selectedColor || "") === (incoming.selectedColor || "") &&
-          (i.selectedSize || "") === (incoming.selectedSize || ""),
+        (item) =>
+          item.id === incomingId &&
+          (item.selectedColor || "") === (incoming.selectedColor || "") &&
+          (item.selectedSize || "") === (incoming.selectedSize || ""),
       );
 
       if (existing) {
-        existing.quantity += incoming.quantity || 1;
+        // Increase existing quantity
+        existing.quantity += Number(incoming.quantity) || 1;
       } else {
+        // Add new product
         state.items.push({
           ...incoming,
-          quantity: incoming.quantity || 1,
+          id: incomingId,
+          quantity: Number(incoming.quantity) || 1,
         });
       }
 
@@ -42,14 +49,16 @@ const cartSlice = createSlice({
 
     /* ================= REMOVE FROM CART ================= */
     removeFromCart: (state, action) => {
-      const { id, selectedColor = "", selectedSize = "" } = action.payload;
+      const { id, _id, selectedColor = "", selectedSize = "" } = action.payload;
+
+      const productId = id || _id;
 
       state.items = state.items.filter(
-        (i) =>
+        (item) =>
           !(
-            i.id === id &&
-            (i.selectedColor || "") === selectedColor &&
-            (i.selectedSize || "") === selectedSize
+            item.id === productId &&
+            (item.selectedColor || "") === selectedColor &&
+            (item.selectedSize || "") === selectedSize
           ),
       );
 
@@ -60,22 +69,24 @@ const cartSlice = createSlice({
     updateQuantity: (state, action) => {
       const {
         id,
+        _id,
         selectedColor = "",
         selectedSize = "",
         quantity,
       } = action.payload;
 
+      const productId = id || _id;
+
       const item = state.items.find(
-        (i) =>
-          i.id === id &&
-          (i.selectedColor || "") === selectedColor &&
-          (i.selectedSize || "") === selectedSize,
+        (item) =>
+          item.id === productId &&
+          (item.selectedColor || "") === selectedColor &&
+          (item.selectedSize || "") === selectedSize,
       );
 
-      if (item) item.quantity = quantity;
-
-      // Remove items with 0 quantity
-      state.items = state.items.filter((i) => i.quantity > 0);
+      if (item) {
+        item.quantity = Math.max(1, Number(quantity));
+      }
 
       saveCart(state.items);
     },
