@@ -783,13 +783,18 @@ function AdminPanel() {
                 required
               />
 
-              <input
-                className="form-control mb-2"
-                placeholder="Category"
+              <select
+                className="form-select mb-2"
                 value={category}
                 onChange={(e) => setCategory(e.target.value)}
                 required
-              />
+              >
+                <option value="">Select Category</option>
+                <option value="watch">Watches</option>
+                <option value="earbuds">Earbuds</option>
+                <option value="beauty">Beauty</option>
+                <option value="electronics">Electronics</option>
+              </select>
               {/* COLORS */}
               <input
                 className="form-control mb-2"
@@ -1350,7 +1355,6 @@ function AdminPanel() {
                     ))}
                   </ul>
                 </div>
-
                 {/* TOTAL AMOUNT */}
                 <div className="card-footer bg-white border-top d-flex justify-content-between align-items-center">
                   <strong className="fs-6">

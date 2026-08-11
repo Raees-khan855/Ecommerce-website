@@ -1,5 +1,6 @@
 import { useEffect, useState, lazy, Suspense } from "react";
 import axios from "axios";
+import { useSearchParams } from "react-router-dom";
 import BACKEND_URL from "../config";
 
 /* 🔥 Lazy load ProductCard */
@@ -12,6 +13,10 @@ function ProductList() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
+  // 🔥 Get category from URL
+  const [searchParams] = useSearchParams();
+  const category = searchParams.get("category");
+
   /* ================= FETCH PRODUCTS ================= */
   useEffect(() => {
     let mounted = true;
@@ -20,8 +25,20 @@ function ProductList() {
       try {
         setLoading(true);
 
+        const params = {};
+
+        // 🔥 Add category if selected
+        if (category) {
+          params.category = category.toLowerCase();
+        }
+
+        // 🔥 Add search if entered
+        if (searchQuery) {
+          params.search = searchQuery;
+        }
+
         const res = await axios.get(`${BACKEND_URL}/products`, {
-          params: searchQuery ? { search: searchQuery } : {},
+          params,
         });
 
         if (mounted) {
@@ -30,15 +47,23 @@ function ProductList() {
         }
       } catch (err) {
         console.error("Product fetch error:", err);
-        if (mounted) setError("Unable to load products.");
+
+        if (mounted) {
+          setError("Unable to load products.");
+        }
       } finally {
-        if (mounted) setLoading(false);
+        if (mounted) {
+          setLoading(false);
+        }
       }
     };
 
     fetchProducts();
-    return () => (mounted = false);
-  }, [searchQuery]);
+
+    return () => {
+      mounted = false;
+    };
+  }, [searchQuery, category]);
 
   /* ================= SEARCH ================= */
   const handleSearch = () => {
@@ -46,7 +71,9 @@ function ProductList() {
   };
 
   const handleKeyDown = (e) => {
-    if (e.key === "Enter") handleSearch();
+    if (e.key === "Enter") {
+      handleSearch();
+    }
   };
 
   /* ================= UI ================= */
@@ -54,7 +81,11 @@ function ProductList() {
     <div className="container-xl py-4">
       {/* HEADER */}
       <div className="text-center mb-4 px-3">
-        <h2 className="fw-bold">Our Products</h2>
+        <h2 className="fw-bold">
+          {category
+            ? `${category.charAt(0).toUpperCase() + category.slice(1)}`
+            : "Our Products"}
+        </h2>
 
         {/* SEARCH */}
         <div className="d-flex justify-content-center mt-3">
@@ -67,6 +98,7 @@ function ProductList() {
               onChange={(e) => setSearchInput(e.target.value)}
               onKeyDown={handleKeyDown}
             />
+
             <button className="btn btn-primary" onClick={handleSearch}>
               🔍
             </button>
@@ -79,7 +111,10 @@ function ProductList() {
 
       {/* EMPTY */}
       {!loading && products.length === 0 && (
-        <div className="text-center text-muted py-5">No products found.</div>
+        <div className="text-center text-muted py-5">
+          No products found
+          {category && ` in ${category}`}.
+        </div>
       )}
 
       {/* GRID */}
@@ -93,9 +128,11 @@ function ProductList() {
               /* 🔥 Skeleton Card */
               <div className="card w-100 border-0 shadow-sm">
                 <div className="bg-light" style={{ height: 180 }} />
+
                 <div className="card-body">
                   <div className="placeholder-glow">
                     <span className="placeholder col-8"></span>
+
                     <span className="placeholder col-6"></span>
                   </div>
                 </div>

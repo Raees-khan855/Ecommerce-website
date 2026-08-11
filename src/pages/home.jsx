@@ -92,6 +92,126 @@ function Home() {
         </div>
       </section>
 
+      {/* ================= TRUST FEATURES ================= */}
+      <section className="py-4 bg-white">
+        <div className="container">
+          <div className="row g-3 justify-content-center">
+            {/* Fast Delivery */}
+            <div className="col-6 col-md-3">
+              <div className="card border-0 shadow-sm h-100 text-center p-3">
+                <div className="fs-1 mb-2">🚚</div>
+                <h6 className="fw-bold mb-1">Fast Delivery</h6>
+                <p className="text-muted small mb-0">
+                  Quick delivery across Pakistan
+                </p>
+              </div>
+            </div>
+
+            {/* Cash on Delivery */}
+            <div className="col-6 col-md-3">
+              <div className="card border-0 shadow-sm h-100 text-center p-3">
+                <div className="fs-1 mb-2">💵</div>
+                <h6 className="fw-bold mb-1">Cash on Delivery</h6>
+                <p className="text-muted small mb-0">
+                  Pay when your order arrives
+                </p>
+              </div>
+            </div>
+
+            {/* Quality Products */}
+            <div className="col-6 col-md-3">
+              <div className="card border-0 shadow-sm h-100 text-center p-3">
+                <div className="fs-1 mb-2">🛡️</div>
+                <h6 className="fw-bold mb-1">Quality Products</h6>
+                <p className="text-muted small mb-0">
+                  Products selected with care
+                </p>
+              </div>
+            </div>
+
+            {/* Customer Support */}
+            <div className="col-6 col-md-3">
+              <div className="card border-0 shadow-sm h-100 text-center p-3">
+                <div className="fs-1 mb-2">💬</div>
+                <h6 className="fw-bold mb-1">Customer Support</h6>
+                <p className="text-muted small mb-0">We're here to help you</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+      {/* ================= SHOP BY CATEGORY ================= */}
+      <section className="py-5 bg-light">
+        <div className="container">
+          <h2 className="fw-bold text-center mb-4">Shop by Category</h2>
+
+          <div className="row g-3">
+            {/* WATCHES */}
+            <div className="col-6 col-md-3">
+              <Link
+                to="/products?category=watch"
+                className="text-decoration-none text-dark"
+              >
+                <div className="card border-0 shadow-sm h-100 text-center p-4">
+                  <div className="fs-1 mb-2">⌚</div>
+
+                  <h5 className="fw-bold mb-1">Watches</h5>
+
+                  <p className="text-muted small mb-0">Explore Watches</p>
+                </div>
+              </Link>
+            </div>
+
+            {/* EARBUDS */}
+            <div className="col-6 col-md-3">
+              <Link
+                to="/products?category=earbuds"
+                className="text-decoration-none text-dark"
+              >
+                <div className="card border-0 shadow-sm h-100 text-center p-4">
+                  <div className="fs-1 mb-2">🎧</div>
+
+                  <h5 className="fw-bold mb-1">Earbuds</h5>
+
+                  <p className="text-muted small mb-0">Explore Earbuds</p>
+                </div>
+              </Link>
+            </div>
+
+            {/* BEAUTY */}
+            <div className="col-6 col-md-3">
+              <Link
+                to="/products?category=beauty"
+                className="text-decoration-none text-dark"
+              >
+                <div className="card border-0 shadow-sm h-100 text-center p-4">
+                  <div className="fs-1 mb-2">💄</div>
+
+                  <h5 className="fw-bold mb-1">Beauty</h5>
+
+                  <p className="text-muted small mb-0">Explore Beauty</p>
+                </div>
+              </Link>
+            </div>
+
+            {/* ELECTRONICS */}
+            <div className="col-6 col-md-3">
+              <Link
+                to="/products?category=electronics"
+                className="text-decoration-none text-dark"
+              >
+                <div className="card border-0 shadow-sm h-100 text-center p-4">
+                  <div className="fs-1 mb-2">🛍️</div>
+
+                  <h5 className="fw-bold mb-1">Electronics</h5>
+
+                  <p className="text-muted small mb-0">Explore Electronics</p>
+                </div>
+              </Link>
+            </div>
+          </div>
+        </div>
+      </section>
       {/* ================= FEATURED ================= */}
       <div className="container my-5">
         <h2 className="fw-bold text-center mb-4">Featured Products</h2>
@@ -114,7 +234,6 @@ function Home() {
           </div>
         )}
       </div>
-
       {/* ================= INFO ================= */}
       <section className="bg-light py-5 mt-5">
         <div className="container text-center">
@@ -126,6 +245,53 @@ function Home() {
             ✔ Fast & FREE shipping nationwide <br />
             ✔ Reliable customer support <br />✔ 100% satisfaction guaranteed
           </p>
+        </div>
+      </section>
+      {/* ================= NEED HELP ================= */}
+      <section className="py-5">
+        <div className="container">
+          <div className="card border-0 shadow-sm text-center p-4">
+            <h4 className="fw-bold mb-2">💬 NEED HELP?</h4>
+
+            <p className="text-muted mb-3">
+              Have a question about a product or your order?
+            </p>
+
+            <a
+              href="https://wa.me/923001234567"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="btn btn-success px-4 py-2 fw-semibold"
+            >
+              WhatsApp Us
+            </a>
+          </div>
+        </div>
+      </section>
+      {/* ================= LOCATION MAP ================= */}
+      <section className="py-5 bg-light">
+        <div className="container">
+          <h2 className="fw-bold text-center mb-2">Find Us</h2>
+
+          <p className="text-muted text-center mb-4">
+            Visit our location or find us on the map
+          </p>
+
+          <div
+            className="rounded-4 overflow-hidden shadow-sm"
+            style={{ height: "400px", width: "100%" }}
+          >
+            <iframe
+              title="RaeesProduct Location"
+              src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3307.2284920206175!2d71.57255387403798!3d34.01234541983877!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x38d93d7cdf45d3af%3A0xb0e53be8bb12f001!2sAshraf%20Rd%2C%20Hashtnagri%2C%20Peshawar%2C%20Pakistan!5e0!3m2!1sen!2s!4v1786474294146!5m2!1sen!2s"
+              width="100%"
+              height="100%"
+              style={{ border: 0 }}
+              allowFullScreen
+              loading="lazy"
+              referrerPolicy="no-referrer-when-downgrade"
+            ></iframe>
+          </div>
         </div>
       </section>
     </div>
