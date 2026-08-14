@@ -258,7 +258,7 @@ function Home() {
             </p>
 
             <a
-              href="https://wa.me/923001234567"
+              href="https://wa.me/923004555681"
               target="_blank"
               rel="noopener noreferrer"
               className="btn btn-success px-4 py-2 fw-semibold"

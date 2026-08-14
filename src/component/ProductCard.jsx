@@ -176,9 +176,32 @@ function ProductCard({ product, showShare = false }) {
           {product.title}
         </h6>
 
-        <span className="text-muted small mb-1">
-          Rs.{Number(product.price).toFixed(2)}
-        </span>
+        <div className="mb-2">
+          {/* Selling Price */}
+          <span
+            className="fw-bold me-2"
+            style={{
+              color: "red",
+              fontSize: "18px",
+            }}
+          >
+            Rs.{Number(product.price).toFixed(2)}
+          </span>
+
+          {/* Compare-at Price */}
+          {product.compareAtPrice &&
+            Number(product.compareAtPrice) > Number(product.price) && (
+              <span
+                style={{
+                  color: "black",
+                  textDecoration: "line-through",
+                  fontSize: "14px",
+                }}
+              >
+                Rs.{Number(product.compareAtPrice).toFixed(2)}
+              </span>
+            )}
+        </div>
 
         {/* RATING */}
         <div className="d-flex align-items-center gap-1 mb-3">

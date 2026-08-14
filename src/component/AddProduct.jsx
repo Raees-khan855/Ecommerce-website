@@ -335,6 +335,7 @@ function AdminPanel() {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [price, setPrice] = useState("");
+  const [compareAtPrice, setCompareAtPrice] = useState("");
   const [category, setCategory] = useState("");
   const [images, setImages] = useState([]); // files
   const [productPreviews, setProductPreviews] = useState([]); // preview urls
@@ -481,6 +482,7 @@ function AdminPanel() {
     formData.append("title", title);
     formData.append("description", description);
     formData.append("price", price);
+    formData.append("compareAtPrice", compareAtPrice ? compareAtPrice : "");
     formData.append("category", category);
     formData.append("featured", featured ? "true" : "false");
     formData.append(
@@ -533,6 +535,7 @@ function AdminPanel() {
 
   const handleEdit = (p) => {
     setEditingProductId(p._id);
+    setCompareAtPrice(p.compareAtPrice || "");
     setTitle(p.title);
     setDescription(p.description);
     setPrice(p.price);
@@ -560,6 +563,7 @@ function AdminPanel() {
     setTitle("");
     setDescription("");
     setPrice("");
+    setCompareAtPrice("");
     setCategory("");
     setImages([]);
     setFeatured(false);
@@ -782,7 +786,13 @@ function AdminPanel() {
                 onChange={(e) => setPrice(e.target.value)}
                 required
               />
-
+              <input
+                className="form-control mb-2"
+                type="number"
+                placeholder="Compare-at Price"
+                value={compareAtPrice}
+                onChange={(e) => setCompareAtPrice(e.target.value)}
+              />
               <select
                 className="form-select mb-2"
                 value={category}

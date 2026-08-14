@@ -132,7 +132,6 @@ function ProductDetails() {
         : [];
 
   const mainImage = getImageUrl(activeImage);
-  const price = Number(product?.price || 0).toFixed(2);
 
   /* Add to cart */
   const addItem = (checkout = false) => {
@@ -267,8 +266,32 @@ function ProductDetails() {
               {rating} ({reviewCount})
             </span>
           </div>
+          <div className="mb-3">
+            {/* Selling Price */}
+            <span
+              className="fw-bold me-2"
+              style={{
+                color: "red",
+                fontSize: "24px",
+              }}
+            >
+              Rs. {Number(product.price).toFixed(2)}
+            </span>
 
-          <h4 className="text-primary fw-bold mb-3">Rs. {price}</h4>
+            {/* Compare-at Price */}
+            {product.compareAtPrice &&
+              Number(product.compareAtPrice) > Number(product.price) && (
+                <span
+                  style={{
+                    color: "black",
+                    textDecoration: "line-through",
+                    fontSize: "17px",
+                  }}
+                >
+                  Rs. {Number(product.compareAtPrice).toFixed(2)}
+                </span>
+              )}
+          </div>
           <p>{product.description}</p>
 
           {/* COLOR BOXES */}
