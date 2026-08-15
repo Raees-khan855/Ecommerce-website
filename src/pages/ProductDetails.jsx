@@ -423,45 +423,65 @@ function ProductDetails() {
         </div>
       </div>
       {/* CUSTOMER REVIEWS */}
-
       <div className="mt-5">
         <h3 className="fw-bold mb-4">Customer Reviews ({reviews.length})</h3>
 
         {reviews.length === 0 ? (
           <p>No reviews yet.</p>
         ) : (
-          reviews.map((review) => (
-            <div key={review._id} className="border rounded p-3 mb-3 shadow-sm">
-              <div className="d-flex align-items-center">
-                {review.image && (
-                  <img
-                    src={review.image}
-                    alt={review.customerName}
-                    style={{
-                      width: 60,
-                      height: 60,
-                      borderRadius: "50%",
-                      objectFit: "cover",
-                    }}
-                  />
-                )}
+          <div className="review-slider">
+            <div className="review-track">
+              {[...reviews, ...reviews].map((review, index) => (
+                <div key={`${review._id}-${index}`} className="review-slide">
+                  <div className="border rounded p-3 shadow-sm bg-white h-100">
+                    {/* Customer */}
+                    <div className="d-flex align-items-center mb-2">
+                      {review.image && (
+                        <img
+                          src={review.image}
+                          alt={review.customerName}
+                          width="50"
+                          height="50"
+                          style={{
+                            borderRadius: "50%",
+                            objectFit: "cover",
+                            marginRight: "12px",
+                          }}
+                        />
+                      )}
 
-                <div className="ms-3">
-                  <h6 className="mb-1">
-                    {review.customerName}
+                      <div>
+                        <h6 className="mb-1 fw-bold">
+                          {review.customerName}
 
-                    {review.verified && (
-                      <span className="badge bg-success ms-2">Verified</span>
-                    )}
-                  </h6>
+                          {review.verified && (
+                            <span className="badge bg-success ms-2">
+                              Verified
+                            </span>
+                          )}
+                        </h6>
 
-                  <div>{"⭐".repeat(review.rating)}</div>
+                        <div style={{ fontSize: "14px" }}>
+                          {"⭐".repeat(review.rating)}
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Review */}
+                    <p
+                      className="mb-0 text-muted"
+                      style={{
+                        fontSize: "14px",
+                        lineHeight: "1.5",
+                      }}
+                    >
+                      {review.comment}
+                    </p>
+                  </div>
                 </div>
-              </div>
-
-              <p className="mt-3 mb-0">{review.comment}</p>
+              ))}
             </div>
-          ))
+          </div>
         )}
       </div>
       {/* RELATED PRODUCTS */}

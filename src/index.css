@@ -18,3 +18,59 @@
   align-items: center;
   justify-content: center;
 }
+/* =========================
+   REVIEW SLIDER
+========================= */
+
+.review-slider {
+  width: 100%;
+  overflow: hidden;
+  position: relative;
+}
+
+.review-track {
+  display: flex;
+  gap: 20px;
+  width: max-content;
+  animation: reviewSlide 25s linear infinite;
+}
+
+.review-slide {
+  width: 420px;
+  flex-shrink: 0;
+}
+
+/* Automatic movement */
+@keyframes reviewSlide {
+  0% {
+    transform: translateX(0);
+  }
+
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
+/* Tablet */
+@media (max-width: 991px) {
+  .review-slide {
+    width: 350px;
+  }
+}
+
+/* Mobile - one review at a time */
+@media (max-width: 576px) {
+  .review-slide {
+    width: calc(100vw - 40px);
+  }
+
+  .review-track {
+    gap: 15px;
+    animation-duration: 20s;
+  }
+}
+
+/* Pause when mouse is over reviews */
+.review-slider:hover .review-track {
+  animation-play-state: paused;
+}
