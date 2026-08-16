@@ -61,6 +61,7 @@ function AdminPanel() {
   const [sizesInput, setSizesInput] = useState(""); // comma separated input
   const [editingReviewId, setEditingReviewId] = useState(null);
   const token = localStorage.getItem("adminToken");
+  const [sidebarOpen, setSidebarOpen] = useState(false);
   const fetchFaqs = async () => {
     try {
       const res = await axios.get(`${BACKEND_URL}/api/faqs`);
@@ -625,7 +626,18 @@ function AdminPanel() {
       alert("Delete failed");
     }
   };
+  const totalProducts = products.length;
+  const totalOrders = orders.length;
+  const totalReviews = reviews.length;
+  const totalFaqs = faqs.length;
 
+  const confirmedOrders = orders.filter(
+    (order) => order.status === "Confirmed",
+  ).length;
+
+  const pendingOrders = orders.filter(
+    (order) => order.status !== "Confirmed",
+  ).length;
   /* ================= LOGIN UI ================= */
   if (!isLoggedIn) {
     return (
@@ -657,725 +669,1529 @@ function AdminPanel() {
     );
   }
 
-  /* ================= ADMIN UI ================= */
-  return (
-    <div className="container py-4">
-      <h2 className="text-center mb-4">Admin Panel</h2>
+  /* ================= ADMIN DASHBOARD UI ================= */
 
-      {/* TABS */}
-      {/* TABS */}
-      <div className="row g-2 mb-4">
-        <div className="col-6 col-md-3">
-          <button
-            className="btn btn-info w-100"
-            onClick={() => setActiveTab("hero")}
-          >
-            Hero
-          </button>
-        </div>
+  if (!isLoggedIn) {
+    return (
+      <div
+        className="min-vh-100 d-flex align-items-center justify-content-center"
+        style={{
+          background:
+            "linear-gradient(135deg, #eef4ff 0%, #f8fafc 50%, #eefbf3 100%)",
+        }}
+      >
+        <div className="container py-5">
+          <div className="row justify-content-center">
+            <div className="col-12 col-sm-10 col-md-6 col-lg-4">
+              <div className="card border-0 shadow-lg rounded-4 overflow-hidden">
+                <div
+                  className="text-white text-center p-4"
+                  style={{
+                    background: "linear-gradient(135deg, #0d6efd, #084298)",
+                  }}
+                >
+                  <div
+                    className="mx-auto mb-3 d-flex align-items-center justify-content-center rounded-circle bg-white text-primary"
+                    style={{
+                      width: 70,
+                      height: 70,
+                      fontSize: 30,
+                    }}
+                  >
+                    🔐
+                  </div>
 
-        <div className="col-6 col-md-3">
-          <button
-            className="btn btn-primary w-100"
-            onClick={() => setActiveTab("product")}
-          >
-            Add Product
-          </button>
-        </div>
+                  <h3 className="fw-bold mb-1">RaeesProduct</h3>
 
-        <div className="col-6 col-md-3">
-          <button
-            className="btn btn-secondary w-100"
-            onClick={() => setActiveTab("manage")}
-          >
-            Manage
-          </button>
-        </div>
+                  <p className="mb-0 opacity-75">Admin Dashboard</p>
+                </div>
 
-        <div className="col-6 col-md-3">
-          <button
-            className="btn btn-success w-100"
-            onClick={() => setActiveTab("orders")}
-          >
-            Orders
-          </button>
-        </div>
+                <div className="card-body p-4">
+                  {message && (
+                    <div className="alert alert-danger rounded-3">
+                      {message}
+                    </div>
+                  )}
 
-        <div className="col-6 col-md-3">
-          <button
-            className="btn btn-dark w-100"
-            onClick={() => setActiveTab("reviews")}
-          >
-            Reviews
-          </button>
-        </div>
+                  <form onSubmit={handleLogin}>
+                    <div className="mb-3">
+                      <label className="form-label fw-semibold">Username</label>
 
-        <div className="col-6 col-md-3">
-          <button
-            className="btn btn-primary w-100"
-            onClick={() => setActiveTab("faq")}
-          >
-            FAQ
-          </button>
+                      <input
+                        type="text"
+                        className="form-control form-control-lg rounded-3"
+                        placeholder="Enter username"
+                        value={username}
+                        onChange={(e) => setUsername(e.target.value)}
+                        required
+                      />
+                    </div>
+
+                    <div className="mb-4">
+                      <label className="form-label fw-semibold">Password</label>
+
+                      <input
+                        className="form-control form-control-lg rounded-3"
+                        type="password"
+                        placeholder="Enter password"
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        required
+                      />
+                    </div>
+
+                    <button
+                      type="submit"
+                      className="btn btn-primary btn-lg w-100 rounded-3 fw-semibold"
+                    >
+                      Login to Dashboard
+                    </button>
+                  </form>
+                </div>
+              </div>
+
+              <p className="text-center text-muted small mt-3">
+                © {new Date().getFullYear()} RaeesProduct
+              </p>
+            </div>
+          </div>
         </div>
       </div>
-      {/* HERO */}
-      {activeTab === "hero" && (
-        <div className="row justify-content-center">
-          <div className="col-12 col-md-8">
-            <form onSubmit={updateHero}>
-              <input
-                className="form-control mb-2"
-                value={heroTitle}
-                onChange={(e) => setHeroTitle(e.target.value)}
-                placeholder="Hero Title"
-              />
-              <input
-                className="form-control mb-2"
-                value={heroSubtitle}
-                onChange={(e) => setHeroSubtitle(e.target.value)}
-                placeholder="Hero Subtitle"
-              />
-              <input
-                type="file"
-                className="form-control mb-2"
-                onChange={(e) => {
-                  setHeroImage(e.target.files[0]);
-                  setHeroPreview(URL.createObjectURL(e.target.files[0]));
-                }}
-              />
-              {heroPreview && (
-                <img src={heroPreview} className="img-fluid rounded mb-3" />
-              )}
-              <button className="btn btn-success w-100">Update Hero</button>
-            </form>
+    );
+  }
+
+  /* ================= MAIN DASHBOARD ================= */
+
+  return (
+    <div
+      className="min-vh-100"
+      style={{
+        background: "#f5f7fb",
+      }}
+    >
+      {/* ================= MOBILE TOPBAR ================= */}
+
+      <div
+        className="d-lg-none bg-white border-bottom sticky-top"
+        style={{ zIndex: 1050 }}
+      >
+        <div className="d-flex align-items-center justify-content-between p-3">
+          <button
+            className="btn btn-light rounded-3"
+            onClick={() => setSidebarOpen(!sidebarOpen)}
+          >
+            ☰
+          </button>
+
+          <div className="fw-bold">RaeesProduct</div>
+
+          <div
+            className="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center"
+            style={{
+              width: 38,
+              height: 38,
+            }}
+          >
+            A
           </div>
         </div>
-      )}
-      {/* ADD / EDIT PRODUCT */}
-      {activeTab === "product" && (
-        <div className="row justify-content-center">
-          <div className="col-12 col-md-8 col-lg-6">
-            <form onSubmit={handleProductSubmit} className="card p-3 shadow-sm">
-              <h5 className="text-center mb-3">
-                {editingProductId ? "Update Product" : "Add Product"}
-              </h5>
+      </div>
 
-              <input
-                className="form-control mb-2"
-                placeholder="Product Title"
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
-                required
-              />
+      <div className="d-flex">
+        {/* ================= SIDEBAR ================= */}
 
-              <textarea
-                className="form-control mb-2"
-                placeholder="Description"
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
-                rows="3"
-                required
-              />
+        <aside
+          className={`bg-white border-end position-fixed ${
+            sidebarOpen ? "d-block" : "d-none"
+          } d-lg-flex flex-column`}
+          style={{
+            width: 250,
+            height: "100vh",
+            zIndex: 1040,
+            top: 0,
+            left: 0,
+          }}
+        >
+          {/* LOGO */}
 
-              <input
-                className="form-control mb-2"
-                type="number"
-                placeholder="Price"
-                value={price}
-                onChange={(e) => setPrice(e.target.value)}
-                required
-              />
-              <input
-                className="form-control mb-2"
-                type="number"
-                placeholder="Compare-at Price"
-                value={compareAtPrice}
-                onChange={(e) => setCompareAtPrice(e.target.value)}
-              />
-              <select
-                className="form-select mb-2"
-                value={category}
-                onChange={(e) => setCategory(e.target.value)}
-                required
-              >
-                <option value="">Select Category</option>
-                <option value="watch">Watches</option>
-                <option value="earbuds">Earbuds</option>
-                <option value="beauty">Beauty</option>
-                <option value="electronics">Electronics</option>
-              </select>
-              {/* COLORS */}
-              <input
-                className="form-control mb-2"
-                placeholder="Colors (comma separated, e.g. Red, Blue, White)"
-                value={colorsInput}
-                onChange={(e) => setColorsInput(e.target.value)}
-              />
-
-              {/* SIZES */}
-              <input
-                className="form-control mb-2"
-                placeholder="Sizes (comma separated, e.g. S, M, L, XL)"
-                value={sizesInput}
-                onChange={(e) => setSizesInput(e.target.value)}
-              />
-
-              {/* ===== Drag & Drop Upload ===== */}
+          <div className="p-4 border-bottom">
+            <div className="d-flex align-items-center gap-3">
               <div
-                className="border rounded p-4 text-center mb-3"
-                style={{ background: "#fafafa", cursor: "pointer" }}
-                onDragOver={(e) => e.preventDefault()}
-                onDrop={handleDrop}
-                onClick={() => fileInputRef.current.click()}
+                className="bg-primary text-white rounded-3 d-flex align-items-center justify-content-center"
+                style={{
+                  width: 45,
+                  height: 45,
+                  fontSize: 21,
+                }}
               >
-                <p className="mb-1">📂 Drag & Drop images here</p>
-                <small className="text-muted">or click to browse (max 5)</small>
-
-                <input
-                  ref={fileInputRef}
-                  type="file"
-                  hidden
-                  multiple
-                  accept="image/*"
-                  onChange={handleImageChange}
-                />
+                R
               </div>
 
-              <div className="d-flex flex-wrap gap-2 mb-2">
-                {productPreviews.map((img, i) => (
-                  <div
-                    key={i}
-                    style={{ position: "relative", textAlign: "center" }}
-                  >
-                    <img
-                      src={img}
-                      style={{
-                        width: 80,
-                        height: 80,
-                        objectFit: "cover",
-                        borderRadius: 6,
-                        border: i === 0 ? "3px solid green" : "2px solid #eee",
-                      }}
-                    />
+              <div>
+                <h5 className="fw-bold mb-0">RaeesProduct</h5>
 
-                    {/* order badge */}
-                    <span
-                      style={{
-                        position: "absolute",
-                        top: 2,
-                        left: 2,
-                        background: "#000",
-                        color: "#fff",
-                        fontSize: 11,
-                        padding: "2px 5px",
-                        borderRadius: 4,
-                      }}
-                    >
-                      {i + 1}
-                    </span>
-
-                    {/* controls */}
-                    <div className="d-flex gap-1 mt-1 justify-content-center">
-                      <button
-                        type="button"
-                        className="btn btn-light btn-sm"
-                        onClick={() => moveImage(i, -1)}
-                      >
-                        ⬆
-                      </button>
-
-                      <button
-                        type="button"
-                        className="btn btn-light btn-sm"
-                        onClick={() => moveImage(i, 1)}
-                      >
-                        ⬇
-                      </button>
-
-                      <button
-                        type="button"
-                        className="btn btn-danger btn-sm"
-                        onClick={() => removeImage(i)}
-                      >
-                        ✕
-                      </button>
-                    </div>
-                  </div>
-                ))}
+                <small className="text-muted">Admin Panel</small>
               </div>
-
-              <div className="form-check mb-3">
-                <input
-                  className="form-check-input"
-                  type="checkbox"
-                  checked={featured}
-                  onChange={(e) => setFeatured(e.target.checked)}
-                  id="featured"
-                />
-                <label className="form-check-label" htmlFor="featured">
-                  Featured Product
-                </label>
-              </div>
-
-              <button className="btn btn-success w-100">
-                {editingProductId ? "Update Product" : "Add Product"}
-              </button>
-            </form>
+            </div>
           </div>
-        </div>
-      )}
 
-      {/* MANAGE PRODUCTS */}
-      {activeTab === "manage" && (
-        <div className="row g-3">
-          {products.map((p) => (
-            <div key={p._id} className="col-12 col-md-6 col-lg-4">
-              <div className="card h-100">
-                <img
-                  src={getImageUrl(p.mainImage || p.images?.[0])}
-                  className="card-img-top img-fluid"
-                />
-                <div className="card-body">
-                  <h6>{p.title}</h6>
-                  <p className="mb-1">Rs.{p.price}</p>
-                  <div className="d-flex gap-2">
-                    <button
-                      className="btn btn-warning btn-sm w-50"
-                      onClick={() => handleEdit(p)}
-                    >
-                      Edit
-                    </button>
-                    <button
-                      className="btn btn-danger btn-sm w-50"
-                      onClick={() => handleDelete(p._id)}
-                    >
-                      Delete
-                    </button>
-                  </div>
+          {/* NAVIGATION */}
+
+          <div className="p-3 flex-grow-1">
+            <small className="text-uppercase text-muted fw-bold px-3">
+              Management
+            </small>
+
+            <div className="mt-2 d-flex flex-column gap-1">
+              {[
+                ["dashboard", "📊", "Dashboard"],
+                ["hero", "🖼️", "Hero"],
+                ["product", "➕", "Add Product"],
+                ["manage", "📦", "Products"],
+                ["orders", "🛒", "Orders"],
+                ["reviews", "⭐", "Reviews"],
+                ["faq", "❓", "FAQs"],
+              ].map(([tab, icon, label]) => (
+                <button
+                  key={tab}
+                  type="button"
+                  onClick={() => {
+                    setActiveTab(tab);
+                    setSidebarOpen(false);
+                  }}
+                  className={`btn text-start d-flex align-items-center gap-3 px-3 py-2 rounded-3 ${
+                    activeTab === tab ? "btn-primary" : "btn-light"
+                  }`}
+                >
+                  <span>{icon}</span>
+                  <span>{label}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* ADMIN */}
+
+          <div className="p-3 border-top">
+            <div className="d-flex align-items-center gap-2">
+              <div
+                className="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center"
+                style={{
+                  width: 40,
+                  height: 40,
+                }}
+              >
+                A
+              </div>
+
+              <div className="flex-grow-1">
+                <div className="fw-semibold">Administrator</div>
+
+                <small className="text-success">● Online</small>
+              </div>
+            </div>
+          </div>
+        </aside>
+
+        {/* ================= CONTENT ================= */}
+
+        <main
+          className="flex-grow-1"
+          style={{
+            marginLeft: 0,
+          }}
+        >
+          <div className="container-fluid p-3 p-md-4 p-lg-5">
+            {/* HEADER */}
+
+            <div className="d-none d-lg-flex align-items-center justify-content-between mb-4">
+              <div>
+                <h2 className="fw-bold mb-1">
+                  {activeTab === "dashboard"
+                    ? "Dashboard"
+                    : activeTab === "hero"
+                      ? "Hero Section"
+                      : activeTab === "product"
+                        ? "Add Product"
+                        : activeTab === "manage"
+                          ? "Products"
+                          : activeTab === "orders"
+                            ? "Orders"
+                            : activeTab === "reviews"
+                              ? "Reviews"
+                              : "FAQs"}
+                </h2>
+
+                <p className="text-muted mb-0">
+                  Manage your store from one place.
+                </p>
+              </div>
+
+              <div className="d-flex align-items-center gap-3">
+                <div className="text-end">
+                  <div className="fw-semibold">Administrator</div>
+
+                  <small className="text-success">● Online</small>
+                </div>
+
+                <div
+                  className="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center"
+                  style={{
+                    width: 45,
+                    height: 45,
+                  }}
+                >
+                  A
                 </div>
               </div>
             </div>
-          ))}
-        </div>
-      )}
-      {activeTab === "reviews" && (
-        <div className="row justify-content-center">
-          <div className="col-lg-6">
-            <form onSubmit={handleReviewSubmit} className="card p-3 shadow">
-              <h4>Add Review</h4>
 
-              <select
-                className="form-select mb-3"
-                value={reviewProductId}
-                onChange={(e) => setReviewProductId(e.target.value)}
-                required
-              >
-                <option value="">Select Product</option>
+            {/* ================= DASHBOARD ================= */}
 
-                {products.map((product) => (
-                  <option key={product._id} value={product._id}>
-                    {product.title}
-                  </option>
-                ))}
-              </select>
+            {activeTab === "dashboard" && (
+              <>
+                {/* STAT CARDS */}
 
-              <input
-                className="form-control mb-3"
-                placeholder="Customer Name"
-                value={customerName}
-                onChange={(e) => setCustomerName(e.target.value)}
-              />
+                <div className="row g-3 mb-4">
+                  {[
+                    {
+                      title: "Total Products",
+                      value: totalProducts,
+                      icon: "📦",
+                      color: "primary",
+                    },
+                    {
+                      title: "Total Orders",
+                      value: totalOrders,
+                      icon: "🛒",
+                      color: "success",
+                    },
+                    {
+                      title: "Reviews",
+                      value: totalReviews,
+                      icon: "⭐",
+                      color: "warning",
+                    },
+                    {
+                      title: "FAQs",
+                      value: totalFaqs,
+                      icon: "❓",
+                      color: "info",
+                    },
+                  ].map((item) => (
+                    <div className="col-6 col-xl-3" key={item.title}>
+                      <div className="card border-0 shadow-sm rounded-4 h-100">
+                        <div className="card-body p-4">
+                          <div className="d-flex justify-content-between align-items-start">
+                            <div>
+                              <p className="text-muted small mb-2">
+                                {item.title}
+                              </p>
 
-              <select
-                className="form-select mb-3"
-                value={rating}
-                onChange={(e) => setRating(e.target.value)}
-              >
-                <option value="5">★★★★★</option>
-                <option value="4">★★★★☆</option>
-                <option value="3">★★★☆☆</option>
-                <option value="2">★★☆☆☆</option>
-                <option value="1">★☆☆☆☆</option>
-              </select>
+                              <h2 className="fw-bold mb-0">{item.value}</h2>
+                            </div>
 
-              <textarea
-                className="form-control mb-3"
-                rows="4"
-                placeholder="Review"
-                value={comment}
-                onChange={(e) => setComment(e.target.value)}
-              />
+                            <div
+                              className={`bg-${item.color} bg-opacity-10 text-${item.color} rounded-3 d-flex align-items-center justify-content-center`}
+                              style={{
+                                width: 48,
+                                height: 48,
+                                fontSize: 22,
+                              }}
+                            >
+                              {item.icon}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
 
-              <input
-                type="file"
-                className="form-control mb-3"
-                onChange={(e) => setReviewImage(e.target.files[0])}
-              />
+                {/* ORDER STATUS */}
 
-              <div className="form-check mb-3">
-                <input
-                  className="form-check-input"
-                  type="checkbox"
-                  checked={verified}
-                  onChange={(e) => setVerified(e.target.checked)}
-                />
+                <div className="row g-3 mb-4">
+                  <div className="col-12 col-lg-4">
+                    <div className="card border-0 shadow-sm rounded-4 h-100">
+                      <div className="card-body p-4">
+                        <h5 className="fw-bold">Order Overview</h5>
 
-                <label className="form-check-label">Verified Purchase</label>
-              </div>
+                        <p className="text-muted small">Current order status</p>
 
-              <button className="btn btn-success w-100">
-                {editingReviewId ? "Update Review" : "Add Review"}
-              </button>
-            </form>
-            <hr className="my-4" />
+                        <div className="d-flex justify-content-between mb-3">
+                          <span>Confirmed</span>
 
-            <h4>Manage Reviews</h4>
+                          <strong className="text-success">
+                            {confirmedOrders}
+                          </strong>
+                        </div>
 
-            {reviews.map((review) => {
-              const product = products.find((p) => p._id === review.productId);
+                        <div className="progress mb-3" style={{ height: 8 }}>
+                          <div
+                            className="progress-bar bg-success"
+                            style={{
+                              width:
+                                totalOrders > 0
+                                  ? `${(confirmedOrders / totalOrders) * 100}%`
+                                  : "0%",
+                            }}
+                          />
+                        </div>
 
-              return (
-                <div key={review._id} className="card mb-3 shadow-sm">
-                  <div className="card-body">
-                    <h5>{review.customerName}</h5>
+                        <div className="d-flex justify-content-between">
+                          <span>Pending</span>
 
-                    <p className="mb-1">
-                      Product:
-                      <strong>{product?.title || "Deleted Product"}</strong>
-                    </p>
+                          <strong className="text-warning">
+                            {pendingOrders}
+                          </strong>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
 
-                    <p className="mb-1">
-                      Rating:
-                      {"⭐".repeat(review.rating)}
-                    </p>
+                  {/* QUICK ACTIONS */}
 
-                    <p>{review.comment}</p>
+                  <div className="col-12 col-lg-8">
+                    <div className="card border-0 shadow-sm rounded-4 h-100">
+                      <div className="card-body p-4">
+                        <h5 className="fw-bold mb-3">Quick Actions</h5>
 
-                    {review.image && (
-                      <img
-                        src={review.image}
-                        width="100"
-                        className="rounded mb-2"
-                      />
-                    )}
+                        <div className="row g-2">
+                          <div className="col-6 col-md-3">
+                            <button
+                              className="btn btn-primary w-100 py-3 rounded-3"
+                              onClick={() => setActiveTab("product")}
+                            >
+                              ➕
+                              <br />
+                              Product
+                            </button>
+                          </div>
 
-                    <div className="d-flex gap-2">
-                      <button
-                        className="btn btn-warning btn-sm"
-                        onClick={() => handleEditReview(review)}
-                      >
-                        Edit
-                      </button>
+                          <div className="col-6 col-md-3">
+                            <button
+                              className="btn btn-success w-100 py-3 rounded-3"
+                              onClick={() => setActiveTab("orders")}
+                            >
+                              🛒
+                              <br />
+                              Orders
+                            </button>
+                          </div>
 
-                      <button
-                        className="btn btn-danger btn-sm"
-                        onClick={() => handleDeleteReview(review._id)}
-                      >
-                        Delete
-                      </button>
+                          <div className="col-6 col-md-3">
+                            <button
+                              className="btn btn-warning w-100 py-3 rounded-3"
+                              onClick={() => setActiveTab("reviews")}
+                            >
+                              ⭐
+                              <br />
+                              Reviews
+                            </button>
+                          </div>
+
+                          <div className="col-6 col-md-3">
+                            <button
+                              className="btn btn-info w-100 py-3 rounded-3"
+                              onClick={() => setActiveTab("faq")}
+                            >
+                              ❓
+                              <br />
+                              FAQs
+                            </button>
+                          </div>
+                        </div>
+                      </div>
                     </div>
                   </div>
                 </div>
-              );
-            })}
-          </div>
-        </div>
-      )}
-      {/* ================= FAQ ================= */}
-      {activeTab === "faq" && (
-        <div className="row justify-content-center">
-          <div className="col-12 col-lg-8">
-            {/* FAQ FORM */}
-            <form
-              onSubmit={handleFaqSubmit}
-              className="card p-3 shadow-sm mb-4"
-            >
-              <h4 className="mb-3">
-                {editingFaqId ? "Edit Product FAQs" : "Add Product FAQs"}
-              </h4>
 
-              {/* SELECT PRODUCT */}
-              <label className="form-label fw-semibold">Select Product</label>
+                {/* RECENT ORDERS */}
 
-              <select
-                className="form-select mb-3"
-                value={faqProductId}
-                onChange={(e) => setFaqProductId(e.target.value)}
-                required
-              >
-                <option value="">Select a product</option>
+                <div className="card border-0 shadow-sm rounded-4">
+                  <div className="card-body p-4">
+                    <div className="d-flex justify-content-between align-items-center mb-3">
+                      <div>
+                        <h5 className="fw-bold mb-1">Recent Orders</h5>
 
-                {products.map((product) => (
-                  <option key={product._id} value={product._id}>
-                    {product.title}
-                  </option>
-                ))}
-              </select>
-
-              <p className="text-muted small">
-                Add up to 10 questions and answers for this product.
-              </p>
-
-              {/* 10 FAQ QUESTIONS */}
-              {faqItems.map((faq, index) => (
-                <div key={index} className="card mb-3 p-3 border">
-                  <h6 className="mb-3">Question {index + 1}</h6>
-
-                  {/* QUESTION */}
-                  <input
-                    type="text"
-                    className="form-control mb-2"
-                    placeholder={`Enter question ${index + 1}`}
-                    value={faq.question}
-                    onChange={(e) =>
-                      updateFaqItem(index, "question", e.target.value)
-                    }
-                  />
-
-                  {/* ANSWER */}
-                  <textarea
-                    className="form-control mb-2"
-                    rows="3"
-                    placeholder={`Enter answer ${index + 1}`}
-                    value={faq.answer}
-                    onChange={(e) =>
-                      updateFaqItem(index, "answer", e.target.value)
-                    }
-                  />
-
-                  {/* ACTIVE */}
-                  <div className="form-check">
-                    <input
-                      type="checkbox"
-                      className="form-check-input"
-                      id={`faq-active-${index}`}
-                      checked={faq.active}
-                      onChange={(e) =>
-                        updateFaqItem(index, "active", e.target.checked)
-                      }
-                    />
-
-                    <label
-                      className="form-check-label"
-                      htmlFor={`faq-active-${index}`}
-                    >
-                      Active
-                    </label>
-                  </div>
-                </div>
-              ))}
-
-              {/* SUBMIT BUTTON */}
-              <button type="submit" className="btn btn-success w-100">
-                {editingFaqId ? "Update FAQs" : "Add FAQs"}
-              </button>
-
-              {/* CANCEL EDIT */}
-              {editingFaqId && (
-                <button
-                  type="button"
-                  className="btn btn-secondary w-100 mt-2"
-                  onClick={resetFaqForm}
-                >
-                  Cancel Edit
-                </button>
-              )}
-            </form>
-
-            {/* FAQ LIST */}
-            <div>
-              <h3 className="mb-3">Manage FAQs</h3>
-
-              {faqs.length === 0 ? (
-                <div className="alert alert-info">No FAQs found.</div>
-              ) : (
-                faqs.map((faq) => (
-                  <div key={faq._id} className="card shadow-sm mb-3">
-                    <div className="card-body">
-                      {/* PRODUCT */}
-                      <div className="mb-2">
-                        <span className="badge bg-primary">
-                          {faq.productId?.title || "Product FAQ"}
-                        </span>
+                        <small className="text-muted">
+                          Latest customer orders
+                        </small>
                       </div>
 
-                      {/* QUESTIONS */}
-                      {Array.isArray(faq.faqs) &&
-                        faq.faqs.map((item, index) => (
-                          <div key={index} className="mb-3">
-                            <h6 className="mb-1">
-                              {index + 1}. {item.question}
+                      <button
+                        className="btn btn-outline-primary btn-sm rounded-pill"
+                        onClick={() => setActiveTab("orders")}
+                      >
+                        View All
+                      </button>
+                    </div>
+
+                    <div className="table-responsive">
+                      <table className="table align-middle mb-0">
+                        <thead>
+                          <tr>
+                            <th>Customer</th>
+                            <th>Products</th>
+                            <th>Amount</th>
+                            <th>Status</th>
+                          </tr>
+                        </thead>
+
+                        <tbody>
+                          {orders.slice(0, 5).map((o) => (
+                            <tr key={o._id}>
+                              <td className="fw-semibold">
+                                {o.customerName || "Unknown"}
+                              </td>
+
+                              <td>{o.products?.length || 0} item(s)</td>
+
+                              <td>
+                                Rs.
+                                {Number(o.totalAmount || 0).toLocaleString()}
+                              </td>
+
+                              <td>
+                                <span
+                                  className={`badge rounded-pill ${
+                                    o.status === "Confirmed"
+                                      ? "bg-success"
+                                      : "bg-warning text-dark"
+                                  }`}
+                                >
+                                  {o.status || "Pending"}
+                                </span>
+                              </td>
+                            </tr>
+                          ))}
+
+                          {orders.length === 0 && (
+                            <tr>
+                              <td
+                                colSpan="4"
+                                className="text-center text-muted py-4"
+                              >
+                                No orders found
+                              </td>
+                            </tr>
+                          )}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                </div>
+              </>
+            )}
+
+            {/* ================= HERO ================= */}
+
+            {activeTab === "hero" && (
+              <div className="row justify-content-center">
+                <div className="col-12 col-xl-8">
+                  <div className="card border-0 shadow-sm rounded-4">
+                    <div className="card-body p-4 p-md-5">
+                      <div className="mb-4">
+                        <h4 className="fw-bold">Hero Section</h4>
+
+                        <p className="text-muted mb-0">
+                          Update the main banner displayed on your store.
+                        </p>
+                      </div>
+
+                      <form onSubmit={updateHero}>
+                        <label className="form-label fw-semibold">
+                          Hero Title
+                        </label>
+
+                        <input
+                          className="form-control form-control-lg rounded-3 mb-3"
+                          value={heroTitle}
+                          onChange={(e) => setHeroTitle(e.target.value)}
+                          placeholder="Hero Title"
+                        />
+
+                        <label className="form-label fw-semibold">
+                          Hero Subtitle
+                        </label>
+
+                        <input
+                          className="form-control form-control-lg rounded-3 mb-3"
+                          value={heroSubtitle}
+                          onChange={(e) => setHeroSubtitle(e.target.value)}
+                          placeholder="Hero Subtitle"
+                        />
+
+                        <label className="form-label fw-semibold">
+                          Hero Image
+                        </label>
+
+                        <input
+                          type="file"
+                          className="form-control rounded-3 mb-3"
+                          accept="image/*"
+                          onChange={(e) => {
+                            const file = e.target.files[0];
+
+                            if (!file) return;
+
+                            setHeroImage(file);
+                            setHeroPreview(URL.createObjectURL(file));
+                          }}
+                        />
+
+                        {heroPreview && (
+                          <div className="mb-4">
+                            <img
+                              src={heroPreview}
+                              alt="Hero preview"
+                              className="img-fluid rounded-4 border"
+                              style={{
+                                maxHeight: 350,
+                                width: "100%",
+                                objectFit: "cover",
+                              }}
+                            />
+                          </div>
+                        )}
+
+                        <button className="btn btn-success btn-lg w-100 rounded-3">
+                          Update Hero
+                        </button>
+                      </form>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* ================= ADD PRODUCT ================= */}
+
+            {activeTab === "product" && (
+              <div className="row justify-content-center">
+                <div className="col-12 col-xl-9">
+                  <form
+                    onSubmit={handleProductSubmit}
+                    className="card border-0 shadow-sm rounded-4"
+                  >
+                    <div className="card-body p-4 p-md-5">
+                      <div className="mb-4">
+                        <h4 className="fw-bold">
+                          {editingProductId
+                            ? "Update Product"
+                            : "Add New Product"}
+                        </h4>
+
+                        <p className="text-muted mb-0">
+                          Add product details, pricing, variants and images.
+                        </p>
+                      </div>
+
+                      <div className="row g-3">
+                        <div className="col-12">
+                          <label className="form-label fw-semibold">
+                            Product Title
+                          </label>
+
+                          <input
+                            className="form-control rounded-3"
+                            placeholder="Product Title"
+                            value={title}
+                            onChange={(e) => setTitle(e.target.value)}
+                            required
+                          />
+                        </div>
+
+                        <div className="col-12">
+                          <label className="form-label fw-semibold">
+                            Description
+                          </label>
+
+                          <textarea
+                            className="form-control rounded-3"
+                            placeholder="Product Description"
+                            value={description}
+                            onChange={(e) => setDescription(e.target.value)}
+                            rows="5"
+                            required
+                          />
+                        </div>
+
+                        <div className="col-12 col-md-6">
+                          <label className="form-label fw-semibold">
+                            Price
+                          </label>
+
+                          <div className="input-group">
+                            <span className="input-group-text">Rs.</span>
+
+                            <input
+                              className="form-control"
+                              type="number"
+                              placeholder="2500"
+                              value={price}
+                              onChange={(e) => setPrice(e.target.value)}
+                              required
+                            />
+                          </div>
+                        </div>
+
+                        <div className="col-12 col-md-6">
+                          <label className="form-label fw-semibold">
+                            Compare-at Price
+                          </label>
+
+                          <div className="input-group">
+                            <span className="input-group-text">Rs.</span>
+
+                            <input
+                              className="form-control"
+                              type="number"
+                              placeholder="3500"
+                              value={compareAtPrice}
+                              onChange={(e) =>
+                                setCompareAtPrice(e.target.value)
+                              }
+                            />
+                          </div>
+                        </div>
+
+                        <div className="col-12">
+                          <label className="form-label fw-semibold">
+                            Category
+                          </label>
+
+                          <select
+                            className="form-select rounded-3"
+                            value={category}
+                            onChange={(e) => setCategory(e.target.value)}
+                            required
+                          >
+                            <option value="">Select Category</option>
+                            <option value="watch">Watches</option>
+                            <option value="earbuds">Earbuds</option>
+                            <option value="beauty">Beauty</option>
+                            <option value="electronics">Electronics</option>
+                          </select>
+                        </div>
+
+                        <div className="col-12 col-md-6">
+                          <label className="form-label fw-semibold">
+                            Colors
+                          </label>
+
+                          <input
+                            className="form-control rounded-3"
+                            placeholder="Red, Blue, White"
+                            value={colorsInput}
+                            onChange={(e) => setColorsInput(e.target.value)}
+                          />
+
+                          <small className="text-muted">
+                            Separate colors with commas.
+                          </small>
+                        </div>
+
+                        <div className="col-12 col-md-6">
+                          <label className="form-label fw-semibold">
+                            Sizes
+                          </label>
+
+                          <input
+                            className="form-control rounded-3"
+                            placeholder="S, M, L, XL"
+                            value={sizesInput}
+                            onChange={(e) => setSizesInput(e.target.value)}
+                          />
+
+                          <small className="text-muted">
+                            Separate sizes with commas.
+                          </small>
+                        </div>
+
+                        {/* IMAGE UPLOAD */}
+
+                        <div className="col-12">
+                          <label className="form-label fw-semibold">
+                            Product Images
+                          </label>
+
+                          <div
+                            className="border border-2 rounded-4 text-center p-5"
+                            style={{
+                              borderStyle: "dashed",
+                              cursor: "pointer",
+                              background: "#fafbfc",
+                            }}
+                            onDragOver={(e) => e.preventDefault()}
+                            onDrop={handleDrop}
+                            onClick={() => fileInputRef.current?.click()}
+                          >
+                            <div
+                              style={{
+                                fontSize: 40,
+                              }}
+                            >
+                              📸
+                            </div>
+
+                            <h6 className="fw-bold mt-2">
+                              Upload Product Images
                             </h6>
 
-                            <p className="text-muted mb-1">{item.answer}</p>
+                            <p className="text-muted small mb-0">
+                              Drag & drop images here or click to browse
+                            </p>
+
+                            <small className="text-muted">
+                              Maximum 5 images
+                            </small>
+
+                            <input
+                              ref={fileInputRef}
+                              type="file"
+                              hidden
+                              multiple
+                              accept="image/*"
+                              onChange={handleImageChange}
+                            />
+                          </div>
+                        </div>
+
+                        {/* PREVIEWS */}
+
+                        {productPreviews.length > 0 && (
+                          <div className="col-12">
+                            <div className="row g-3">
+                              {productPreviews.map((img, i) => (
+                                <div
+                                  className="col-6 col-sm-4 col-md-3"
+                                  key={i}
+                                >
+                                  <div className="card border-0 shadow-sm overflow-hidden rounded-4">
+                                    <div
+                                      style={{
+                                        position: "relative",
+                                      }}
+                                    >
+                                      <img
+                                        src={img}
+                                        alt={`Product ${i + 1}`}
+                                        className="w-100"
+                                        style={{
+                                          height: 130,
+                                          objectFit: "cover",
+                                        }}
+                                      />
+
+                                      <span className="badge bg-dark position-absolute top-0 start-0 m-2">
+                                        {i + 1}
+                                      </span>
+
+                                      {i === 0 && (
+                                        <span className="badge bg-success position-absolute bottom-0 start-0 m-2">
+                                          Main
+                                        </span>
+                                      )}
+                                    </div>
+
+                                    <div className="p-2">
+                                      <div className="d-flex gap-1">
+                                        <button
+                                          type="button"
+                                          className="btn btn-light btn-sm flex-fill"
+                                          onClick={() => moveImage(i, -1)}
+                                        >
+                                          ⬆
+                                        </button>
+
+                                        <button
+                                          type="button"
+                                          className="btn btn-light btn-sm flex-fill"
+                                          onClick={() => moveImage(i, 1)}
+                                        >
+                                          ⬇
+                                        </button>
+
+                                        <button
+                                          type="button"
+                                          className="btn btn-danger btn-sm flex-fill"
+                                          onClick={() => removeImage(i)}
+                                        >
+                                          ✕
+                                        </button>
+                                      </div>
+                                    </div>
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+
+                        {/* FEATURED */}
+
+                        <div className="col-12">
+                          <div className="form-check form-switch p-3 bg-light rounded-3">
+                            <input
+                              className="form-check-input ms-0 me-2"
+                              type="checkbox"
+                              checked={featured}
+                              onChange={(e) => setFeatured(e.target.checked)}
+                              id="featured"
+                            />
+
+                            <label
+                              className="form-check-label fw-semibold"
+                              htmlFor="featured"
+                            >
+                              ⭐ Featured Product
+                            </label>
+                          </div>
+                        </div>
+
+                        <div className="col-12">
+                          <button
+                            type="submit"
+                            className="btn btn-success btn-lg w-100 rounded-3 fw-semibold"
+                          >
+                            {editingProductId
+                              ? "Update Product"
+                              : "Add Product"}
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </form>
+                </div>
+              </div>
+            )}
+
+            {/* ================= MANAGE PRODUCTS ================= */}
+
+            {activeTab === "manage" && (
+              <>
+                <div className="d-flex justify-content-between align-items-center mb-4">
+                  <div>
+                    <h4 className="fw-bold mb-1">Products</h4>
+
+                    <small className="text-muted">
+                      {products.length} products in your store
+                    </small>
+                  </div>
+
+                  <button
+                    className="btn btn-primary rounded-3"
+                    onClick={() => setActiveTab("product")}
+                  >
+                    + Add Product
+                  </button>
+                </div>
+
+                <div className="row g-4">
+                  {products.map((p) => (
+                    <div key={p._id} className="col-12 col-sm-6 col-xl-4">
+                      <div className="card border-0 shadow-sm rounded-4 overflow-hidden h-100">
+                        <img
+                          src={getImageUrl(p.mainImage || p.images?.[0])}
+                          alt={p.title}
+                          className="w-100"
+                          style={{
+                            height: 220,
+                            objectFit: "cover",
+                          }}
+                        />
+
+                        <div className="card-body p-4">
+                          <div className="d-flex justify-content-between align-items-start gap-2">
+                            <h6 className="fw-bold mb-2">{p.title}</h6>
+
+                            {p.featured && (
+                              <span className="badge bg-warning text-dark">
+                                Featured
+                              </span>
+                            )}
+                          </div>
+
+                          <div className="text-muted small mb-2">
+                            {p.category}
+                          </div>
+
+                          <div className="fw-bold text-primary fs-5 mb-3">
+                            Rs.
+                            {Number(p.price || 0).toLocaleString()}
+                          </div>
+
+                          <div className="d-flex gap-2">
+                            <button
+                              className="btn btn-warning flex-fill rounded-3"
+                              onClick={() => handleEdit(p)}
+                            >
+                              ✏️ Edit
+                            </button>
+
+                            <button
+                              className="btn btn-outline-danger flex-fill rounded-3"
+                              onClick={() => handleDelete(p._id)}
+                            >
+                              🗑️ Delete
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+
+                  {products.length === 0 && (
+                    <div className="col-12">
+                      <div className="card border-0 shadow-sm rounded-4">
+                        <div className="card-body text-center py-5">
+                          <div style={{ fontSize: 50 }}>📦</div>
+
+                          <h5 className="fw-bold mt-3">No products yet</h5>
+
+                          <p className="text-muted">
+                            Add your first product to get started.
+                          </p>
+
+                          <button
+                            className="btn btn-primary rounded-pill px-4"
+                            onClick={() => setActiveTab("product")}
+                          >
+                            Add Product
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </>
+            )}
+
+            {/* ================= ORDERS ================= */}
+
+            {activeTab === "orders" && (
+              <>
+                <div className="d-flex justify-content-between align-items-center mb-4">
+                  <div>
+                    <h4 className="fw-bold mb-1">Orders</h4>
+
+                    <small className="text-muted">
+                      {orders.length} total orders
+                    </small>
+                  </div>
+
+                  <div className="d-flex gap-2">
+                    <span className="badge bg-warning text-dark rounded-pill px-3 py-2">
+                      Pending: {pendingOrders}
+                    </span>
+
+                    <span className="badge bg-success rounded-pill px-3 py-2">
+                      Confirmed: {confirmedOrders}
+                    </span>
+                  </div>
+                </div>
+
+                <div className="row g-4">
+                  {orders.map((o) => (
+                    <div key={o._id} className="col-12 col-xl-6">
+                      <div className="card border-0 shadow-sm rounded-4 h-100">
+                        <div className="card-body p-4">
+                          {/* CUSTOMER */}
+
+                          <div className="d-flex justify-content-between gap-3 mb-3">
+                            <div>
+                              <h5 className="fw-bold mb-1">
+                                {o.customerName || "Unknown Customer"}
+                              </h5>
+
+                              <div className="small text-muted">
+                                Order #{o._id?.slice(-6)}
+                              </div>
+                            </div>
 
                             <span
-                              className={`badge ${
-                                item.active !== false
+                              className={`badge align-self-start rounded-pill ${
+                                o.status === "Confirmed"
                                   ? "bg-success"
-                                  : "bg-secondary"
+                                  : "bg-warning text-dark"
                               }`}
                             >
-                              {item.active !== false ? "Active" : "Inactive"}
+                              {o.status || "Pending"}
                             </span>
+                          </div>
+
+                          <div className="bg-light rounded-3 p-3 mb-3">
+                            <div className="small mb-2">
+                              📧 {o.email || "No email"}
+                            </div>
+
+                            <div className="small mb-2">
+                              📞 {o.phone || "No phone"}
+                            </div>
+
+                            {o.whatsapp && (
+                              <div className="d-flex align-items-center gap-2 small">
+                                🟢 {o.whatsapp}
+                                <button
+                                  type="button"
+                                  className="btn btn-sm btn-success rounded-pill"
+                                  onClick={() => handleSendOrderWhatsApp(o)}
+                                >
+                                  WhatsApp
+                                </button>
+                              </div>
+                            )}
+
+                            <div className="small mt-2">
+                              🏠 {o.address || "No address"}
+                            </div>
+                          </div>
+
+                          {/* PRODUCTS */}
+
+                          <h6 className="fw-bold mb-3">Order Items</h6>
+
+                          <div className="d-flex flex-column gap-2">
+                            {(o.products || []).map((p, i) => (
+                              <div
+                                key={i}
+                                className="d-flex align-items-center gap-3 border rounded-3 p-2"
+                              >
+                                <img
+                                  src={getImageUrl(p?.image)}
+                                  alt={p?.title || "Product"}
+                                  style={{
+                                    width: 55,
+                                    height: 55,
+                                    objectFit: "cover",
+                                    borderRadius: 8,
+                                  }}
+                                />
+
+                                <div className="flex-grow-1">
+                                  <div className="fw-semibold">
+                                    {p?.title || "Unknown Product"}
+                                  </div>
+
+                                  <small className="text-muted">
+                                    Qty: {p?.quantity || 0}
+                                    {p?.selectedSize &&
+                                      ` • Size: ${p.selectedSize}`}
+                                    {p?.selectedColor &&
+                                      ` • Color: ${p.selectedColor}`}
+                                  </small>
+                                </div>
+
+                                <div className="fw-semibold">
+                                  Rs.
+                                  {Number(
+                                    (p?.price || 0) * (p?.quantity || 0),
+                                  ).toLocaleString()}
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+
+                          {/* FOOTER */}
+
+                          <div className="border-top mt-3 pt-3 d-flex justify-content-between align-items-center">
+                            <strong>Total</strong>
+
+                            <strong className="fs-5 text-primary">
+                              Rs.
+                              {Number(o.totalAmount || 0).toLocaleString()}
+                            </strong>
+                          </div>
+
+                          <div className="d-flex gap-2 mt-3">
+                            {o.status !== "Confirmed" && (
+                              <button
+                                className="btn btn-success flex-fill rounded-3"
+                                onClick={() => handleConfirmOrder(o._id)}
+                              >
+                                ✓ Confirm
+                              </button>
+                            )}
+
+                            <button
+                              className="btn btn-outline-danger flex-fill rounded-3"
+                              onClick={() => handleDeleteOrder(o._id)}
+                            >
+                              🗑️ Delete
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+
+                  {orders.length === 0 && (
+                    <div className="col-12">
+                      <div className="card border-0 shadow-sm rounded-4">
+                        <div className="card-body text-center py-5">
+                          <div style={{ fontSize: 50 }}>🛒</div>
+
+                          <h5 className="fw-bold mt-3">No orders found</h5>
+
+                          <p className="text-muted mb-0">
+                            New orders will appear here.
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </>
+            )}
+
+            {/* ================= REVIEWS ================= */}
+
+            {activeTab === "reviews" && (
+              <div className="row g-4">
+                <div className="col-12 col-xl-5">
+                  <form
+                    onSubmit={handleReviewSubmit}
+                    className="card border-0 shadow-sm rounded-4"
+                  >
+                    <div className="card-body p-4">
+                      <h4 className="fw-bold mb-1">
+                        {editingReviewId ? "Edit Review" : "Add Review"}
+                      </h4>
+
+                      <p className="text-muted small mb-4">
+                        Add customer feedback to your products.
+                      </p>
+
+                      <select
+                        className="form-select rounded-3 mb-3"
+                        value={reviewProductId}
+                        onChange={(e) => setReviewProductId(e.target.value)}
+                        required
+                      >
+                        <option value="">Select Product</option>
+
+                        {products.map((product) => (
+                          <option key={product._id} value={product._id}>
+                            {product.title}
+                          </option>
+                        ))}
+                      </select>
+
+                      <input
+                        className="form-control rounded-3 mb-3"
+                        placeholder="Customer Name"
+                        value={customerName}
+                        onChange={(e) => setCustomerName(e.target.value)}
+                      />
+
+                      <select
+                        className="form-select rounded-3 mb-3"
+                        value={rating}
+                        onChange={(e) => setRating(e.target.value)}
+                      >
+                        <option value="5">⭐⭐⭐⭐⭐</option>
+                        <option value="4">⭐⭐⭐⭐☆</option>
+                        <option value="3">⭐⭐⭐☆☆</option>
+                        <option value="2">⭐⭐☆☆☆</option>
+                        <option value="1">⭐☆☆☆☆</option>
+                      </select>
+
+                      <textarea
+                        className="form-control rounded-3 mb-3"
+                        rows="5"
+                        placeholder="Customer Review"
+                        value={comment}
+                        onChange={(e) => setComment(e.target.value)}
+                      />
+
+                      <input
+                        type="file"
+                        className="form-control rounded-3 mb-3"
+                        accept="image/*"
+                        onChange={(e) => setReviewImage(e.target.files[0])}
+                      />
+
+                      <div className="form-check form-switch mb-4">
+                        <input
+                          className="form-check-input"
+                          type="checkbox"
+                          checked={verified}
+                          onChange={(e) => setVerified(e.target.checked)}
+                        />
+
+                        <label className="form-check-label fw-semibold">
+                          Verified Purchase
+                        </label>
+                      </div>
+
+                      <button className="btn btn-success w-100 rounded-3">
+                        {editingReviewId ? "Update Review" : "Add Review"}
+                      </button>
+                    </div>
+                  </form>
+                </div>
+
+                <div className="col-12 col-xl-7">
+                  <div className="card border-0 shadow-sm rounded-4">
+                    <div className="card-body p-4">
+                      <h4 className="fw-bold mb-4">Customer Reviews</h4>
+
+                      <div className="d-flex flex-column gap-3">
+                        {reviews.map((review) => {
+                          const product = products.find(
+                            (p) => p._id === review.productId,
+                          );
+
+                          return (
+                            <div
+                              key={review._id}
+                              className="border rounded-4 p-3"
+                            >
+                              <div className="d-flex justify-content-between gap-3">
+                                <div>
+                                  <h6 className="fw-bold mb-1">
+                                    {review.customerName}
+                                  </h6>
+
+                                  <div className="text-warning">
+                                    {"⭐".repeat(review.rating)}
+                                  </div>
+                                </div>
+
+                                {review.verified && (
+                                  <span className="badge bg-success rounded-pill align-self-start">
+                                    ✓ Verified
+                                  </span>
+                                )}
+                              </div>
+
+                              <small className="text-muted d-block mt-2">
+                                {product?.title || "Deleted Product"}
+                              </small>
+
+                              <p className="mt-2 mb-2">{review.comment}</p>
+
+                              {review.image && (
+                                <img
+                                  src={review.image}
+                                  alt="Review"
+                                  width="90"
+                                  height="90"
+                                  className="rounded-3 object-fit-cover mb-2"
+                                />
+                              )}
+
+                              <div className="d-flex gap-2">
+                                <button
+                                  className="btn btn-warning btn-sm rounded-3"
+                                  onClick={() => handleEditReview(review)}
+                                >
+                                  ✏️ Edit
+                                </button>
+
+                                <button
+                                  className="btn btn-outline-danger btn-sm rounded-3"
+                                  onClick={() => handleDeleteReview(review._id)}
+                                >
+                                  🗑️ Delete
+                                </button>
+                              </div>
+                            </div>
+                          );
+                        })}
+
+                        {reviews.length === 0 && (
+                          <div className="text-center py-5 text-muted">
+                            No reviews found.
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* ================= FAQ ================= */}
+
+            {activeTab === "faq" && (
+              <div className="row g-4">
+                <div className="col-12 col-xl-7">
+                  <form
+                    onSubmit={handleFaqSubmit}
+                    className="card border-0 shadow-sm rounded-4"
+                  >
+                    <div className="card-body p-4">
+                      <h4 className="fw-bold mb-1">
+                        {editingFaqId ? "Edit FAQs" : "Add Product FAQs"}
+                      </h4>
+
+                      <p className="text-muted small mb-4">
+                        Add up to 10 questions and answers.
+                      </p>
+
+                      <select
+                        className="form-select rounded-3 mb-4"
+                        value={faqProductId}
+                        onChange={(e) => setFaqProductId(e.target.value)}
+                        required
+                      >
+                        <option value="">Select Product</option>
+
+                        {products.map((product) => (
+                          <option key={product._id} value={product._id}>
+                            {product.title}
+                          </option>
+                        ))}
+                      </select>
+
+                      {faqItems.map((faq, index) => (
+                        <div key={index} className="border rounded-4 p-3 mb-3">
+                          <div className="d-flex justify-content-between mb-2">
+                            <h6 className="fw-bold mb-0">
+                              Question {index + 1}
+                            </h6>
+
+                            <span className="badge bg-light text-dark">
+                              {index + 1}/10
+                            </span>
+                          </div>
+
+                          <input
+                            type="text"
+                            className="form-control rounded-3 mb-2"
+                            placeholder={`Enter question ${index + 1}`}
+                            value={faq.question}
+                            onChange={(e) =>
+                              updateFaqItem(index, "question", e.target.value)
+                            }
+                          />
+
+                          <textarea
+                            className="form-control rounded-3 mb-2"
+                            rows="3"
+                            placeholder={`Enter answer ${index + 1}`}
+                            value={faq.answer}
+                            onChange={(e) =>
+                              updateFaqItem(index, "answer", e.target.value)
+                            }
+                          />
+
+                          <div className="form-check form-switch">
+                            <input
+                              type="checkbox"
+                              className="form-check-input"
+                              id={`faq-active-${index}`}
+                              checked={faq.active}
+                              onChange={(e) =>
+                                updateFaqItem(index, "active", e.target.checked)
+                              }
+                            />
+
+                            <label
+                              className="form-check-label"
+                              htmlFor={`faq-active-${index}`}
+                            >
+                              Active
+                            </label>
+                          </div>
+                        </div>
+                      ))}
+
+                      <button
+                        type="submit"
+                        className="btn btn-success w-100 rounded-3"
+                      >
+                        {editingFaqId ? "Update FAQs" : "Save FAQs"}
+                      </button>
+
+                      {editingFaqId && (
+                        <button
+                          type="button"
+                          className="btn btn-outline-secondary w-100 rounded-3 mt-2"
+                          onClick={resetFaqForm}
+                        >
+                          Cancel Edit
+                        </button>
+                      )}
+                    </div>
+                  </form>
+                </div>
+
+                {/* FAQ LIST */}
+
+                <div className="col-12 col-xl-5">
+                  <div className="card border-0 shadow-sm rounded-4">
+                    <div className="card-body p-4">
+                      <h4 className="fw-bold mb-4">Manage FAQs</h4>
+
+                      <div className="d-flex flex-column gap-3">
+                        {faqs.map((faq) => (
+                          <div key={faq._id} className="border rounded-4 p-3">
+                            <span className="badge bg-primary rounded-pill mb-3">
+                              {faq.productId?.title || "Product FAQ"}
+                            </span>
+
+                            {Array.isArray(faq.faqs) &&
+                              faq.faqs.map((item, index) => (
+                                <div key={index} className="mb-3">
+                                  <div className="fw-semibold">
+                                    {index + 1}. {item.question}
+                                  </div>
+
+                                  <p className="text-muted small mb-1 mt-1">
+                                    {item.answer}
+                                  </p>
+
+                                  <span
+                                    className={`badge ${
+                                      item.active !== false
+                                        ? "bg-success"
+                                        : "bg-secondary"
+                                    }`}
+                                  >
+                                    {item.active !== false
+                                      ? "Active"
+                                      : "Inactive"}
+                                  </span>
+                                </div>
+                              ))}
+
+                            <div className="d-flex gap-2 mt-3">
+                              <button
+                                type="button"
+                                className="btn btn-warning btn-sm rounded-3 flex-fill"
+                                onClick={() => handleEditFaq(faq)}
+                              >
+                                ✏️ Edit
+                              </button>
+
+                              <button
+                                type="button"
+                                className="btn btn-outline-danger btn-sm rounded-3 flex-fill"
+                                onClick={() => handleDeleteFaq(faq._id)}
+                              >
+                                🗑️ Delete
+                              </button>
+                            </div>
                           </div>
                         ))}
 
-                      {/* ACTIONS */}
-                      <div className="d-flex gap-2 mt-3">
-                        <button
-                          type="button"
-                          className="btn btn-warning btn-sm"
-                          onClick={() => handleEditFaq(faq)}
-                        >
-                          Edit
-                        </button>
-
-                        <button
-                          type="button"
-                          className="btn btn-danger btn-sm"
-                          onClick={() => handleDeleteFaq(faq._id)}
-                        >
-                          Delete
-                        </button>
+                        {faqs.length === 0 && (
+                          <div className="text-center text-muted py-4">
+                            No FAQs found.
+                          </div>
+                        )}
                       </div>
                     </div>
                   </div>
-                ))
-              )}
-            </div>
-          </div>
-        </div>
-      )}
-      {/* ORDERS */}
-      {activeTab === "orders" && (
-        <div className="row g-3">
-          {orders.length === 0 && (
-            <p className="text-center">No orders found</p>
-          )}
-
-          {orders.map((o) => (
-            <div key={o._id} className="col-12 col-lg-6">
-              <div className="card shadow-sm h-100">
-                {/* CARD BODY */}
-                <div className="card-body">
-                  {/* CUSTOMER INFO */}
-                  <div className="mb-3">
-                    <h6 className="mb-1 fw-bold">
-                      {o.customerName || "Unknown Customer"}
-                    </h6>
-                    <div className="d-flex flex-column gap-1">
-                      {o.email && (
-                        <small className="text-muted">📧 {o.email}</small>
-                      )}
-                      {o.phone && (
-                        <small className="text-muted">📞 {o.phone}</small>
-                      )}
-                      {o.whatsapp && (
-                        <div className="d-flex align-items-center gap-2 flex-wrap">
-                          <span className="text-success">🟢 {o.whatsapp}</span>
-                          <button
-                            type="button"
-                            className="btn p-0"
-                            onClick={() => handleSendOrderWhatsApp(o)}
-                            title="Send Order on WhatsApp"
-                          >
-                            <img
-                              src="https://upload.wikimedia.org/wikipedia/commons/6/6b/WhatsApp.svg"
-                              alt="WhatsApp"
-                              style={{ width: 20, height: 20 }}
-                            />
-                          </button>
-                        </div>
-                      )}
-                      {o.address && (
-                        <small className="text-muted">🏠 {o.address}</small>
-                      )}
-                    </div>
-                  </div>
-
-                  {/* STATUS + ACTIONS */}
-                  <div className="d-flex justify-content-between align-items-center mb-3">
-                    <span
-                      className={`badge ${o.status === "Confirmed" ? "bg-success" : "bg-info"}`}
-                    >
-                      {o.status || "Pending"}
-                    </span>
-                    <div className="d-flex gap-2">
-                      {o.status !== "Confirmed" && (
-                        <button
-                          className="btn btn-success btn-sm"
-                          onClick={() => handleConfirmOrder(o._id)}
-                        >
-                          Confirm
-                        </button>
-                      )}
-                      <button
-                        className="btn btn-danger btn-sm"
-                        onClick={() => handleDeleteOrder(o._id)}
-                      >
-                        Delete
-                      </button>
-                    </div>
-                  </div>
-
-                  {/* PRODUCTS LIST */}
-                  <ul className="list-group list-group-flush mb-2">
-                    {(o.products || []).map((p, i) => (
-                      <li
-                        key={i}
-                        className="list-group-item d-flex align-items-center gap-3 px-0"
-                      >
-                        <img
-                          src={getImageUrl(p?.image)}
-                          alt={p?.title || "Product"}
-                          style={{
-                            width: "48px",
-                            height: "48px",
-                            objectFit: "cover",
-                            borderRadius: "6px",
-                          }}
-                        />
-                        <div className="flex-grow-1">
-                          <div className="fw-semibold">
-                            {p?.title || "Unknown Product"}
-                          </div>
-                          <div className="small text-muted">
-                            Qty: {p?.quantity || 0}
-                            {p?.selectedSize && (
-                              <span className="ms-2">
-                                | Size: <b>{p.selectedSize}</b>
-                              </span>
-                            )}
-                            {p?.selectedColor && (
-                              <span className="ms-2">
-                                | Color: <b>{p.selectedColor}</b>
-                              </span>
-                            )}
-                          </div>
-                        </div>
-                        <span className="fw-semibold">
-                          Rs.
-                          {Number((p?.price || 0) * (p?.quantity || 0)).toFixed(
-                            2,
-                          )}
-                        </span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-                {/* TOTAL AMOUNT */}
-                <div className="card-footer bg-white border-top d-flex justify-content-between align-items-center">
-                  <strong className="fs-6">
-                    Total: Rs.{Number(o?.totalAmount || 0).toFixed(2)}
-                  </strong>
                 </div>
               </div>
-            </div>
-          ))}
-        </div>
-      )}
+            )}
+          </div>
+        </main>
+      </div>
     </div>
   );
 }
