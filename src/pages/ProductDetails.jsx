@@ -5,7 +5,6 @@ import { useDispatch } from "react-redux";
 import { addToCart } from "../redux/cartSlice";
 import BACKEND_URL from "../config";
 import useSEO from "../hooks/useSEO";
-
 import {
   FaStar,
   FaStarHalfAlt,
@@ -422,6 +421,76 @@ function ProductDetails() {
           </div>
         </div>
       </div>
+      {/* DELIVERY INFORMATION */}
+      <div
+        className="border rounded-3 p-3 mb-3 mt-3"
+        style={{ backgroundColor: "#f8f9fa" }}
+      >
+        <h6 className="fw-bold mb-3">🚚 Delivery Information</h6>
+
+        <div className="d-flex align-items-center mb-3">
+          <div
+            className="me-3 d-flex align-items-center justify-content-center rounded-circle"
+            style={{
+              width: "40px",
+              height: "40px",
+              backgroundColor: "#e8f5e9",
+              fontSize: "20px",
+            }}
+          >
+            📦
+          </div>
+
+          <div>
+            <div className="fw-semibold">Delivery in 3–5 Days</div>
+            <div className="text-muted small">
+              We will deliver your order to your address within 3–5 days.
+            </div>
+          </div>
+        </div>
+
+        <div className="d-flex align-items-center mb-3">
+          <div
+            className="me-3 d-flex align-items-center justify-content-center rounded-circle"
+            style={{
+              width: "40px",
+              height: "40px",
+              backgroundColor: "#e3f2fd",
+              fontSize: "20px",
+            }}
+          >
+            🚚
+          </div>
+
+          <div>
+            <div className="fw-semibold">Fast & Secure Delivery</div>
+            <div className="text-muted small">
+              Your order is packed securely before dispatch.
+            </div>
+          </div>
+        </div>
+
+        <div className="d-flex align-items-center">
+          <div
+            className="me-3 d-flex align-items-center justify-content-center rounded-circle"
+            style={{
+              width: "40px",
+              height: "40px",
+              backgroundColor: "#fff3e0",
+              fontSize: "20px",
+            }}
+          >
+            📞
+          </div>
+
+          <div>
+            <div className="fw-semibold">Order Confirmation</div>
+            <div className="text-muted small">
+              We may contact you to confirm your order before dispatch.
+            </div>
+          </div>
+        </div>
+      </div>
       {/* CUSTOMER REVIEWS */}
       <div className="mt-5">
         <h3 className="fw-bold mb-4">Customer Reviews ({reviews.length})</h3>
@@ -503,7 +572,7 @@ function ProductDetails() {
 
       {/* PRODUCT FAQS */}
       {faqs.length > 0 && (
-        <div className="mt-5 mb-5">
+        <div className="mt-5 mb-1">
           <h3 className="fw-bold mb-4">Frequently Asked Questions</h3>
 
           <div className="accordion" id="productFaqAccordion">
