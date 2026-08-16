@@ -9,32 +9,56 @@ import useSEO from "../hooks/useSEO";
 import PhoneInput from "react-phone-input-2";
 import "react-phone-input-2/lib/style.css";
 
-// Helper to normalize number to +923xxxxxxxxx
+import {
+  FaUser,
+  FaPhone,
+  FaWhatsapp,
+  FaMapMarkerAlt,
+  FaMoneyBillWave,
+  FaShieldAlt,
+  FaTruck,
+  FaShoppingBag,
+  FaCheckCircle,
+  FaArrowLeft,
+} from "react-icons/fa";
+
+/* ================= NORMALIZE NUMBER ================= */
+
 const normalizeNumber = (num) => {
   if (!num) return "";
+
   let cleaned = num.replace(/\D/g, "");
+
   if (cleaned.startsWith("92") && cleaned[2] === "0") {
     cleaned = "92" + cleaned.slice(3);
   } else if (cleaned.startsWith("0")) {
     cleaned = cleaned.slice(1);
   }
-  if (!cleaned.startsWith("92")) cleaned = "92" + cleaned;
+
+  if (!cleaned.startsWith("92")) {
+    cleaned = "92" + cleaned;
+  }
+
   return "+" + cleaned;
 };
 
+/* ================= CHECKOUT ================= */
+
 function Checkout() {
   useSEO({
-    title: "Secure Checkout | MyShop",
+    title: "Secure Checkout | RaeesProduct",
     description:
       "Complete your order securely with Cash on Delivery and fast shipping.",
     url: window.location.href,
   });
 
   const items = useSelector((state) => state.cart.items);
+
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
   const [isSubmitting, setIsSubmitting] = useState(false);
+
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -44,9 +68,13 @@ function Checkout() {
     paymentMethod: "COD",
   });
 
+  /* ================= SCROLL TOP ================= */
+
   useEffect(() => {
     window.scrollTo(0, 0);
   }, []);
+
+  /* ================= TOTAL ================= */
 
   const totalAmount = useMemo(() => {
     return items.reduce(
@@ -55,32 +83,50 @@ function Checkout() {
     );
   }, [items]);
 
+  /* ================= CHANGE ================= */
+
   const handleChange = useCallback((e) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
+
+    setFormData((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
   }, []);
 
-  const handlePhoneChange = (value) => {
+  /* ================= PHONE ================= */
+
+  const cleanPhone = (value) => {
     let cleaned = value.replace(/\D/g, "");
+
     if (cleaned.startsWith("92") && cleaned[2] === "0") {
       cleaned = "92" + cleaned.slice(3);
     } else if (cleaned.startsWith("0")) {
       cleaned = cleaned.slice(1);
     }
-    if (cleaned.length > 12) cleaned = cleaned.slice(0, 12);
-    setFormData((prev) => ({ ...prev, phone: cleaned }));
+
+    if (cleaned.length > 12) {
+      cleaned = cleaned.slice(0, 12);
+    }
+
+    return cleaned;
+  };
+
+  const handlePhoneChange = (value) => {
+    setFormData((prev) => ({
+      ...prev,
+      phone: cleanPhone(value),
+    }));
   };
 
   const handleWhatsAppChange = (value) => {
-    let cleaned = value.replace(/\D/g, "");
-    if (cleaned.startsWith("92") && cleaned[2] === "0") {
-      cleaned = "92" + cleaned.slice(3);
-    } else if (cleaned.startsWith("0")) {
-      cleaned = cleaned.slice(1);
-    }
-    if (cleaned.length > 12) cleaned = cleaned.slice(0, 12);
-    setFormData((prev) => ({ ...prev, whatsapp: cleaned }));
+    setFormData((prev) => ({
+      ...prev,
+      whatsapp: cleanPhone(value),
+    }));
   };
+
+  /* ================= SUBMIT ================= */
 
   const handleSubmit = useCallback(
     async (e) => {
@@ -93,25 +139,27 @@ function Checkout() {
       const address = formData.address.trim();
 
       if (!name || !phone || !whatsapp || !address) {
-        alert("Please fill all required fields");
+        alert("Please fill all required fields.");
         return;
       }
 
       if (phone.replace(/^92/, "").length !== 10) {
-        alert("Phone number must be 10 digits");
+        alert("Phone number must be 10 digits.");
         return;
       }
+
       if (whatsapp.replace(/^92/, "").length !== 10) {
-        alert("WhatsApp number must be 10 digits");
+        alert("WhatsApp number must be 10 digits.");
         return;
       }
 
       if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-        alert("Please enter a valid email address");
+        alert("Please enter a valid email address.");
         return;
       }
 
       if (isSubmitting) return;
+
       setIsSubmitting(true);
 
       try {
@@ -122,6 +170,7 @@ function Checkout() {
           whatsapp: normalizeNumber(whatsapp),
           address,
           paymentMethod: formData.paymentMethod,
+
           products: items.map((item) => ({
             productId: item.id,
             title: item.title,
@@ -133,21 +182,21 @@ function Checkout() {
               ? item.image
               : `${BACKEND_URL}/${item.image}`,
           })),
+
           totalAmount,
         };
-
-        console.log("Submitting order:", orderPayload);
 
         await axios.post(`${BACKEND_URL}/orders`, orderPayload);
 
         dispatch(clearCart());
+
         navigate("/order-success");
       } catch (err) {
         console.error("ORDER ERROR:", err.response?.data || err.message);
+
         alert(
           err.response?.data?.message ||
-            JSON.stringify(err.response?.data) ||
-            "❌ Failed to place order. Check console.",
+            "Failed to place order. Please try again.",
         );
       } finally {
         setIsSubmitting(false);
@@ -156,211 +205,609 @@ function Checkout() {
     [formData, items, totalAmount, isSubmitting, dispatch, navigate],
   );
 
+  /* ================= EMPTY CART ================= */
+
   if (items.length === 0) {
     return (
-      <div className="text-center my-5">
-        <h4 className="mb-3">Your cart is empty</h4>
-        <Link to="/products" className="btn btn-primary">
-          Continue Shopping
-        </Link>
+      <div
+        className="container d-flex align-items-center justify-content-center"
+        style={{ minHeight: "70vh" }}
+      >
+        <div className="text-center">
+          <div
+            className="rounded-circle bg-light d-flex align-items-center justify-content-center mx-auto mb-4"
+            style={{
+              width: 90,
+              height: 90,
+              fontSize: 36,
+            }}
+          >
+            🛒
+          </div>
+
+          <h3 className="fw-bold">Your cart is empty</h3>
+
+          <p className="text-muted mb-4">
+            Add some products before proceeding to checkout.
+          </p>
+
+          <Link
+            to="/products"
+            className="btn btn-primary px-4 py-2 rounded-pill"
+          >
+            <FaShoppingBag className="me-2" />
+            Continue Shopping
+          </Link>
+        </div>
       </div>
     );
   }
 
+  /* ================= UI ================= */
+
   return (
-    <div className="container my-5">
-      <h1 className="text-center fw-bold mb-2">Secure Checkout</h1>
-      <p className="text-center text-muted mb-4">
-        Please review your order before placing it
-      </p>
+    <div
+      className="checkout-page py-4 py-md-5"
+      style={{
+        background: "#f6f8fb",
+        minHeight: "100vh",
+      }}
+    >
+      <div className="container">
+        {/* ================= HEADER ================= */}
 
-      <div className="row g-4">
-        {/* CUSTOMER DETAILS */}
-        <div className="col-12 col-lg-7">
-          <div className="card border-0 shadow-lg p-4">
-            <h5 className="mb-3 fw-semibold">Customer Details</h5>
+        <div className="mb-4">
+          <Link
+            to="/cart"
+            className="text-decoration-none text-muted small d-inline-flex align-items-center mb-3"
+          >
+            <FaArrowLeft className="me-2" />
+            Back to Cart
+          </Link>
 
-            <form onSubmit={handleSubmit} noValidate>
-              <div className="mb-3">
-                <label className="form-label">Full Name *</label>
-                <input
-                  type="text"
-                  name="name"
-                  value={formData.name}
-                  onChange={handleChange}
-                  className="form-control"
-                  required
-                />
-              </div>
+          <div className="text-center">
+            <div
+              className="d-inline-flex align-items-center justify-content-center rounded-circle mb-3"
+              style={{
+                width: 58,
+                height: 58,
+                background: "#eaf2ff",
+                color: "#0d6efd",
+                fontSize: 24,
+              }}
+            >
+              🔒
+            </div>
 
-              <div className="mb-3">
-                <label className="form-label">
-                  Email <span className="text-muted">(optional)</span>
-                </label>
-                <input
-                  type="email"
-                  name="email"
-                  value={formData.email}
-                  onChange={handleChange}
-                  className="form-control"
-                />
-              </div>
+            <h1 className="fw-bold mb-2">Secure Checkout</h1>
 
-              {/* PHONE INPUT */}
-              <div className="mb-3">
-                <label className="form-label">Phone *</label>
-                <PhoneInput
-                  country={"pk"}
-                  value={formData.phone}
-                  onChange={handlePhoneChange}
-                  onlyCountries={["pk"]}
-                  countryCodeEditable={false}
-                  inputStyle={{ width: "100%" }}
-                  inputProps={{
-                    name: "phone",
-                    required: true,
-                  }}
-                />
-              </div>
-
-              {/* WHATSAPP INPUT */}
-              <div className="mb-3">
-                <label className="form-label">WhatsApp Number *</label>
-                <PhoneInput
-                  country={"pk"}
-                  value={formData.whatsapp}
-                  onChange={handleWhatsAppChange}
-                  onlyCountries={["pk"]}
-                  countryCodeEditable={false}
-                  inputStyle={{ width: "100%" }}
-                  inputProps={{
-                    name: "whatsapp",
-                    required: true,
-                  }}
-                />
-              </div>
-
-              <div className="mb-3">
-                <label className="form-label">Delivery Address *</label>
-                <textarea
-                  placeholder="House/Flat #, Street, Area, City"
-                  name="address"
-                  rows="3"
-                  value={formData.address}
-                  onChange={handleChange}
-                  className="form-control"
-                  required
-                />
-              </div>
-
-              {/* PAYMENT METHOD */}
-              <div className="mb-4">
-                <h6 className="fw-semibold mb-3">Payment Method</h6>
-                <label className="w-100 border rounded-3 p-4 d-flex gap-3 border-primary bg-light">
-                  <input
-                    type="radio"
-                    checked
-                    readOnly
-                    className="form-check-input mt-1"
-                  />
-                  <div>
-                    <strong className="fs-5">Cash on Delivery</strong>
-                    <p className="text-muted mb-0 mt-1">
-                      Pay cash at your doorstep.
-                    </p>
-                  </div>
-                </label>
-              </div>
-
-              <button
-                type="submit"
-                className="btn btn-primary w-100 py-3 fw-semibold"
-                disabled={isSubmitting}
-              >
-                {isSubmitting ? "Placing Order..." : "Place Order"}
-              </button>
-            </form>
+            <p className="text-muted mb-0">
+              Complete your details and place your order
+            </p>
           </div>
         </div>
 
-        {/* ORDER SUMMARY */}
-        <div className="col-12 col-lg-5">
-          <div style={{ position: "sticky", top: "100px" }}>
-            <div className="card border-0 shadow-lg p-4">
-              <h5 className="mb-3 fw-semibold">Order Summary</h5>
+        {/* ================= PROGRESS ================= */}
 
-              <ul className="list-group list-group-flush mb-3">
-                {items.map((item) => (
-                  <li
-                    key={`${item.id}-${item.selectedColor}-${item.selectedSize}`}
-                    className="list-group-item d-flex justify-content-between align-items-center"
+        <div className="checkout-progress bg-white rounded-4 shadow-sm p-3 mb-4">
+          <div className="row text-center">
+            <div className="col-4">
+              <div className="text-primary fw-bold">
+                <FaShoppingBag />
+              </div>
+              <small className="fw-semibold">Cart</small>
+            </div>
+
+            <div className="col-4">
+              <div className="text-primary fw-bold">
+                <FaUser />
+              </div>
+              <small className="fw-semibold">Checkout</small>
+            </div>
+
+            <div className="col-4">
+              <div className="text-muted fw-bold">
+                <FaCheckCircle />
+              </div>
+              <small className="text-muted">Complete</small>
+            </div>
+          </div>
+        </div>
+
+        <div className="row g-4">
+          {/* ================= CUSTOMER FORM ================= */}
+
+          <div className="col-12 col-lg-7">
+            <div className="card border-0 shadow-sm rounded-4 overflow-hidden">
+              <div className="card-body p-3 p-md-4">
+                <div className="d-flex align-items-center mb-4">
+                  <div
+                    className="rounded-circle d-flex align-items-center justify-content-center me-3"
+                    style={{
+                      width: 44,
+                      height: 44,
+                      background: "#eaf2ff",
+                      color: "#0d6efd",
+                    }}
                   >
-                    <div className="d-flex align-items-center gap-3">
-                      <img
-                        src={
-                          item.image?.startsWith("http")
-                            ? item.image
-                            : `${BACKEND_URL}/${item.image}`
-                        }
-                        alt={item.title}
-                        width="60"
-                        height="60"
-                        style={{
-                          objectFit: "contain",
-                          borderRadius: 6,
-                          backgroundColor: "#f8f9fa",
-                        }}
-                        onError={(e) =>
-                          (e.currentTarget.src =
-                            "https://via.placeholder.com/60")
-                        }
+                    <FaUser />
+                  </div>
+
+                  <div>
+                    <h5 className="fw-bold mb-1">Customer Information</h5>
+
+                    <p className="text-muted small mb-0">
+                      Enter your delivery details
+                    </p>
+                  </div>
+                </div>
+
+                <form onSubmit={handleSubmit} noValidate>
+                  {/* NAME */}
+
+                  <div className="mb-3">
+                    <label className="form-label fw-semibold">
+                      Full Name <span className="text-danger">*</span>
+                    </label>
+
+                    <div className="input-group">
+                      <span className="input-group-text bg-light border-end-0">
+                        <FaUser className="text-muted" />
+                      </span>
+
+                      <input
+                        type="text"
+                        name="name"
+                        value={formData.name}
+                        onChange={handleChange}
+                        className="form-control border-start-0 ps-0"
+                        placeholder="Enter your full name"
+                        required
                       />
-                      <div>
-                        <strong>{item.title}</strong>
-                        <div className="small text-muted d-flex gap-2 align-items-center">
-                          Qty: {item.quantity}
+                    </div>
+                  </div>
+
+                  {/* EMAIL */}
+
+                  <div className="mb-3">
+                    <label className="form-label fw-semibold">
+                      Email{" "}
+                      <span className="text-muted fw-normal">(optional)</span>
+                    </label>
+
+                    <input
+                      type="email"
+                      name="email"
+                      value={formData.email}
+                      onChange={handleChange}
+                      className="form-control"
+                      placeholder="example@email.com"
+                    />
+                  </div>
+
+                  {/* PHONE */}
+
+                  <div className="mb-3">
+                    <label className="form-label fw-semibold">
+                      Phone Number <span className="text-danger">*</span>
+                    </label>
+
+                    <div className="checkout-phone">
+                      <PhoneInput
+                        country="pk"
+                        value={formData.phone}
+                        onChange={handlePhoneChange}
+                        onlyCountries={["pk"]}
+                        countryCodeEditable={false}
+                        inputStyle={{
+                          width: "100%",
+                          height: "48px",
+                          borderRadius: "10px",
+                          border: "1px solid #dee2e6",
+                        }}
+                        buttonStyle={{
+                          borderRadius: "10px 0 0 10px",
+                          border: "1px solid #dee2e6",
+                        }}
+                        inputProps={{
+                          name: "phone",
+                          required: true,
+                        }}
+                      />
+                    </div>
+                  </div>
+
+                  {/* WHATSAPP */}
+
+                  <div className="mb-3">
+                    <label className="form-label fw-semibold">
+                      WhatsApp Number <span className="text-danger">*</span>
+                    </label>
+
+                    <div className="checkout-phone">
+                      <PhoneInput
+                        country="pk"
+                        value={formData.whatsapp}
+                        onChange={handleWhatsAppChange}
+                        onlyCountries={["pk"]}
+                        countryCodeEditable={false}
+                        inputStyle={{
+                          width: "100%",
+                          height: "48px",
+                          borderRadius: "10px",
+                          border: "1px solid #dee2e6",
+                        }}
+                        buttonStyle={{
+                          borderRadius: "10px 0 0 10px",
+                          border: "1px solid #dee2e6",
+                        }}
+                        inputProps={{
+                          name: "whatsapp",
+                          required: true,
+                        }}
+                      />
+                    </div>
+
+                    <small className="text-muted">
+                      We'll use WhatsApp to confirm your order.
+                    </small>
+                  </div>
+
+                  {/* ADDRESS */}
+
+                  <div className="mb-4">
+                    <label className="form-label fw-semibold">
+                      Delivery Address <span className="text-danger">*</span>
+                    </label>
+
+                    <div className="position-relative">
+                      <FaMapMarkerAlt
+                        className="position-absolute text-muted"
+                        style={{
+                          top: 16,
+                          left: 14,
+                          zIndex: 2,
+                        }}
+                      />
+
+                      <textarea
+                        name="address"
+                        rows="4"
+                        value={formData.address}
+                        onChange={handleChange}
+                        className="form-control ps-5"
+                        placeholder="House/Flat #, Street, Area, City"
+                        required
+                        style={{
+                          resize: "vertical",
+                        }}
+                      />
+                    </div>
+                  </div>
+
+                  {/* PAYMENT */}
+
+                  <div className="mb-4">
+                    <label className="form-label fw-bold">Payment Method</label>
+
+                    <div
+                      className="border rounded-4 p-3"
+                      style={{
+                        background: "linear-gradient(135deg,#f0fff5,#ffffff)",
+                        borderColor: "#b7e4c7",
+                      }}
+                    >
+                      <div className="d-flex align-items-center">
+                        <div
+                          className="rounded-circle d-flex align-items-center justify-content-center me-3"
+                          style={{
+                            width: 48,
+                            height: 48,
+                            background: "#dff7e8",
+                            color: "#198754",
+                          }}
+                        >
+                          <FaMoneyBillWave size={21} />
+                        </div>
+
+                        <div className="flex-grow-1">
+                          <div className="fw-bold">Cash on Delivery</div>
+
+                          <small className="text-muted">
+                            Pay when your order arrives at your doorstep.
+                          </small>
+                        </div>
+
+                        <FaCheckCircle className="text-success" size={22} />
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* SUBMIT */}
+
+                  <button
+                    type="submit"
+                    disabled={isSubmitting}
+                    className="btn btn-primary w-100 py-3 rounded-3 fw-bold"
+                    style={{
+                      fontSize: "16px",
+                    }}
+                  >
+                    {isSubmitting ? (
+                      <>
+                        <span
+                          className="spinner-border spinner-border-sm me-2"
+                          role="status"
+                        />
+                        Placing Order...
+                      </>
+                    ) : (
+                      <>
+                        <FaCheckCircle className="me-2" />
+                        Place Order — Rs. {totalAmount.toFixed(0)}
+                      </>
+                    )}
+                  </button>
+                </form>
+              </div>
+            </div>
+
+            {/* ================= TRUST ================= */}
+
+            <div className="row g-3 mt-1">
+              <div className="col-4">
+                <div className="bg-white rounded-4 shadow-sm p-3 text-center h-100">
+                  <FaShieldAlt className="text-primary mb-2" size={20} />
+
+                  <div className="small fw-semibold">Secure</div>
+                </div>
+              </div>
+
+              <div className="col-4">
+                <div className="bg-white rounded-4 shadow-sm p-3 text-center h-100">
+                  <FaTruck className="text-primary mb-2" size={20} />
+
+                  <div className="small fw-semibold">Fast Delivery</div>
+                </div>
+              </div>
+
+              <div className="col-4">
+                <div className="bg-white rounded-4 shadow-sm p-3 text-center h-100">
+                  <FaMoneyBillWave className="text-success mb-2" size={20} />
+
+                  <div className="small fw-semibold">COD Available</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* ================= ORDER SUMMARY ================= */}
+
+          <div className="col-12 col-lg-5">
+            <div
+              style={{
+                position: "sticky",
+                top: "90px",
+              }}
+            >
+              <div className="card border-0 shadow-sm rounded-4 overflow-hidden">
+                <div className="card-body p-3 p-md-4">
+                  <div className="d-flex justify-content-between align-items-center mb-4">
+                    <div>
+                      <h5 className="fw-bold mb-1">Your Order</h5>
+
+                      <small className="text-muted">
+                        {items.length} {items.length === 1 ? "item" : "items"}
+                      </small>
+                    </div>
+
+                    <div
+                      className="rounded-circle d-flex align-items-center justify-content-center"
+                      style={{
+                        width: 44,
+                        height: 44,
+                        background: "#eaf2ff",
+                        color: "#0d6efd",
+                      }}
+                    >
+                      <FaShoppingBag />
+                    </div>
+                  </div>
+
+                  {/* ITEMS */}
+
+                  <div>
+                    {items.map((item) => (
+                      <div
+                        key={`${item.id}-${item.selectedColor}-${item.selectedSize}`}
+                        className="d-flex gap-3 pb-3 mb-3 border-bottom"
+                      >
+                        {/* IMAGE */}
+
+                        <div
+                          className="rounded-3 bg-light d-flex align-items-center justify-content-center flex-shrink-0"
+                          style={{
+                            width: 72,
+                            height: 72,
+                          }}
+                        >
+                          <img
+                            src={
+                              item.image?.startsWith("http")
+                                ? item.image
+                                : `${BACKEND_URL}/${item.image}`
+                            }
+                            alt={item.title}
+                            width="64"
+                            height="64"
+                            style={{
+                              objectFit: "contain",
+                              maxWidth: "100%",
+                            }}
+                            onError={(e) => {
+                              e.currentTarget.src =
+                                "https://via.placeholder.com/64";
+                            }}
+                          />
+                        </div>
+
+                        {/* INFO */}
+
+                        <div className="flex-grow-1 min-width-0">
+                          <div
+                            className="fw-semibold"
+                            style={{
+                              display: "-webkit-box",
+                              WebkitLineClamp: 2,
+                              WebkitBoxOrient: "vertical",
+                              overflow: "hidden",
+                            }}
+                          >
+                            {item.title}
+                          </div>
+
+                          <div className="small text-muted mt-1">
+                            Qty: {item.quantity}
+                            {item.selectedSize && (
+                              <> · Size: {item.selectedSize}</>
+                            )}
+                          </div>
+
                           {item.selectedColor && (
-                            <span className="d-flex align-items-center">
-                              | Color:{" "}
+                            <div className="small text-muted d-flex align-items-center mt-1">
+                              Color:
                               <span
+                                className="ms-1"
                                 style={{
-                                  display: "inline-block",
-                                  width: 16,
-                                  height: 16,
+                                  width: 13,
+                                  height: 13,
                                   borderRadius: "50%",
-                                  backgroundColor: item.selectedColor,
-                                  marginLeft: 4,
+                                  background: item.selectedColor,
                                   border: "1px solid #ccc",
                                 }}
                               />
-                            </span>
+                            </div>
                           )}
-                          {item.selectedSize && (
-                            <span>| Size: {item.selectedSize}</span>
+                        </div>
+
+                        {/* PRICE */}
+
+                        <div className="fw-bold text-end flex-shrink-0">
+                          Rs.
+                          {(Number(item.price) * Number(item.quantity)).toFixed(
+                            0,
                           )}
                         </div>
                       </div>
+                    ))}
+                  </div>
+
+                  {/* TOTAL */}
+
+                  <div className="pt-1">
+                    <div className="d-flex justify-content-between text-muted mb-2">
+                      <span>Subtotal</span>
+
+                      <span>Rs. {totalAmount.toFixed(0)}</span>
                     </div>
 
-                    <span className="fw-bold">
-                      Rs.{(item.price * item.quantity).toFixed(2)}
-                    </span>
-                  </li>
-                ))}
-              </ul>
+                    <div className="d-flex justify-content-between text-muted mb-3">
+                      <span>Delivery</span>
 
-              <hr />
+                      <span className="text-success fw-semibold">FREE</span>
+                    </div>
 
-              <div className="d-flex justify-content-between fs-5 fw-bold">
-                <span>Total</span>
-                <span className="text-primary">
-                  Rs.{totalAmount.toFixed(2)}
-                </span>
+                    <hr />
+
+                    <div className="d-flex justify-content-between align-items-center">
+                      <span className="fw-bold fs-5">Total</span>
+
+                      <span className="fw-bold text-primary fs-4">
+                        Rs. {totalAmount.toFixed(0)}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* ================= DELIVERY BOX ================= */}
+
+              <div className="bg-white rounded-4 shadow-sm p-3 mt-3">
+                <div className="d-flex align-items-center mb-2">
+                  <FaTruck className="text-primary me-3" />
+
+                  <div>
+                    <div className="fw-semibold">Fast Delivery</div>
+
+                    <small className="text-muted">
+                      Delivery available across Pakistan
+                    </small>
+                  </div>
+                </div>
+
+                <div className="d-flex align-items-center">
+                  <FaWhatsapp className="text-success me-3" />
+
+                  <div>
+                    <div className="fw-semibold">WhatsApp Confirmation</div>
+
+                    <small className="text-muted">
+                      We'll contact you before dispatch
+                    </small>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
         </div>
       </div>
+
+      {/* ================= SMALL CSS ================= */}
+
+      <style>{`
+
+        .checkout-page .form-control {
+          min-height: 48px;
+          border-radius: 10px;
+          border-color: #dee2e6;
+        }
+
+        .checkout-page .form-control:focus {
+          border-color: #86b7fe;
+          box-shadow: 0 0 0 .2rem rgba(13,110,253,.08);
+        }
+
+        .checkout-page .input-group-text {
+          border-radius: 10px 0 0 10px;
+        }
+
+        .checkout-page .input-group .form-control {
+          border-radius: 0 10px 10px 0;
+        }
+
+        .checkout-progress {
+          max-width: 650px;
+          margin-left: auto;
+          margin-right: auto;
+        }
+
+        @media (max-width: 575px) {
+
+          .checkout-page {
+            padding-top: 20px !important;
+          }
+
+          .checkout-page h1 {
+            font-size: 27px;
+          }
+
+          .checkout-progress {
+            padding: 12px !important;
+          }
+
+        }
+
+      `}</style>
     </div>
   );
 }

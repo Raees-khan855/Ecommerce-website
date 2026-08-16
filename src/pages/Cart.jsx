@@ -2,13 +2,13 @@ import { useSelector, useDispatch } from "react-redux";
 import { removeFromCart, updateQuantity, clearCart } from "../redux/cartSlice";
 import { useNavigate } from "react-router-dom";
 import { useMemo, useCallback } from "react";
+import { FaTrash, FaMinus, FaPlus, FaShoppingBag } from "react-icons/fa";
 
 function Cart() {
   const items = useSelector((state) => state.cart.items);
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
-  /* ================= TOTAL ================= */
   const total = useMemo(
     () =>
       Math.round(
@@ -20,7 +20,6 @@ function Cart() {
     [items],
   );
 
-  /* ================= QUANTITY CHANGE ================= */
   const handleQtyChange = useCallback(
     (item, value) => {
       const quantity = Number(value);
@@ -39,7 +38,6 @@ function Cart() {
     [dispatch],
   );
 
-  /* ================= REMOVE ================= */
   const handleRemove = useCallback(
     (item) => {
       dispatch(
@@ -53,186 +51,246 @@ function Cart() {
     [dispatch],
   );
 
-  /* ================= CHECKOUT ================= */
-  const handleCheckout = useCallback(() => {
-    navigate("/checkout");
-  }, [navigate]);
-
   /* ================= EMPTY CART ================= */
   if (items.length === 0) {
     return (
-      <div className="container text-center mt-5 py-5">
-        <h4>Your cart is empty</h4>
-
-        <button
-          className="btn btn-primary mt-3"
-          onClick={() => navigate("/products")}
+      <div className="container py-5">
+        <div
+          className="text-center mx-auto p-5 rounded-4 shadow-sm"
+          style={{
+            maxWidth: "500px",
+            background: "#f8fafc",
+          }}
         >
-          🛍️ Shop Products
-        </button>
+          <div
+            className="d-flex align-items-center justify-content-center mx-auto mb-3 rounded-circle"
+            style={{
+              width: "70px",
+              height: "70px",
+              background: "#e9f2ff",
+              color: "#0d6efd",
+            }}
+          >
+            <FaShoppingBag size={28} />
+          </div>
+
+          <h5 className="fw-bold mb-2">Your cart is empty</h5>
+
+          <p className="text-muted small mb-4">
+            Looks like you haven't added anything yet.
+          </p>
+
+          <button
+            className="btn btn-primary btn-sm px-4 rounded-pill"
+            onClick={() => navigate("/products")}
+          >
+            Continue Shopping
+          </button>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="container my-5">
-      {/* ================= TITLE ================= */}
-      <h1 className="mb-4 text-center fw-semibold">🛒 Shopping Cart</h1>
+    <div className="container py-4" style={{ maxWidth: "950px" }}>
+      {/* ================= HEADER ================= */}
+      <div className="d-flex align-items-center justify-content-between mb-3">
+        <div>
+          <h4 className="fw-bold mb-1">Shopping Cart</h4>
+          <span className="text-muted small">
+            {items.length} {items.length === 1 ? "item" : "items"}
+          </span>
+        </div>
 
-      {/* ================= CART ITEMS ================= */}
-      <div className="list-group mb-4">
+        <button
+          className="btn btn-sm btn-outline-danger rounded-pill px-3"
+          onClick={() => dispatch(clearCart())}
+        >
+          <FaTrash size={11} className="me-1" />
+          Clear
+        </button>
+      </div>
+
+      {/* ================= ITEMS ================= */}
+      <div className="d-flex flex-column gap-2">
         {items.map((item) => (
           <div
             key={`${item.id}-${item.selectedColor || ""}-${item.selectedSize || ""}`}
-            className="list-group-item d-flex flex-column flex-sm-row align-items-sm-center gap-3 p-3 shadow-sm border-0 mb-2 rounded-3"
+            className="bg-white border rounded-3 p-2 shadow-sm"
           >
-            {/* ================= IMAGE ================= */}
-            <img
-              src={item.image}
-              alt={item.title}
-              width="80"
-              height="80"
-              className="rounded bg-light p-2"
-              style={{
-                objectFit: "contain",
-                flexShrink: 0,
-              }}
-              onError={(e) => {
-                e.currentTarget.src = "https://via.placeholder.com/80";
-              }}
-            />
+            <div className="d-flex align-items-center gap-3">
+              {/* IMAGE */}
+              <img
+                src={item.image}
+                alt={item.title}
+                width="70"
+                height="70"
+                className="rounded-3 bg-light"
+                style={{
+                  objectFit: "contain",
+                  flexShrink: 0,
+                }}
+                onError={(e) => {
+                  e.currentTarget.src = "https://via.placeholder.com/70";
+                }}
+              />
 
-            {/* ================= PRODUCT INFO ================= */}
-            <div className="flex-grow-1 w-100">
-              <div className="d-flex flex-column flex-md-row justify-content-between align-items-md-center">
-                <div>
-                  <strong>{item.title}</strong>
+              {/* INFO */}
+              <div className="flex-grow-1 min-width-0">
+                <h6
+                  className="fw-semibold mb-1"
+                  style={{
+                    fontSize: "14px",
+                    display: "-webkit-box",
+                    WebkitLineClamp: 2,
+                    WebkitBoxOrient: "vertical",
+                    overflow: "hidden",
+                  }}
+                >
+                  {item.title}
+                </h6>
 
-                  {/* COLOR + SIZE */}
-                  <div className="small text-muted mt-1">
+                {/* OPTIONS */}
+                {(item.selectedSize || item.selectedColor) && (
+                  <div className="text-muted mb-1" style={{ fontSize: "11px" }}>
                     {item.selectedSize && (
-                      <>
+                      <span>
                         Size: <b>{item.selectedSize}</b>
-                      </>
+                      </span>
                     )}
 
-                    {item.selectedSize && item.selectedColor && " | "}
+                    {item.selectedSize && item.selectedColor && (
+                      <span className="mx-1">•</span>
+                    )}
 
                     {item.selectedColor && (
-                      <>
+                      <span>
                         Color: <b>{item.selectedColor}</b>
-                      </>
+                      </span>
                     )}
                   </div>
+                )}
 
-                  {/* PRICE */}
-                  <div className="text-muted small mt-1">
-                    Rs. {item.price} each
-                  </div>
-                </div>
-
-                {/* ITEM TOTAL */}
-                <div className="fw-bold text-primary mt-2 mt-md-0">
-                  Rs. {Number(item.price) * Number(item.quantity)}
+                <div
+                  className="fw-bold text-primary"
+                  style={{ fontSize: "14px" }}
+                >
+                  Rs. {Number(item.price).toLocaleString()}
                 </div>
               </div>
 
-              {/* ================= QUANTITY + REMOVE ================= */}
-              <div className="mt-3 d-flex align-items-center gap-2 flex-wrap">
-                {/* QUANTITY CONTROLS */}
+              {/* RIGHT SIDE */}
+              <div className="text-end">
+                {/* TOTAL */}
+                <div className="fw-bold mb-2" style={{ fontSize: "14px" }}>
+                  Rs.{" "}
+                  {(
+                    Number(item.price) * Number(item.quantity)
+                  ).toLocaleString()}
+                </div>
+
+                {/* QUANTITY */}
                 <div
-                  className="d-flex align-items-center border rounded-3 overflow-hidden"
+                  className="d-flex align-items-center border rounded-pill overflow-hidden"
                   style={{
-                    height: "40px",
-                    backgroundColor: "#fff",
+                    height: "30px",
+                    width: "92px",
                   }}
                 >
-                  {/* MINUS */}
                   <button
-                    type="button"
-                    className="btn btn-light border-0 px-3"
-                    onClick={() => handleQtyChange(item, item.quantity - 1)}
-                    disabled={item.quantity <= 1}
-                    aria-label="Decrease quantity"
+                    className="btn btn-light border-0 p-0"
                     style={{
-                      height: "100%",
-                      fontSize: "20px",
-                      fontWeight: "bold",
-                      lineHeight: 1,
+                      width: "30px",
+                      height: "30px",
                     }}
+                    disabled={item.quantity <= 1}
+                    onClick={() => handleQtyChange(item, item.quantity - 1)}
                   >
-                    −
+                    <FaMinus size={9} />
                   </button>
 
-                  {/* QUANTITY */}
                   <span
-                    className="fw-bold text-center"
-                    style={{
-                      minWidth: "45px",
-                      userSelect: "none",
-                    }}
+                    className="fw-bold text-center flex-grow-1"
+                    style={{ fontSize: "12px" }}
                   >
                     {item.quantity}
                   </span>
 
-                  {/* PLUS */}
                   <button
-                    type="button"
-                    className="btn btn-light border-0 px-3"
-                    onClick={() => handleQtyChange(item, item.quantity + 1)}
-                    aria-label="Increase quantity"
+                    className="btn btn-light border-0 p-0"
                     style={{
-                      height: "100%",
-                      fontSize: "20px",
-                      fontWeight: "bold",
-                      lineHeight: 1,
+                      width: "30px",
+                      height: "30px",
                     }}
+                    onClick={() => handleQtyChange(item, item.quantity + 1)}
                   >
-                    +
+                    <FaPlus size={9} />
                   </button>
                 </div>
-
-                {/* REMOVE BUTTON */}
-                <button
-                  type="button"
-                  className="btn btn-sm btn-outline-danger"
-                  onClick={() => handleRemove(item)}
-                >
-                  ❌ Remove
-                </button>
               </div>
+            </div>
+
+            {/* REMOVE */}
+            <div className="text-end mt-1">
+              <button
+                className="btn btn-link text-danger p-0"
+                style={{ fontSize: "11px" }}
+                onClick={() => handleRemove(item)}
+              >
+                Remove
+              </button>
             </div>
           </div>
         ))}
       </div>
 
-      {/* ================= FOOTER ================= */}
-      <div className="d-flex flex-column flex-md-row justify-content-between align-items-md-center mt-4">
-        {/* BUTTONS */}
-        <div className="d-flex gap-2 flex-wrap mb-3 mb-md-0">
-          {/* CLEAR CART */}
-          <button
-            type="button"
-            className="btn btn-outline-secondary"
-            onClick={() => dispatch(clearCart())}
-          >
-            🧹 Clear Cart
-          </button>
+      {/* ================= SUMMARY ================= */}
+      <div className="mt-4 p-3 rounded-3 border bg-light">
+        <div className="d-flex justify-content-between mb-2">
+          <span className="text-muted small">Subtotal</span>
 
-          {/* CHECKOUT */}
-          <button
-            type="button"
-            className="btn btn-primary"
-            onClick={handleCheckout}
-          >
-            💳 Proceed to Checkout
-          </button>
+          <span className="fw-semibold small">
+            Rs. {total.toLocaleString()}
+          </span>
         </div>
 
-        {/* TOTAL */}
-        <h5 className="fw-bold text-primary mt-3 mt-md-0">
-          Total: Rs. {total}
-        </h5>
+        <div className="d-flex justify-content-between mb-3">
+          <span className="text-muted small">Delivery</span>
+
+          <span className="text-success fw-semibold small">FREE</span>
+        </div>
+
+        <hr className="my-2" />
+
+        <div className="d-flex justify-content-between align-items-center">
+          <span className="fw-bold">Total</span>
+
+          <span className="fw-bold text-primary" style={{ fontSize: "20px" }}>
+            Rs. {total.toLocaleString()}
+          </span>
+        </div>
+
+        {/* CHECKOUT */}
+        <button
+          className="btn btn-primary w-100 mt-3 rounded-3 fw-semibold"
+          onClick={() => navigate("/checkout")}
+        >
+          Proceed to Checkout →
+        </button>
+
+        <button
+          className="btn btn-link btn-sm w-100 text-muted mt-1"
+          onClick={() => navigate("/products")}
+        >
+          Continue Shopping
+        </button>
+      </div>
+
+      {/* ================= DELIVERY INFO ================= */}
+      <div className="text-center mt-3">
+        <span className="text-muted" style={{ fontSize: "11px" }}>
+          🚚 Delivery within 3–5 days &nbsp; • &nbsp; 💵 Cash on Delivery
+        </span>
       </div>
     </div>
   );
