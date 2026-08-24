@@ -5,6 +5,7 @@ import { useDispatch } from "react-redux";
 import { addToCart } from "../redux/cartSlice";
 import BACKEND_URL from "../config";
 import useSEO from "../hooks/useSEO";
+import { tiktokTrack } from "../utils/tiktok";
 import {
   FaStar,
   FaStarHalfAlt,
@@ -113,7 +114,13 @@ function ProductDetails() {
         const prod = res.data.product || res.data;
 
         setProduct(prod);
-
+        tiktokTrack("ViewContent", {
+          content_id: String(prod._id),
+          content_name: prod.title,
+          content_type: "product",
+          value: Number(prod.price || 0),
+          currency: "PKR",
+        });
         await fetchReviews(prod._id);
         await fetchFaqs(prod._id);
 
@@ -177,13 +184,16 @@ function ProductDetails() {
   const mainImage = getImageUrl(activeImage);
 
   /* ================= ADD TO CART ================= */
-
   const addItem = (checkout = false) => {
+    const price = Number(product.price || 0);
+    const totalValue = price * quantity;
+
+    // Add product to Redux cart
     dispatch(
       addToCart({
         id: product._id,
         title: product.title,
-        price: Number(product.price || 0),
+        price,
         image: mainImage,
         quantity,
         selectedColor,
@@ -191,9 +201,18 @@ function ProductDetails() {
       }),
     );
 
+    // TikTok AddToCart event
+    tiktokTrack("AddToCart", {
+      content_id: String(product._id),
+      content_name: product.title,
+      content_type: "product",
+      quantity: quantity,
+      value: totalValue,
+      currency: "PKR",
+    });
+
     navigate(checkout ? "/checkout" : "/cart");
   };
-
   /* ================= SHARE ================= */
 
   const productUrl = window.location.href;

@@ -294,7 +294,7 @@ function Footer() {
                 href="tel:+923254555681"
                 className="text-secondary text-decoration-none small footer-link"
               >
-                +92 325 4555681
+                +92 3004555681
               </a>
             </div>
 
@@ -309,7 +309,7 @@ function Footer() {
                 className="text-secondary text-decoration-none small footer-link"
                 style={{ wordBreak: "break-word" }}
               >
-                support@sigmaraees183@gmail.com
+                support@inforaees808080@gmail.com
               </a>
             </div>
 

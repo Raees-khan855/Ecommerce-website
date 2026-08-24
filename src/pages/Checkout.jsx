@@ -5,7 +5,7 @@ import { useNavigate, Link } from "react-router-dom";
 import axios from "axios";
 import BACKEND_URL from "../config";
 import useSEO from "../hooks/useSEO";
-
+import { tiktokTrack } from "../utils/tiktok";
 import PhoneInput from "react-phone-input-2";
 import "react-phone-input-2/lib/style.css";
 
@@ -82,7 +82,21 @@ function Checkout() {
       0,
     );
   }, [items]);
+  /* ================= TIKTOK INITIATE CHECKOUT ================= */
 
+  useEffect(() => {
+    if (!items.length || totalAmount <= 0) return;
+
+    tiktokTrack("InitiateCheckout", {
+      content_type: "product",
+      quantity: items.reduce(
+        (sum, item) => sum + Number(item.quantity || 0),
+        0,
+      ),
+      value: Number(totalAmount),
+      currency: "PKR",
+    });
+  }, [items, totalAmount]);
   /* ================= CHANGE ================= */
 
   const handleChange = useCallback((e) => {
@@ -185,8 +199,28 @@ function Checkout() {
 
           totalAmount,
         };
+        const orderResponse = await axios.post(
+          `${BACKEND_URL}/orders`,
+          orderPayload,
+        );
 
-        await axios.post(`${BACKEND_URL}/orders`, orderPayload);
+        /* ================= TIKTOK PLACE ORDER ================= */
+
+        tiktokTrack("PlaceAnOrder", {
+          content_type: "product",
+          quantity: items.reduce(
+            (sum, item) => sum + Number(item.quantity || 0),
+            0,
+          ),
+          value: Number(totalAmount),
+          currency: "PKR",
+        });
+
+        /* ================= CLEAR CART ================= */
+
+        dispatch(clearCart());
+
+        navigate("/order-success");
 
         dispatch(clearCart());
 
