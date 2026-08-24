@@ -115,10 +115,10 @@ function ProductDetails() {
 
         setProduct(prod);
         tiktokTrack("ViewContent", {
-          content_id: String(prod._id),
-          content_name: prod.title,
           content_type: "product",
-          value: Number(prod.price || 0),
+          content_id: String(product._id || product.id),
+          content_name: product.title,
+          value: Number(product.price || 0),
           currency: "PKR",
         });
         await fetchReviews(prod._id);
@@ -203,11 +203,11 @@ function ProductDetails() {
 
     // TikTok AddToCart event
     tiktokTrack("AddToCart", {
-      content_id: String(product._id),
-      content_name: product.title,
       content_type: "product",
-      quantity: quantity,
-      value: totalValue,
+      content_id: String(product._id || product.id),
+      content_name: product.title,
+      quantity: Number(quantity || 1),
+      value: Number(product.price || 0) * Number(quantity || 1),
       currency: "PKR",
     });
 
