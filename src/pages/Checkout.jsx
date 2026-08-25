@@ -219,11 +219,6 @@ function Checkout() {
         /* ================= CLEAR CART ================= */
 
         dispatch(clearCart());
-
-        navigate("/order-success");
-
-        dispatch(clearCart());
-
         navigate("/order-success");
       } catch (err) {
         console.error("ORDER ERROR:", err.response?.data || err.message);

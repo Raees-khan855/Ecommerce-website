@@ -114,13 +114,15 @@ function ProductDetails() {
         const prod = res.data.product || res.data;
 
         setProduct(prod);
+
         tiktokTrack("ViewContent", {
           content_type: "product",
-          content_id: String(product._id || product.id),
-          content_name: product.title,
-          value: Number(product.price || 0),
+          content_id: String(prod._id || prod.id),
+          content_name: prod.title,
+          value: Number(prod.price || 0),
           currency: "PKR",
         });
+
         await fetchReviews(prod._id);
         await fetchFaqs(prod._id);
 
