@@ -204,9 +204,9 @@ function Checkout() {
           orderPayload,
         );
 
-        /* ================= TIKTOK PLACE ORDER ================= */
+        // ================= TIKTOK PURCHASE =================
 
-        tiktokTrack("PlaceAnOrder", {
+        tiktokTrack("Purchase", {
           content_type: "product",
           quantity: items.reduce(
             (sum, item) => sum + Number(item.quantity || 0),
